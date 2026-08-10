@@ -178,8 +178,139 @@ const App = (() => {
     render();
   }
 
+  // ── Dark Mode / Theme Handler ──────────────────────────
+  function applyTheme() {
+    const isDark = data.settings && data.settings.theme === 'dark';
+    document.body.classList.toggle('dark-mode', isDark);
+    const btn = document.getElementById('themeToggleBtn');
+    if (btn) btn.textContent = isDark ? '☀️' : '🌙';
+  }
+
+  function toggleTheme() {
+    if (!data.settings) data.settings = {};
+    data.settings.theme = data.settings.theme === 'dark' ? 'light' : 'dark';
+    applyTheme();
+    persist();
+    toast(data.settings.theme === 'dark' ? 'OLED Dark Mode enabled' : 'Light Mode enabled');
+  }
+
+  // ── Exam Target Countdown ──────────────────────────────
+  function updateCountdown() {
+    const timerEl = document.getElementById('countdownTimer');
+    if (!timerEl) return;
+    const examDateStr = data.settings ? data.settings.examDate : '';
+    if (!examDateStr) {
+      timerEl.textContent = 'No target date set · Click "Set Target Date"';
+      return;
+    }
+
+    const targetDate = new Date(examDateStr).getTime();
+    const now = Date.now();
+    const diff = targetDate - now;
+
+    if (diff <= 0) {
+      timerEl.textContent = '🎉 Exam Day is Here! Best of luck!';
+      return;
+    }
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+    timerEl.textContent = `${days} Days ${hours}h ${mins}m Remaining`;
+  }
+
+  async function editExamDate() {
+    const currentDate = data.settings ? data.settings.examDate : '';
+    const newDate = prompt('Enter your GTU Exam target date (YYYY-MM-DD):', currentDate || '2026-11-15');
+    if (newDate === null) return;
+    if (newDate.trim() === '') {
+      data.settings.examDate = '';
+      persist(); updateCountdown();
+      toast('Exam countdown cleared');
+      return;
+    }
+    if (isNaN(new Date(newDate).getTime())) {
+      toast('Invalid date format. Use YYYY-MM-DD', true);
+      return;
+    }
+    data.settings.examDate = newDate.trim();
+    persist();
+    updateCountdown();
+    toast('Exam target date updated!');
+  }
+
+  // ── Semester Readiness Breakdown ───────────────────────
+  function toggleReadinessView() {
+    if (!data.settings) data.settings = {};
+    data.settings.hideReadiness = !data.settings.hideReadiness;
+    persist();
+    renderReadinessGrid();
+  }
+
+  function renderReadinessGrid() {
+    const section = document.getElementById('semReadinessSection');
+    const grid = document.getElementById('readinessGrid');
+    const toggleBtn = document.getElementById('btnToggleReadiness');
+    if (!grid || !section) return;
+
+    const isHidden = data.settings && data.settings.hideReadiness;
+    if (toggleBtn) toggleBtn.textContent = isHidden ? 'Show' : 'Hide';
+    grid.style.display = isHidden ? 'none' : 'grid';
+
+    // Calculate per-semester readiness
+    const semMap = {};
+    for (let sNum = 1; sNum <= 6; sNum++) {
+      semMap[sNum] = { total: 0, dl: 0, pr: 0 };
+    }
+
+    if (Array.isArray(data.subjects)) {
+      data.subjects.forEach(s => {
+        const sem = s.sem || 1;
+        if (semMap[sem] && Array.isArray(s.units)) {
+          s.units.forEach(u => {
+            if (Array.isArray(u.parts)) {
+              u.parts.forEach(p => {
+                semMap[sem].total++;
+                if (p.downloaded) semMap[sem].dl++;
+                if (p.printed) semMap[sem].pr++;
+              });
+            }
+          });
+        }
+      });
+    }
+
+    const visibleSems = (data.settings && Array.isArray(data.settings.visibleSems)) ? data.settings.visibleSems : [1, 2, 3, 4, 5, 6];
+
+    grid.innerHTML = visibleSems.map(semNum => {
+      const stats = semMap[semNum] || { total: 0, dl: 0, pr: 0 };
+      const pct = stats.total ? Math.round((stats.dl / stats.total) * 100) : 0;
+      const statusBadge = pct >= 80 ? '🟢 Exam Ready' : pct >= 40 ? '🟡 Progressing' : '🔴 Needs Study';
+
+      return `
+        <div class="readiness-card">
+          <div class="readiness-card-head">
+            <span class="readiness-sem-title">Sem ${semNum}</span>
+            <span class="readiness-status-badge">${statusBadge}</span>
+          </div>
+          <div class="readiness-bar-track">
+            <div class="readiness-bar-fill" style="width:${pct}%"></div>
+          </div>
+          <div class="readiness-card-footer">
+            <span>${pct}% Downloaded</span>
+            <span>${stats.dl}/${stats.total} Parts</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
   // ── Render ─────────────────────────────────────────────
   function render() {
+    applyTheme();
+    updateCountdown();
+    renderReadinessGrid();
     updateStats();
     renderSemBar();
 
@@ -303,6 +434,18 @@ const App = (() => {
     const done = p.downloaded && p.printed;
     const delay = (idx || 0) * 38;
     const trashSvg = `<svg class="del-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>`;
+
+    let priorityBadge = '';
+    if (p.priority === 'high') {
+      priorityBadge = `<span class="priority-badge p-high" onclick="App.cyclePartPriority('${subId}','${unitId}','${p.id}')" title="Click to cycle priority">🔥 High Imp</span>`;
+    } else if (p.priority === 'revision') {
+      priorityBadge = `<span class="priority-badge p-rev" onclick="App.cyclePartPriority('${subId}','${unitId}','${p.id}')" title="Click to cycle priority">⚡ Revision</span>`;
+    } else if (p.priority === 'mastered') {
+      priorityBadge = `<span class="priority-badge p-mastered" onclick="App.cyclePartPriority('${subId}','${unitId}','${p.id}')" title="Click to cycle priority">✅ Mastered</span>`;
+    } else {
+      priorityBadge = `<span class="priority-badge p-none" onclick="App.cyclePartPriority('${subId}','${unitId}','${p.id}')" title="Click to set priority">+ Tag</span>`;
+    }
+
     return `
       <div class="part ${done ? 'done' : ''}" style="animation-delay:${delay}ms">
         <span class="part-tag">P${p.number}</span>
@@ -310,6 +453,7 @@ const App = (() => {
               onfocus="this.dataset.prev=this.textContent"
               onblur="App.editPartName('${subId}','${unitId}','${p.id}',this)"
               onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${esc(p.name)}</span>
+        ${priorityBadge}
         <div class="part-checks">
           <button class="ck ck-dl ${p.downloaded ? 'on' : ''}"
                   onclick="App.toggleDl('${subId}','${unitId}','${p.id}')" title="${p.downloaded ? 'Downloaded ✓' : 'Mark Downloaded'}">${dlSvg}</button>
@@ -363,6 +507,37 @@ const App = (() => {
     if (!p) return;
     p.printed = !p.printed;
     if (p.printed) p.downloaded = true;
+    persist(); render();
+  }
+
+  // ── Batch Unit Actions & Priority ───────────────────────
+  function markUnitDl(subId, unitId) {
+    const { u } = find(subId, unitId);
+    if (!u || !Array.isArray(u.parts)) return;
+    const allDl = u.parts.every(p => p.downloaded);
+    u.parts.forEach(p => p.downloaded = !allDl);
+    persist(); render();
+    toast(allDl ? 'Unit marked incomplete' : 'All unit parts downloaded');
+  }
+
+  function markUnitPr(subId, unitId) {
+    const { u } = find(subId, unitId);
+    if (!u || !Array.isArray(u.parts)) return;
+    const allPr = u.parts.every(p => p.printed);
+    u.parts.forEach(p => {
+      p.printed = !allPr;
+      if (!allPr) p.downloaded = true;
+    });
+    persist(); render();
+    toast(allPr ? 'Unit print status reset' : 'All unit parts printed');
+  }
+
+  function cyclePartPriority(subId, unitId, partId) {
+    const { p } = find(subId, unitId, partId);
+    if (!p) return;
+    const states = ['none', 'high', 'revision', 'mastered'];
+    const nextIdx = (states.indexOf(p.priority || 'none') + 1) % states.length;
+    p.priority = states[nextIdx];
     persist(); render();
   }
 
@@ -808,6 +983,9 @@ const App = (() => {
     toggleUnit,
     toggleDl,
     togglePr,
+    markUnitDl,
+    markUnitPr,
+    cyclePartPriority,
     editSubjectName,
     editUnitName,
     editPartName,
@@ -825,6 +1003,9 @@ const App = (() => {
     openModal,
     closeModal,
     closeConfirm,
+    toggleTheme,
+    editExamDate,
+    toggleReadinessView,
     exportData,
     importData,
     resetToSyllabusDefaults

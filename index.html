@@ -21,7 +21,7 @@
 
     <!-- HEADER -->
     <header class="header">
-      <img src="faviconBBA_PDF.png" alt="BBA PDF Tracker" class="header-logo" />
+      <img src="faviconBBA_PDF.png" alt="BBA PDF Tracker" class="header-logo" width="38" height="38" />
       <div class="header-content">
         <div class="header-badges">
           <span class="header-badge">GTU BBA · 3 Years</span>
@@ -30,6 +30,7 @@
             <span class="cloud-dot"></span>
             <span class="cloud-text">Connecting...</span>
           </span>
+          <button class="icon-btn" id="themeToggleBtn" onclick="App.toggleTheme()" title="Toggle Dark/Light Theme">🌙</button>
           <button class="icon-btn" onclick="App.openSettingsModal()" title="Settings & Backup">⚙️</button>
         </div>
         <h1 class="header-title">My PDF Tracker</h1>
@@ -69,6 +70,18 @@
           <span class="stat-value" id="statPending">0</span>
           <span class="stat-label">Pending</span>
         </div>
+      </div>
+
+      <!-- Overall Ring -->
+      <div class="stat-ring-card">
+        <div class="ring-wrap">
+          <svg viewBox="0 0 80 80">
+            <circle class="ring-bg" cx="40" cy="40" r="34" fill="none" />
+            <circle class="ring-fill" id="ringFill" cx="40" cy="40" r="34" fill="none" />
+          </svg>
+          <span class="ring-pct" id="ringCenterPct">0%</span>
+        </div>
+        <span class="ring-label">Progress</span>
       </div>
     </section>
 

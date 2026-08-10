@@ -113,7 +113,10 @@ function buildUnits(code, unitNames) {
 function getDefaultData() {
   return {
     settings: {
-      visibleSems: [1, 2, 3, 4, 5, 6]
+      visibleSems: [1, 2, 3, 4, 5, 6],
+      theme: 'light',
+      examDate: '',
+      hideReadiness: false
     },
     trash: [],
     subjects: SUBJECT_SEED.map(s => ({
@@ -131,9 +134,13 @@ function getDefaultData() {
 // Sanitize & Migration Helper
 function sanitizeData(d) {
   if (!d || !Array.isArray(d.subjects) || !d.subjects.length) return getDefaultData();
-  if (!d.settings || !Array.isArray(d.settings.visibleSems) || !d.settings.visibleSems.length) {
-    d.settings = { visibleSems: [1, 2, 3, 4, 5, 6] };
+  if (!d.settings || typeof d.settings !== 'object') d.settings = {};
+  if (!Array.isArray(d.settings.visibleSems) || !d.settings.visibleSems.length) {
+    d.settings.visibleSems = [1, 2, 3, 4, 5, 6];
   }
+  if (!d.settings.theme) d.settings.theme = 'light';
+  if (typeof d.settings.examDate !== 'string') d.settings.examDate = '';
+  if (typeof d.settings.hideReadiness !== 'boolean') d.settings.hideReadiness = false;
   if (!Array.isArray(d.trash)) {
     d.trash = [];
   }
@@ -174,6 +181,17 @@ function sanitizeData(d) {
             }
           });
         }
+      }
+
+      if (Array.isArray(s.units)) {
+        s.units.forEach(u => {
+          if (Array.isArray(u.parts)) {
+            u.parts.forEach(p => {
+              if (!p.priority) p.priority = 'none';
+              if (typeof p.note !== 'string') p.note = '';
+            });
+          }
+        });
       }
     });
   }
