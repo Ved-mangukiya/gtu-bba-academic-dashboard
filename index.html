@@ -1,31 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <meta name="description" content="GTU BBA 3-Year (6 Semesters) PDF Tracker — Track downloads and prints for all your study material." />
+  <meta name="description"
+    content="GTU BBA 3-Year (6 Semesters) PDF Tracker — Track downloads and prints for all your study material." />
   <meta name="theme-color" content="#faf8f5" />
   <title>GTU BBA · 3-Year PDF Tracker</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" type="image/png" href="faviconBBA_PDF.png" />
 </head>
+
 <body>
   <div class="app" id="app">
 
     <!-- HEADER -->
     <header class="header">
-      <div class="header-badges">
-        <span class="header-badge">GTU BBA · 3 Years</span>
-        <span class="cloud-badge syncing" id="cloudBadge">
-          <span class="cloud-dot"></span>
-          <span class="cloud-text">Connecting...</span>
-        </span>
-        <button class="icon-btn" onclick="App.openSettingsModal()" title="Settings & Backup">⚙️</button>
+      <img src="faviconBBA_PDF.png" alt="BBA PDF Tracker" class="header-logo" />
+      <div class="header-content">
+        <div class="header-badges">
+          <span class="header-badge">GTU BBA · 3 Years</span>
+          <span class="creator-badge">By Ved Mangukiya</span>
+          <span class="cloud-badge syncing" id="cloudBadge">
+            <span class="cloud-dot"></span>
+            <span class="cloud-text">Connecting...</span>
+          </span>
+          <button class="icon-btn" onclick="App.openSettingsModal()" title="Settings & Backup">⚙️</button>
+        </div>
+        <h1 class="header-title">My PDF Tracker</h1>
+        <p class="header-sub">Personal Study Dashboard & Material Manager · Created by Ved Mangukiya</p>
       </div>
-      <h1 class="header-title">My PDF Tracker</h1>
-      <p class="header-sub">Personal Study Dashboard & Material Manager</p>
     </header>
 
     <!-- SEMESTER BAR -->
@@ -66,18 +75,45 @@
     <!-- PROGRESS -->
     <section class="progress-wrap">
       <div class="progress-top">
-        <span class="progress-label">Overall Progress</span>
-        <span class="progress-pct" id="progressPct">0%</span>
+        <div class="progress-left">
+          <span class="progress-label">Overall Download Progress</span>
+          <span class="progress-pct" id="progressPct">0%</span>
+        </div>
+        <!-- SVG Ring -->
+        <div class="ring-wrap">
+          <svg class="ring-svg" viewBox="0 0 80 80" width="64" height="64">
+            <defs>
+              <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#34d399" />
+                <stop offset="100%" stop-color="#60a5fa" />
+              </linearGradient>
+            </defs>
+            <circle class="ring-track" cx="40" cy="40" r="34" />
+            <circle class="ring-fill" id="ringFill" cx="40" cy="40" r="34" />
+          </svg>
+          <span class="ring-center-pct" id="ringCenterPct" aria-hidden="true"></span>
+        </div>
       </div>
+      <!-- Dual-segment bar: downloaded (green) + printed (purple overlay) -->
       <div class="progress-track">
         <div class="progress-fill" id="progressFill"></div>
+        <div class="progress-fill-pr" id="progressFillPr"></div>
+      </div>
+      <div class="progress-legend">
+        <span class="legend-dot legend-dl"></span><span class="legend-text">Downloaded</span>
+        <span class="legend-dot legend-pr"></span><span class="legend-text">Printed</span>
       </div>
     </section>
 
     <!-- TOOLBAR -->
     <section class="toolbar">
       <div class="search-box">
-        <svg class="search-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
+        <svg class="search-icon" viewBox="0 0 20 20" fill="currentColor" width="16" height="16"
+          style="width:16px;height:16px;min-width:16px;min-height:16px">
+          <path fill-rule="evenodd"
+            d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+            clip-rule="evenodd" />
+        </svg>
         <input type="text" id="searchInput" class="search-input" placeholder="Search subjects or parts…" />
       </div>
       <div class="filters" id="filters">
@@ -93,12 +129,22 @@
 
     <!-- EMPTY STATE -->
     <div class="empty" id="emptyState" style="display:none">
-      <div class="empty-icon">🔍</div>
-      <p>No results match your search or filter.</p>
+      <div class="empty-anim">
+        <svg class="empty-svg" viewBox="0 0 120 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="15" y="20" width="90" height="70" rx="10" fill="#f0ebe4" stroke="#e0d8ce" stroke-width="2" />
+          <rect x="28" y="36" width="64" height="8" rx="4" fill="#d8d0c4" />
+          <rect x="28" y="52" width="44" height="8" rx="4" fill="#e4ddd4" />
+          <rect x="28" y="68" width="52" height="8" rx="4" fill="#e4ddd4" />
+          <circle cx="90" cy="28" r="18" fill="#faf8f5" stroke="#e0d8ce" stroke-width="2" />
+          <path d="M83 28l4 4 8-8" stroke="#c8b898" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </div>
+      <p class="empty-title">Nothing found</p>
+      <p class="empty-sub">No results match your search or filter.</p>
     </div>
 
     <!-- FOOTER -->
-    <footer class="footer">GTU BBA 3-Year PDF Tracker · Cloud Synced</footer>
+    <footer class="footer">GTU BBA 3-Year PDF Tracker · Created with ❤️ by Ved Mangukiya · Cloud Synced</footer>
   </div>
 
   <!-- ADD SUBJECT MODAL -->
@@ -156,11 +202,15 @@
           </div>
         </div>
         <button class="btn btn-accent btn-full" onclick="App.closeModal('settingsModal'); App.openAddSubjectModal();">
-          <svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+          <svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15">
+            <path fill-rule="evenodd"
+              d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+              clip-rule="evenodd" />
+          </svg>
           + Add New Subject
         </button>
       </div>
-      
+
       <!-- Semester Visibility -->
       <div class="settings-group">
         <div class="settings-group-header">
@@ -171,12 +221,36 @@
           </div>
         </div>
         <div class="sem-check-grid" id="semCheckGrid">
-          <label class="sem-check-item"><input type="checkbox" value="1" onchange="App.toggleSemVisibility(1)" /> Sem 1</label>
-          <label class="sem-check-item"><input type="checkbox" value="2" onchange="App.toggleSemVisibility(2)" /> Sem 2</label>
-          <label class="sem-check-item"><input type="checkbox" value="3" onchange="App.toggleSemVisibility(3)" /> Sem 3</label>
-          <label class="sem-check-item"><input type="checkbox" value="4" onchange="App.toggleSemVisibility(4)" /> Sem 4</label>
-          <label class="sem-check-item"><input type="checkbox" value="5" onchange="App.toggleSemVisibility(5)" /> Sem 5</label>
+          <label class="sem-check-item"><input type="checkbox" value="1" onchange="App.toggleSemVisibility(1)" /> Sem
+            1</label>
+          <label class="sem-check-item"><input type="checkbox" value="2" onchange="App.toggleSemVisibility(2)" /> Sem
+            2</label>
+          <label class="sem-check-item"><input type="checkbox" value="3" onchange="App.toggleSemVisibility(3)" /> Sem
+            3</label>
+          <label class="sem-check-item"><input type="checkbox" value="4" onchange="App.toggleSemVisibility(4)" /> Sem
+            4</label>
+          <label class="sem-check-item"><input type="checkbox" value="5" onchange="App.toggleSemVisibility(5)" /> Sem
+            5</label>
           <label class="sem-check-item"><input type="checkbox" value="6" onchange="App.toggleSemVisibility(6)" /> Sem 6</label>
+        </div>
+      </div>
+
+      <!-- Recycle Bin / Trash -->
+      <div class="settings-group">
+        <div class="settings-group-header">
+          <span class="settings-icon">🗑️</span>
+          <div>
+            <span class="settings-title">Recycle Bin / Trash</span>
+            <span class="settings-sub">Restore deleted subjects and parts anytime</span>
+          </div>
+        </div>
+        <div class="trash-container">
+          <div class="trash-list" id="trashList">
+            <!-- Dynamically populated -->
+          </div>
+          <button class="btn btn-ghost btn-danger-text btn-full btn-clear-trash" id="btnClearTrash" onclick="App.clearTrash()" style="margin-top: 10px; display: none;">
+            🗑️ Clear Recycle Bin
+          </button>
         </div>
       </div>
 
@@ -191,11 +265,19 @@
         </div>
         <div class="settings-btn-row">
           <button class="btn btn-ghost" onclick="App.exportData()">
-            <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+            <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+              <path fill-rule="evenodd"
+                d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                clip-rule="evenodd" />
+            </svg>
             Export Backup
           </button>
           <button class="btn btn-ghost" onclick="document.getElementById('importInput').click()">
-            <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+            <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+              <path fill-rule="evenodd"
+                d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z"
+                clip-rule="evenodd" />
+            </svg>
             Import Backup
           </button>
           <button class="btn btn-ghost btn-danger-text" onclick="App.resetToSyllabusDefaults()">
@@ -207,6 +289,23 @@
 
       <div class="modal-btns">
         <button class="btn btn-accent btn-full" onclick="App.closeModal('settingsModal')">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CUSTOM CONFIRM MODAL -->
+  <div class="overlay" id="confirmModal">
+    <div class="modal confirm-modal">
+      <div class="modal-head">
+        <h3 id="confirmTitle">Confirm Action</h3>
+        <button class="modal-close" onclick="App.closeConfirm(false)">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 10px 0 18px;">
+        <p id="confirmMessage" style="font-size: 0.85rem; color: var(--text-base);"></p>
+      </div>
+      <div class="modal-btns">
+        <button class="btn btn-ghost" onclick="App.closeConfirm(false)" id="confirmCancelBtn">Cancel</button>
+        <button class="btn btn-accent" onclick="App.closeConfirm(true)" id="confirmYesBtn">Yes, Proceed</button>
       </div>
     </div>
   </div>
@@ -223,4 +322,5 @@
   <script src="cloud.js"></script>
   <script src="app.js"></script>
 </body>
+
 </html>

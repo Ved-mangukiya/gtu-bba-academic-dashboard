@@ -79,107 +79,6 @@ const SUBJECT_SEED = [
       'Sustainable Development Goals (SDGs) / ESG Framework',
       'Practical (Industry initiatives research, tree plantation, clean campus drive)'
     ]
-  },
-
-  // Semester 2
-  {
-    name: 'Advanced Financial Accounting',
-    code: 'S2-AFA',
-    sem: 2,
-    colorIndex: 1,
-    unitNames: [
-      'Partnership Accounts',
-      'Company Accounts & Issue of Shares',
-      'Valuation of Goodwill',
-      'Bank Reconciliation & Branch Accounts',
-      'Single Entry System'
-    ]
-  },
-  {
-    name: 'Organizational Behavior',
-    code: 'S2-OB',
-    sem: 2,
-    colorIndex: 6,
-    unitNames: [
-      'Individual Behavior & Personality',
-      'Motivation Concepts',
-      'Group Dynamics & Team Building',
-      'Leadership & Power',
-      'Organizational Culture & Change'
-    ]
-  },
-
-  // Semester 3
-  {
-    name: 'Corporate Accounting',
-    code: 'S3-CA',
-    sem: 3,
-    colorIndex: 2,
-    unitNames: [
-      'Amalgamation & Absorption',
-      'Holding Company Accounts',
-      'Liquidation of Companies',
-      'Financial Statement Analysis',
-      'Cash Flow Statements'
-    ]
-  },
-  {
-    name: 'Human Resource Management',
-    code: 'S3-HRM',
-    sem: 3,
-    colorIndex: 4,
-    unitNames: [
-      'HR Planning & Job Analysis',
-      'Recruitment & Selection',
-      'Training & Development',
-      'Performance Appraisal',
-      'Compensation & Industrial Relations'
-    ]
-  },
-
-  // Semester 4
-  {
-    name: 'Cost Accounting',
-    code: 'S4-COST',
-    sem: 4,
-    colorIndex: 3,
-    unitNames: [
-      'Cost Elements & Cost Sheet',
-      'Material & Labor Costing',
-      'Overhead Allocation',
-      'Marginal Costing & CVP Analysis',
-      'Budgetary Control'
-    ]
-  },
-
-  // Semester 5
-  {
-    name: 'Strategic Management',
-    code: 'S5-SM',
-    sem: 5,
-    colorIndex: 0,
-    unitNames: [
-      'Strategic Intent & Vision',
-      'Environmental & Industry Analysis',
-      'SWOT & Portfolio Analysis',
-      'Strategy Formulation & Choice',
-      'Strategy Implementation & Evaluation'
-    ]
-  },
-
-  // Semester 6
-  {
-    name: 'Global Business Environment',
-    code: 'S6-GBE',
-    sem: 6,
-    colorIndex: 7,
-    unitNames: [
-      'Globalization & International Trade',
-      'Foreign Direct Investment (FDI)',
-      'Foreign Exchange Market',
-      'International Financial Institutions',
-      'Global Trade Agreements & WTO'
-    ]
   }
 ];
 
@@ -216,6 +115,7 @@ function getDefaultData() {
     settings: {
       visibleSems: [1, 2, 3, 4, 5, 6]
     },
+    trash: [],
     subjects: SUBJECT_SEED.map(s => ({
       id: uid(),
       name: s.name,
@@ -230,37 +130,45 @@ function getDefaultData() {
 
 // Sanitize & Migration Helper
 function sanitizeData(d) {
-  if (!d) return getDefaultData();
-  if (!d.settings || !Array.isArray(d.settings.visibleSems)) {
+  if (!d || !Array.isArray(d.subjects) || !d.subjects.length) return getDefaultData();
+  if (!d.settings || !Array.isArray(d.settings.visibleSems) || !d.settings.visibleSems.length) {
     d.settings = { visibleSems: [1, 2, 3, 4, 5, 6] };
   }
+  if (!Array.isArray(d.trash)) {
+    d.trash = [];
+  }
   if (Array.isArray(d.subjects)) {
-    d.subjects.forEach(s => {
+    // Purge legacy pre-seeded placeholder subjects for Sem 2-6
+    d.subjects = d.subjects.filter(s => {
       if (!s.sem) {
         const m = s.code ? s.code.match(/S(\d)/i) : null;
         s.sem = m ? parseInt(m[1]) : 1;
       }
-      // Migration: automatically update unit counts and names to syllabus defaults if using old seed structure
+      if (s.sem > 1 && ['S2-AFA', 'S2-OB', 'S3-CA', 'S3-HRM', 'S4-COST', 'S5-SM', 'S6-GBE'].includes(s.code)) {
+        return false;
+      }
+      return true;
+    });
+
+    d.subjects.forEach(s => {
       const seedMatch = SUBJECT_SEED.find(seed => seed.code === s.code);
       if (seedMatch) {
-        // Fix unit count for 3-unit subjects (IKS & ESG)
         if (s.units.length > seedMatch.unitNames.length && (s.code === 'S1-IKS' || s.code === 'S1-ESG')) {
           s.units = s.units.slice(0, seedMatch.unitNames.length);
         }
-        // Update unit names for Sem 1 subjects
         if (s.sem === 1) {
           s.units.forEach((u, idx) => {
             if (seedMatch.unitNames[idx]) {
-              if (u.name.startsWith('Unit ') || 
-                  u.name.includes('Introduction to Management') || 
-                  u.name.includes('Introduction to Accounting') ||
-                  u.name.includes('Introduction to Statistics') ||
-                  u.name.includes('Communication Fundamentals') ||
-                  u.name.includes('Introduction to IKS') ||
-                  u.name.includes('Introduction to ESG') ||
-                  u.name.includes('Environmental Factors') ||
-                  u.name.includes('Ancient Indian Sciences') ||
-                  u.name.includes('Modern Relevance')) {
+              if (u.name.startsWith('Unit ') ||
+                u.name.includes('Introduction to Management') ||
+                u.name.includes('Introduction to Accounting') ||
+                u.name.includes('Introduction to Statistics') ||
+                u.name.includes('Communication Fundamentals') ||
+                u.name.includes('Introduction to IKS') ||
+                u.name.includes('Introduction to ESG') ||
+                u.name.includes('Environmental Factors') ||
+                u.name.includes('Ancient Indian Sciences') ||
+                u.name.includes('Modern Relevance')) {
                 u.name = seedMatch.unitNames[idx];
               }
             }

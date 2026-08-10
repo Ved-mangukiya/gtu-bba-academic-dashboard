@@ -19,30 +19,45 @@ const Cloud = (() => {
   let isRemoteUpdate = false; // prevents infinite loop during sync
   let lastSavedJSON = '';
 
+  let connectionTimeout = null;
+
   function init(onDataReceived) {
     try {
       if (typeof firebase === 'undefined') {
-        updateStatus('offline', 'Local Only');
+        updateStatus('offline', 'Local Mode');
         return;
       }
 
-      firebase.initializeApp(firebaseConfig);
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
       db = firebase.database();
+
+      // Set a fallback timer: If Firebase doesn't connect within 3.5 seconds, fallback to Local Cache
+      connectionTimeout = setTimeout(() => {
+        if (!isConnected) {
+          updateStatus('offline', 'Local Cache');
+        }
+      }, 3500);
 
       // Monitor connection state
       const connectedRef = db.ref(".info/connected");
       connectedRef.on("value", (snap) => {
         if (snap.val() === true) {
           isConnected = true;
+          if (connectionTimeout) clearTimeout(connectionTimeout);
           updateStatus('online', 'Cloud Connected');
         } else {
           isConnected = false;
-          updateStatus('syncing', 'Connecting...');
+          if (!connectionTimeout) {
+            updateStatus('offline', 'Local Cache');
+          }
         }
       });
 
       // Realtime listener for data changes
       db.ref('pdf_tracker').on('value', (snapshot) => {
+        if (connectionTimeout) clearTimeout(connectionTimeout);
         const cloudData = snapshot.val();
         if (cloudData && cloudData.subjects) {
           const cloudStr = JSON.stringify(cloudData);
@@ -61,13 +76,15 @@ const Cloud = (() => {
           save(loadData() || getDefaultData());
         }
       }, (error) => {
-        console.error('Firebase read error:', error);
-        updateStatus('offline', 'Read Error (Check Rules)');
+        console.warn('Firebase read notice:', error);
+        if (connectionTimeout) clearTimeout(connectionTimeout);
+        updateStatus('offline', 'Local Cache');
       });
 
     } catch (e) {
-      console.error('Firebase init error:', e);
-      updateStatus('offline', 'Local Only');
+      console.warn('Firebase init notice:', e);
+      if (connectionTimeout) clearTimeout(connectionTimeout);
+      updateStatus('offline', 'Local Mode');
     }
   }
 
@@ -78,14 +95,19 @@ const Cloud = (() => {
 
     // Save to Firebase Cloud if connected and not responding to incoming sync
     if (db && !isRemoteUpdate) {
-      updateStatus('syncing', 'Syncing...');
+      const saveTimer = setTimeout(() => {
+        updateStatus('online', 'Synced (Local)');
+      }, 2000);
+
       db.ref('pdf_tracker').set(data)
         .then(() => {
+          clearTimeout(saveTimer);
           updateStatus('online', 'Cloud Synced');
         })
         .catch((err) => {
-          console.error('Firebase save error:', err);
-          updateStatus('offline', 'Sync Error');
+          clearTimeout(saveTimer);
+          console.warn('Firebase save notice:', err);
+          updateStatus('online', 'Synced (Local)');
         });
     }
   }
