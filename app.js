@@ -10,6 +10,7 @@ const App = (() => {
   let data = loadData() || getDefaultData();
   let filter = 'all';
   let search = '';
+  let semFilter = 'all';
 
   // ── Helpers ────────────────────────────────────────────
   function esc(t) {
@@ -30,10 +31,21 @@ const App = (() => {
     Cloud.save(data);
   }
 
+  function getVisibleSubjects() {
+    const visibleSems = data.settings && Array.isArray(data.settings.visibleSems) ? data.settings.visibleSems : [1,2,3,4,5,6];
+    return data.subjects.filter(s => {
+      const sSem = s.sem || 1;
+      const isSemVisible = visibleSems.includes(sSem);
+      const isSemMatch = (semFilter === 'all' || sSem === parseInt(semFilter));
+      return isSemVisible && isSemMatch;
+    });
+  }
+
   // ── Stats ──────────────────────────────────────────────
   function updateStats() {
     let total = 0, dl = 0, pr = 0;
-    data.subjects.forEach(s => s.units.forEach(u => u.parts.forEach(p => {
+    const activeSubjects = getVisibleSubjects();
+    activeSubjects.forEach(s => s.units.forEach(u => u.parts.forEach(p => {
       total++;
       if (p.downloaded) dl++;
       if (p.printed)    pr++;
@@ -52,16 +64,68 @@ const App = (() => {
   // ── Chevron SVG ────────────────────────────────────────
   const chevSvg = `<svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>`;
 
+  function getSubjectIcon(code, ci) {
+    const iconMap = {
+      'S1-PPM': '💼',
+      'S1-FA':  '💰', // Universal Money Bag Emoji for Financial Accounting
+      'S1-BSL': '📊',
+      'S1-ENG': '💬',
+      'S1-IKS': '🏛️',
+      'S1-ESG': '🌱',
+      'S2-AFA': '💰',
+      'S2-OB':  '👥',
+      'S2-BE':  '🌐',
+      'S2-MM':  '📢',
+      'S2-BC':  '✉️',
+      'S3-CA':  '🪙',
+      'S3-HRM': '👔',
+      'S3-FM':  '📈',
+      'S3-BL':  '⚖️',
+      'S4-COST':'📊',
+      'S4-POM': '⚙️',
+      'S4-MIS': '💻',
+      'S4-RM':  '🔬',
+      'S5-SM':  '🎯',
+      'S5-ED':  '🚀',
+      'S5-TAX': '📑',
+      'S6-GBE': '🌍',
+      'S6-PROJ':'🎓',
+      'S6-BEG': '🛡️'
+    };
+    if (code && iconMap[code.toUpperCase()]) return iconMap[code.toUpperCase()];
+    const fallbackIcons = ['💼', '💰', '📊', '💬', '🏛️', '🌱', '📈', '🎯'];
+    return fallbackIcons[ci % fallbackIcons.length];
+  }
+
+  // ── Semester Navigation Bar ────────────────────────────
+  function renderSemBar() {
+    const bar = document.getElementById('semBar');
+    if (!bar) return;
+    const visible = (data.settings && Array.isArray(data.settings.visibleSems) ? data.settings.visibleSems : [1,2,3,4,5,6]).sort((a,b) => a - b);
+    let html = `<button class="sem-tab ${semFilter === 'all' ? 'active' : ''}" onclick="App.setSemFilter('all')">All Sems</button>`;
+    visible.forEach(sNum => {
+      html += `<button class="sem-tab ${semFilter === sNum ? 'active' : ''}" onclick="App.setSemFilter(${sNum})">Sem ${sNum}</button>`;
+    });
+    bar.innerHTML = html;
+  }
+
+  function setSemFilter(sem) {
+    semFilter = sem === 'all' ? 'all' : parseInt(sem);
+    render();
+  }
+
   // ── Render ─────────────────────────────────────────────
   function render() {
     updateStats();
+    renderSemBar();
 
     const container = document.getElementById('subjectsContainer');
     const emptyEl   = document.getElementById('emptyState');
     const term      = search.toLowerCase().trim();
+    const activeSubjects = getVisibleSubjects();
 
     // Build filtered view
-    const filtered = data.subjects.map(s => {
+    const filtered = activeSubjects.map(s => {
       const sMatch = !term || s.name.toLowerCase().includes(term) || s.code.toLowerCase().includes(term);
 
       const units = s.units.map(u => {
@@ -99,21 +163,23 @@ const App = (() => {
       const spct = stotal ? Math.round((sdl / stotal) * 100) : 0;
 
       return `
-        <div class="subject-card ${orig.expanded ? 'open' : ''}" data-id="${s.id}" style="animation-delay:${si * 40}ms">
+        <div class="subject-card sub-theme-${ci} ${orig.expanded ? 'open' : ''}" data-id="${s.id}" style="animation-delay:${si * 40}ms">
           <div class="subject-head" onclick="App.toggleSubject('${s.id}')">
-            <div class="subject-dot dot-${ci}"></div>
+            <div class="subject-icon-badge">${getSubjectIcon(orig.code, ci)}</div>
             <div class="subject-info">
+              <div class="subject-meta">
+                <span class="subject-sem-badge">Sem ${orig.sem || 1}</span>
+                <span class="subject-code-badge">${esc(orig.code)}</span>
+              </div>
               <div class="subject-name editable" contenteditable="true"
                    onfocus="this.dataset.prev=this.textContent"
                    onblur="App.editSubjectName('${s.id}',this)"
                    onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${esc(orig.name)}</div>
-              <div class="subject-code">${esc(orig.code)}</div>
             </div>
             <div class="subject-mini-progress">
-              <div class="mini-track"><div class="mini-fill fill-${ci}" style="width:${spct}%"></div></div>
+              <div class="mini-track"><div class="mini-fill" style="width:${spct}%"></div></div>
               <span class="mini-pct">${spct}%</span>
             </div>
-            <button class="subject-del" onclick="event.stopPropagation();App.deleteSubject('${s.id}')" title="Delete">✕</button>
             <span class="chevron">${chevSvg}</span>
           </div>
           <div class="subject-body">
@@ -132,7 +198,7 @@ const App = (() => {
     return `
       <div class="unit ${isOpen ? 'open' : ''}" data-uid="${u.id}">
         <div class="unit-head" onclick="App.toggleUnit('${subId}','${u.id}')">
-          <span class="unit-tag tag-${ci}">U${origUnit ? origUnit.number : u.number}</span>
+          <span class="unit-tag">U${origUnit ? origUnit.number : u.number}</span>
           <span class="unit-name editable" contenteditable="true"
                 onfocus="this.dataset.prev=this.textContent"
                 onblur="App.editUnitName('${subId}','${u.id}',this)"
@@ -164,19 +230,36 @@ const App = (() => {
           <button class="ck ck-pr ${p.printed ? 'on' : ''}"
                   onclick="App.togglePr('${subId}','${unitId}','${p.id}')" title="${p.printed ? 'Printed ✓' : 'Mark Printed'}">🖨</button>
         </div>
-        <button class="part-del" onclick="App.deletePart('${subId}','${unitId}','${p.id}')" title="Delete">✕</button>
       </div>`;
   }
 
-  // ── Toggle expand ──────────────────────────────────────
+  // ── Toggle expand (smooth in-place CSS animation) ─────────
   function toggleSubject(id) {
     const s = data.subjects.find(x => x.id === id);
-    if (s) { s.expanded = !s.expanded; persist(); render(); }
+    if (!s) return;
+    s.expanded = !s.expanded;
+    persist();
+
+    const cardEl = document.querySelector(`.subject-card[data-id="${id}"]`);
+    if (cardEl) {
+      cardEl.classList.toggle('open', s.expanded);
+    } else {
+      render();
+    }
   }
 
   function toggleUnit(subId, unitId) {
     const { u } = find(subId, unitId);
-    if (u) { u.expanded = !u.expanded; persist(); render(); }
+    if (!u) return;
+    u.expanded = !u.expanded;
+    persist();
+
+    const unitEl = document.querySelector(`.unit[data-uid="${unitId}"]`);
+    if (unitEl) {
+      unitEl.classList.toggle('open', u.expanded);
+    } else {
+      render();
+    }
   }
 
   // ── Checkbox toggles ──────────────────────────────────
@@ -260,12 +343,14 @@ const App = (() => {
     document.getElementById('newSubName').value  = '';
     document.getElementById('newSubCode').value  = '';
     document.getElementById('newSubUnits').value = '5';
+    document.getElementById('newSubSem').value   = (semFilter !== 'all' ? semFilter.toString() : '1');
     openModal('addSubjectModal');
   }
 
   function addSubject() {
     const name  = document.getElementById('newSubName').value.trim();
     const code  = document.getElementById('newSubCode').value.trim();
+    const sem   = parseInt(document.getElementById('newSubSem').value) || 1;
     const uCount = parseInt(document.getElementById('newSubUnits').value) || 5;
 
     if (!name) { toast('Enter a subject name', true); return; }
@@ -279,6 +364,7 @@ const App = (() => {
       id: uid(),
       name,
       code,
+      sem,
       colorIndex: ci,
       expanded: true,
       units: buildUnits(code, unitNames)
@@ -287,6 +373,37 @@ const App = (() => {
     persist(); render();
     closeModal('addSubjectModal');
     toast(`"${name}" added`);
+  }
+
+  // ── Settings Modal ─────────────────────────────────────
+  function openSettingsModal() {
+    const visible = (data.settings && Array.isArray(data.settings.visibleSems) ? data.settings.visibleSems : [1,2,3,4,5,6]);
+    document.querySelectorAll('#semCheckGrid input[type="checkbox"]').forEach(ck => {
+      const sNum = parseInt(ck.value);
+      ck.checked = visible.includes(sNum);
+    });
+    openModal('settingsModal');
+  }
+
+  function toggleSemVisibility(semNum) {
+    if (!data.settings) data.settings = { visibleSems: [1,2,3,4,5,6] };
+    let visible = data.settings.visibleSems;
+    if (visible.includes(semNum)) {
+      if (visible.length <= 1) {
+        toast('At least one semester must remain visible', true);
+        openSettingsModal();
+        return;
+      }
+      visible = visible.filter(x => x !== semNum);
+    } else {
+      visible.push(semNum);
+    }
+    data.settings.visibleSems = visible;
+    if (semFilter !== 'all' && !visible.includes(semFilter)) {
+      semFilter = 'all';
+    }
+    persist();
+    render();
   }
 
   // ── Modals ─────────────────────────────────────────────
@@ -313,7 +430,7 @@ const App = (() => {
     const reader = new FileReader();
     reader.onload = ev => {
       try {
-        const imported = JSON.parse(ev.target.result);
+        const imported = sanitizeData(JSON.parse(ev.target.result));
         if (!imported.subjects || !Array.isArray(imported.subjects)) throw 0;
         data = imported;
         persist(); render();
@@ -324,6 +441,15 @@ const App = (() => {
     };
     reader.readAsText(file);
     e.target.value = '';
+  }
+
+  function resetToSyllabusDefaults() {
+    if (!confirm('Reset all subjects & units to the official GTU BBA syllabus defaults?')) return;
+    data = getDefaultData();
+    persist();
+    render();
+    closeModal('settingsModal');
+    toast('Reset to official syllabus defaults');
   }
 
   // ── Toast ──────────────────────────────────────────────
@@ -374,7 +500,7 @@ const App = (() => {
   // ── Initialize Cloud Sync ──────────────────────────────
   render();
   Cloud.init((newCloudData) => {
-    data = newCloudData;
+    data = sanitizeData(newCloudData);
     saveData(data); // update local cache
     render();
   });
@@ -393,10 +519,14 @@ const App = (() => {
     deleteSubject,
     openAddSubjectModal,
     addSubject,
+    openSettingsModal,
+    toggleSemVisibility,
+    setSemFilter,
     openModal,
     closeModal,
     exportData,
-    importData
+    importData,
+    resetToSyllabusDefaults
   };
 
 })();

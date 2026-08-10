@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <meta name="description" content="GTU BBA Semester 1 PDF Tracker — Track downloads and prints for all your study material." />
+  <meta name="description" content="GTU BBA 3-Year (6 Semesters) PDF Tracker — Track downloads and prints for all your study material." />
   <meta name="theme-color" content="#faf8f5" />
-  <title>GTU BBA · PDF Tracker</title>
+  <title>GTU BBA · 3-Year PDF Tracker</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -17,15 +17,19 @@
     <!-- HEADER -->
     <header class="header">
       <div class="header-badges">
-        <span class="header-badge">GTU BBA · Sem 1</span>
+        <span class="header-badge">GTU BBA · 3 Years</span>
         <span class="cloud-badge syncing" id="cloudBadge">
           <span class="cloud-dot"></span>
           <span class="cloud-text">Connecting...</span>
         </span>
+        <button class="icon-btn" onclick="App.openSettingsModal()" title="Settings & Backup">⚙️</button>
       </div>
       <h1 class="header-title">My PDF Tracker</h1>
       <p class="header-sub">Personal Study Dashboard & Material Manager</p>
     </header>
+
+    <!-- SEMESTER BAR -->
+    <section class="sem-bar" id="semBar"></section>
 
     <!-- STATS DASHBOARD -->
     <section class="stats" id="stats">
@@ -73,32 +77,15 @@
     <!-- TOOLBAR -->
     <section class="toolbar">
       <div class="search-box">
-        <svg class="search-icon" viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
+        <svg class="search-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
         <input type="text" id="searchInput" class="search-input" placeholder="Search subjects or parts…" />
       </div>
       <div class="filters" id="filters">
-        <button class="pill active" data-filter="all">All</button>
+        <button class="pill active" data-filter="all">All Status</button>
         <button class="pill" data-filter="pending">Pending</button>
         <button class="pill" data-filter="downloaded">Downloaded</button>
         <button class="pill" data-filter="printed">Printed</button>
       </div>
-    </section>
-
-    <!-- ACTIONS -->
-    <section class="actions">
-      <button class="btn btn-accent" id="btnAddSubject" onclick="App.openAddSubjectModal()">
-        <svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
-        Add Subject
-      </button>
-      <button class="btn btn-ghost" onclick="App.exportData()">
-        <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
-        Export
-      </button>
-      <button class="btn btn-ghost" onclick="document.getElementById('importInput').click()">
-        <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
-        Import
-      </button>
-      <input type="file" id="importInput" accept=".json" onchange="App.importData(event)" hidden />
     </section>
 
     <!-- SUBJECTS -->
@@ -111,13 +98,27 @@
     </div>
 
     <!-- FOOTER -->
-    <footer class="footer">GTU BBA PDF Tracker · Cloud Synced</footer>
+    <footer class="footer">GTU BBA 3-Year PDF Tracker · Cloud Synced</footer>
   </div>
 
   <!-- ADD SUBJECT MODAL -->
   <div class="overlay" id="addSubjectModal">
     <div class="modal">
-      <h3>Add New Subject</h3>
+      <div class="modal-head">
+        <h3>Add New Subject</h3>
+        <button class="modal-close" onclick="App.closeModal('addSubjectModal')">✕</button>
+      </div>
+      <div class="field">
+        <label for="newSubSem">Semester</label>
+        <select id="newSubSem" class="input">
+          <option value="1">Semester 1</option>
+          <option value="2">Semester 2</option>
+          <option value="3">Semester 3</option>
+          <option value="4">Semester 4</option>
+          <option value="5">Semester 5</option>
+          <option value="6">Semester 6</option>
+        </select>
+      </div>
       <div class="field">
         <label for="newSubName">Subject Name</label>
         <input type="text" id="newSubName" class="input" placeholder="e.g. Marketing Management" />
@@ -133,6 +134,79 @@
       <div class="modal-btns">
         <button class="btn btn-ghost" onclick="App.closeModal('addSubjectModal')">Cancel</button>
         <button class="btn btn-accent" onclick="App.addSubject()">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div class="overlay" id="settingsModal">
+    <div class="modal modal-settings">
+      <div class="modal-head">
+        <h3>⚙️ Tracker Control Center</h3>
+        <button class="modal-close" onclick="App.closeModal('settingsModal')">✕</button>
+      </div>
+
+      <!-- Quick Action: Add Subject -->
+      <div class="settings-group primary-group">
+        <div class="settings-group-header">
+          <span class="settings-icon">➕</span>
+          <div>
+            <span class="settings-title">Add New Subject</span>
+            <span class="settings-sub">Create a subject for any semester with custom units</span>
+          </div>
+        </div>
+        <button class="btn btn-accent btn-full" onclick="App.closeModal('settingsModal'); App.openAddSubjectModal();">
+          <svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+          + Add New Subject
+        </button>
+      </div>
+      
+      <!-- Semester Visibility -->
+      <div class="settings-group">
+        <div class="settings-group-header">
+          <span class="settings-icon">🎓</span>
+          <div>
+            <span class="settings-title">Semester Visibility (3 Years)</span>
+            <span class="settings-sub">Toggle semesters to show or hide on your dashboard</span>
+          </div>
+        </div>
+        <div class="sem-check-grid" id="semCheckGrid">
+          <label class="sem-check-item"><input type="checkbox" value="1" onchange="App.toggleSemVisibility(1)" /> Sem 1</label>
+          <label class="sem-check-item"><input type="checkbox" value="2" onchange="App.toggleSemVisibility(2)" /> Sem 2</label>
+          <label class="sem-check-item"><input type="checkbox" value="3" onchange="App.toggleSemVisibility(3)" /> Sem 3</label>
+          <label class="sem-check-item"><input type="checkbox" value="4" onchange="App.toggleSemVisibility(4)" /> Sem 4</label>
+          <label class="sem-check-item"><input type="checkbox" value="5" onchange="App.toggleSemVisibility(5)" /> Sem 5</label>
+          <label class="sem-check-item"><input type="checkbox" value="6" onchange="App.toggleSemVisibility(6)" /> Sem 6</label>
+        </div>
+      </div>
+
+      <!-- Backup & Restore -->
+      <div class="settings-group">
+        <div class="settings-group-header">
+          <span class="settings-icon">☁️</span>
+          <div>
+            <span class="settings-title">Data Backup & Reset</span>
+            <span class="settings-sub">Cloud synced. Export JSON backup or reset syllabus defaults</span>
+          </div>
+        </div>
+        <div class="settings-btn-row">
+          <button class="btn btn-ghost" onclick="App.exportData()">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+            Export Backup
+          </button>
+          <button class="btn btn-ghost" onclick="document.getElementById('importInput').click()">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+            Import Backup
+          </button>
+          <button class="btn btn-ghost btn-danger-text" onclick="App.resetToSyllabusDefaults()">
+            🔄 Reset Syllabus
+          </button>
+          <input type="file" id="importInput" accept=".json" onchange="App.importData(event)" hidden />
+        </div>
+      </div>
+
+      <div class="modal-btns">
+        <button class="btn btn-accent btn-full" onclick="App.closeModal('settingsModal')">Done</button>
       </div>
     </div>
   </div>

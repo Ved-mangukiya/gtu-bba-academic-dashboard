@@ -5,76 +5,180 @@
 const STORAGE_KEY = 'gtu_bba_pdf_tracker_v3';
 
 const SUBJECT_SEED = [
+  // Semester 1
   {
     name: 'Principles and Practices of Management',
     code: 'S1-PPM',
+    sem: 1,
     colorIndex: 0,
     unitNames: [
-      'Introduction to Management',
-      'Planning and Decision Making',
-      'Organizing and Staffing',
-      'Directing and Leading',
-      'Controlling and Coordination'
+      'Nature and Functions of Management / History of Management / Planning',
+      'Decision-Making / Organization and Organization Structure',
+      'Staffing / Direction and Supervision',
+      'Controlling / Co-ordination / Motivation / Communication / Social Responsibility / Strategic Management',
+      'Practical (SME/MSME visit and report)'
     ]
   },
   {
     name: 'Financial Accounting',
     code: 'S1-FA',
+    sem: 1,
     colorIndex: 1,
     unitNames: [
-      'Introduction to Accounting',
-      'Journal and Ledger',
-      'Trial Balance and Rectification',
-      'Final Accounts',
-      'Depreciation and Provisions'
+      'Introduction of Accounting',
+      'Journals, Subsidiary Books, Ledger & Posting and Trial Balance / Preparation of Final Accounts / Financial Statement Analysis Techniques',
+      'Final Accounts of Non-Profit Organization / Cash Flow Statement',
+      'Valuation of Inventory / Valuation of Shares',
+      'Practical (Financial statements analysis and final accounts assignments)'
     ]
   },
   {
     name: 'Business Statistics and Logic',
     code: 'S1-BSL',
+    sem: 1,
     colorIndex: 2,
     unitNames: [
-      'Introduction to Statistics',
-      'Measures of Central Tendency',
-      'Measures of Dispersion',
-      'Correlation and Regression',
-      'Logical Reasoning'
+      'Introduction to Business Statistics',
+      'Measurement of Central Tendency & Dispersion',
+      'Linear Correlation, Regression & Index Numbers',
+      'Fundamentals of Logic',
+      'Practical (Assignments on tabulation, graphical presentation, and real-life statistical applications)'
     ]
   },
   {
     name: 'General and Communicative English',
     code: 'S1-ENG',
+    sem: 1,
     colorIndex: 3,
     unitNames: [
-      'Communication Fundamentals',
-      'Reading Comprehension',
-      'Grammar and Usage',
-      'Writing Skills',
-      'Spoken English and Presentation'
+      'Grammar and Usage: Sentence Construction',
+      'Listening and Speaking Competence',
+      'English Comprehension & Composition',
+      'Public Speaking and Presentation',
+      'Practical (Reading assignments, short story/paragraph writing, and public announcements)'
     ]
   },
   {
     name: 'Indian Knowledge Systems',
     code: 'S1-IKS',
+    sem: 1,
     colorIndex: 4,
     unitNames: [
-      'Introduction to IKS',
-      'Ancient Indian Sciences',
-      'Indian Philosophy',
-      'Art and Architecture',
-      'Modern Relevance of IKS'
+      'Introduction / Sanskrit Language & Sanskrit Literature',
+      'Significant Contributions of Indian Knowledge Systems',
+      'Practical (Heritage visits, group discussions, and debates)'
     ]
   },
   {
     name: 'Fundamentals of ESG for Sustainability',
     code: 'S1-ESG',
+    sem: 1,
     colorIndex: 5,
     unitNames: [
-      'Introduction to ESG',
-      'Environmental Factors',
-      'Social Responsibility',
-      'Governance Framework',
-      'ESG Reporting and Standards'
+      'Introduction to Ecosystems / Environmental Issues / Sustainability of Business Enterprise',
+      'Sustainable Development Goals (SDGs) / ESG Framework',
+      'Practical (Industry initiatives research, tree plantation, clean campus drive)'
+    ]
+  },
+
+  // Semester 2
+  {
+    name: 'Advanced Financial Accounting',
+    code: 'S2-AFA',
+    sem: 2,
+    colorIndex: 1,
+    unitNames: [
+      'Partnership Accounts',
+      'Company Accounts & Issue of Shares',
+      'Valuation of Goodwill',
+      'Bank Reconciliation & Branch Accounts',
+      'Single Entry System'
+    ]
+  },
+  {
+    name: 'Organizational Behavior',
+    code: 'S2-OB',
+    sem: 2,
+    colorIndex: 6,
+    unitNames: [
+      'Individual Behavior & Personality',
+      'Motivation Concepts',
+      'Group Dynamics & Team Building',
+      'Leadership & Power',
+      'Organizational Culture & Change'
+    ]
+  },
+
+  // Semester 3
+  {
+    name: 'Corporate Accounting',
+    code: 'S3-CA',
+    sem: 3,
+    colorIndex: 2,
+    unitNames: [
+      'Amalgamation & Absorption',
+      'Holding Company Accounts',
+      'Liquidation of Companies',
+      'Financial Statement Analysis',
+      'Cash Flow Statements'
+    ]
+  },
+  {
+    name: 'Human Resource Management',
+    code: 'S3-HRM',
+    sem: 3,
+    colorIndex: 4,
+    unitNames: [
+      'HR Planning & Job Analysis',
+      'Recruitment & Selection',
+      'Training & Development',
+      'Performance Appraisal',
+      'Compensation & Industrial Relations'
+    ]
+  },
+
+  // Semester 4
+  {
+    name: 'Cost Accounting',
+    code: 'S4-COST',
+    sem: 4,
+    colorIndex: 3,
+    unitNames: [
+      'Cost Elements & Cost Sheet',
+      'Material & Labor Costing',
+      'Overhead Allocation',
+      'Marginal Costing & CVP Analysis',
+      'Budgetary Control'
+    ]
+  },
+
+  // Semester 5
+  {
+    name: 'Strategic Management',
+    code: 'S5-SM',
+    sem: 5,
+    colorIndex: 0,
+    unitNames: [
+      'Strategic Intent & Vision',
+      'Environmental & Industry Analysis',
+      'SWOT & Portfolio Analysis',
+      'Strategy Formulation & Choice',
+      'Strategy Implementation & Evaluation'
+    ]
+  },
+
+  // Semester 6
+  {
+    name: 'Global Business Environment',
+    code: 'S6-GBE',
+    sem: 6,
+    colorIndex: 7,
+    unitNames: [
+      'Globalization & International Trade',
+      'Foreign Direct Investment (FDI)',
+      'Foreign Exchange Market',
+      'International Financial Institutions',
+      'Global Trade Agreements & WTO'
     ]
   }
 ];
@@ -109,10 +213,14 @@ function buildUnits(code, unitNames) {
 // Generate default dataset
 function getDefaultData() {
   return {
+    settings: {
+      visibleSems: [1, 2, 3, 4, 5, 6]
+    },
     subjects: SUBJECT_SEED.map(s => ({
       id: uid(),
       name: s.name,
       code: s.code,
+      sem: s.sem || 1,
       colorIndex: s.colorIndex,
       expanded: false,
       units: buildUnits(s.code, s.unitNames)
@@ -120,13 +228,57 @@ function getDefaultData() {
   };
 }
 
+// Sanitize & Migration Helper
+function sanitizeData(d) {
+  if (!d) return getDefaultData();
+  if (!d.settings || !Array.isArray(d.settings.visibleSems)) {
+    d.settings = { visibleSems: [1, 2, 3, 4, 5, 6] };
+  }
+  if (Array.isArray(d.subjects)) {
+    d.subjects.forEach(s => {
+      if (!s.sem) {
+        const m = s.code ? s.code.match(/S(\d)/i) : null;
+        s.sem = m ? parseInt(m[1]) : 1;
+      }
+      // Migration: automatically update unit counts and names to syllabus defaults if using old seed structure
+      const seedMatch = SUBJECT_SEED.find(seed => seed.code === s.code);
+      if (seedMatch) {
+        // Fix unit count for 3-unit subjects (IKS & ESG)
+        if (s.units.length > seedMatch.unitNames.length && (s.code === 'S1-IKS' || s.code === 'S1-ESG')) {
+          s.units = s.units.slice(0, seedMatch.unitNames.length);
+        }
+        // Update unit names for Sem 1 subjects
+        if (s.sem === 1) {
+          s.units.forEach((u, idx) => {
+            if (seedMatch.unitNames[idx]) {
+              if (u.name.startsWith('Unit ') || 
+                  u.name.includes('Introduction to Management') || 
+                  u.name.includes('Introduction to Accounting') ||
+                  u.name.includes('Introduction to Statistics') ||
+                  u.name.includes('Communication Fundamentals') ||
+                  u.name.includes('Introduction to IKS') ||
+                  u.name.includes('Introduction to ESG') ||
+                  u.name.includes('Environmental Factors') ||
+                  u.name.includes('Ancient Indian Sciences') ||
+                  u.name.includes('Modern Relevance')) {
+                u.name = seedMatch.unitNames[idx];
+              }
+            }
+          });
+        }
+      }
+    });
+  }
+  return d;
+}
+
 // LocalStorage helpers
 function loadData() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) return sanitizeData(JSON.parse(raw));
   } catch (_) { /* corrupted — reset */ }
-  return null;
+  return sanitizeData(null);
 }
 
 function saveData(data) {

@@ -17,6 +17,7 @@ const Cloud = (() => {
   let db = null;
   let isConnected = false;
   let isRemoteUpdate = false; // prevents infinite loop during sync
+  let lastSavedJSON = '';
 
   function init(onDataReceived) {
     try {
@@ -44,6 +45,13 @@ const Cloud = (() => {
       db.ref('pdf_tracker').on('value', (snapshot) => {
         const cloudData = snapshot.val();
         if (cloudData && cloudData.subjects) {
+          const cloudStr = JSON.stringify(cloudData);
+          // If the cloud update is an echo of our own recent local save, suppress re-rendering
+          if (cloudStr === lastSavedJSON) {
+            updateStatus('online', 'Cloud Synced');
+            return;
+          }
+          lastSavedJSON = cloudStr;
           isRemoteUpdate = true;
           onDataReceived(cloudData);
           isRemoteUpdate = false;
@@ -66,6 +74,7 @@ const Cloud = (() => {
   function save(data) {
     // Save to LocalStorage always as instant cache
     saveData(data);
+    lastSavedJSON = JSON.stringify(data);
 
     // Save to Firebase Cloud if connected and not responding to incoming sync
     if (db && !isRemoteUpdate) {
