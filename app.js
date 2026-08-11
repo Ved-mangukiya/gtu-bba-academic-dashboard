@@ -464,7 +464,68 @@ const App = (() => {
       </div>`;
   }
 
-  // ── Toggle expand (smooth in-place CSS animation) ─────────
+  // ── rAF Height Animation (true physical accordion) ───────────
+  //  easeOutExpo: very fast initial drop, then gradually settles — feels like yanking open
+  function _easeOutExpo(t) { return t >= 1 ? 1 : 1 - Math.pow(2, -10 * t); }
+  //  easeInCubic: starts slowly (resistance), then accelerates closed — feels like gravity
+  function _easeInCubic(t) { return t * t * t; }
+
+  function _animOpen(bodyEl, duration) {
+    // Cancel any running animation on this element
+    if (bodyEl._raf) { cancelAnimationFrame(bodyEl._raf); bodyEl._raf = null; }
+
+    // Measure natural height: temporarily unlock, read, lock back
+    bodyEl.style.height = 'auto';
+    const targetH = bodyEl.scrollHeight;
+    bodyEl.style.height = (bodyEl._currentH || 0) + 'px';
+    // Force browser to register the style before we animate
+    void bodyEl.offsetHeight;
+
+    const fromH = parseFloat(bodyEl.style.height) || 0;
+    const start = performance.now();
+
+    function frame(now) {
+      const t = Math.min((now - start) / duration, 1);
+      const h = fromH + (targetH - fromH) * _easeOutExpo(t);
+      bodyEl.style.height = h + 'px';
+      bodyEl._currentH = h;
+      if (t < 1) {
+        bodyEl._raf = requestAnimationFrame(frame);
+      } else {
+        bodyEl.style.height = 'auto'; // unlock for dynamic reflows
+        bodyEl._currentH = null;
+        bodyEl._raf = null;
+      }
+    }
+    bodyEl._raf = requestAnimationFrame(frame);
+  }
+
+  function _animClose(bodyEl, duration) {
+    if (bodyEl._raf) { cancelAnimationFrame(bodyEl._raf); bodyEl._raf = null; }
+
+    // Snapshot current rendered height (may be mid-open-animation)
+    const fromH = bodyEl.getBoundingClientRect().height;
+    bodyEl.style.height = fromH + 'px';
+    void bodyEl.offsetHeight;
+
+    const start = performance.now();
+    function frame(now) {
+      const t = Math.min((now - start) / duration, 1);
+      const h = fromH * (1 - _easeInCubic(t));
+      bodyEl.style.height = h + 'px';
+      bodyEl._currentH = h;
+      if (t < 1) {
+        bodyEl._raf = requestAnimationFrame(frame);
+      } else {
+        bodyEl.style.height = '0px';
+        bodyEl._currentH = 0;
+        bodyEl._raf = null;
+      }
+    }
+    bodyEl._raf = requestAnimationFrame(frame);
+  }
+
+  // ── Toggle expand (rAF pixel-by-pixel height animation) ───────
   function toggleSubject(id) {
     const s = data.subjects.find(x => x.id === id);
     if (!s) return;
@@ -472,10 +533,17 @@ const App = (() => {
     persist();
 
     const cardEl = document.querySelector(`.subject-card[data-id="${id}"]`);
-    if (cardEl) {
-      cardEl.classList.toggle('open', s.expanded);
+    if (!cardEl) { render(); return; }
+
+    const bodyEl = cardEl.querySelector('.subject-body');
+    if (!bodyEl) { render(); return; }
+
+    cardEl.classList.toggle('open', s.expanded);
+
+    if (s.expanded) {
+      _animOpen(bodyEl, 420);
     } else {
-      render();
+      _animClose(bodyEl, 300);
     }
   }
 
@@ -486,10 +554,17 @@ const App = (() => {
     persist();
 
     const unitEl = document.querySelector(`.unit[data-uid="${unitId}"]`);
-    if (unitEl) {
-      unitEl.classList.toggle('open', u.expanded);
+    if (!unitEl) { render(); return; }
+
+    const bodyEl = unitEl.querySelector('.unit-body');
+    if (!bodyEl) { render(); return; }
+
+    unitEl.classList.toggle('open', u.expanded);
+
+    if (u.expanded) {
+      _animOpen(bodyEl, 360);
     } else {
-      render();
+      _animClose(bodyEl, 260);
     }
   }
 
