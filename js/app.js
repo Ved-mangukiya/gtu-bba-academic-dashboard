@@ -442,6 +442,7 @@ const App = (() => {
 
     if (container) {
       container.innerHTML = filtered.map((s, si) => {
+        try {
         const orig = data.subjects.find(o => o.id === s.id);
         if (!orig) return '';
         const ci = (orig.colorIndex || 0) % 8;
@@ -483,10 +484,17 @@ const App = (() => {
             </div>
             <div class="subject-body">
               <div class="subject-inner">
-                ${s.units && Array.isArray(s.units) ? s.units.map(u => PdfTracker.renderUnit(s.id, u, ci, orig)).join('') : ''}
+                ${s.units && Array.isArray(s.units) ? s.units.map(u => {
+                  try { return PdfTracker.renderUnit(s.id, u, ci, orig); }
+                  catch(e) { console.error('renderUnit error:', e); return ''; }
+                }).join('') : ''}
               </div>
             </div>
           </div>`;
+        } catch(e) {
+          console.error('Subject card render error for', s.id, e);
+          return `<div class="subject-card" style="padding:12px;color:red">Error rendering: ${(s.name||s.id)}</div>`;
+        }
       }).join('');
     }
   }
