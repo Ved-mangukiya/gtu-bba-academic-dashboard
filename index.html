@@ -12,6 +12,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet" />
+  <link rel="stylesheet" href="css/variables.css" />
+  <link rel="stylesheet" href="css/pdf-tracker.css" />
   <link rel="stylesheet" href="styles.css" />
   <link rel="icon" type="image/png" href="faviconBBA_PDF.png" />
 </head>
@@ -24,125 +26,266 @@
       <img src="faviconBBA_PDF.png" alt="BBA PDF Tracker" class="header-logo" width="38" height="38" />
       <div class="header-content">
         <div class="header-badges">
-          <span class="header-badge">GTU BBA · 3 Years</span>
+          <span class="header-badge">GTU BBA · Sem 1 Hub</span>
           <span class="creator-badge">By Ved Mangukiya</span>
           <span class="cloud-badge syncing" id="cloudBadge">
             <span class="cloud-dot"></span>
             <span class="cloud-text">Connecting...</span>
           </span>
-          <button class="icon-btn" id="themeToggleBtn" onclick="App.toggleTheme()" title="Toggle Dark/Light Theme">🌙</button>
-          <button class="icon-btn" onclick="App.openSettingsModal()" title="Settings & Backup">⚙️</button>
+          <button class="icon-btn" id="themeToggleBtn" onclick="App.toggleTheme()" title="Toggle Dark/Light Theme">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          </button>
+          <button class="icon-btn" onclick="App.openSettingsModal()" title="Settings & Backup">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          </button>
         </div>
-        <h1 class="header-title">My PDF Tracker</h1>
-        <p class="header-sub">Personal Study Dashboard & Material Manager · Created by Ved Mangukiya</p>
+        <h1 class="header-title" id="headerAppTitle">GTU BBA Dashboard</h1>
+        <p class="header-sub">Academic Marks & Material Manager · Created by Ved Mangukiya</p>
       </div>
+
+      <!-- MAIN TAB NAVIGATION -->
+      <nav class="main-tab-nav" id="mainTabNav">
+        <button class="tab-btn active" id="tabPdfBtn" onclick="App.switchTab('pdf')">
+          <span class="tab-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg></span>
+          <span class="tab-text">PDF Tracker</span>
+        </button>
+        <button class="tab-btn" id="tabMarksBtn" onclick="App.switchTab('marks')">
+          <span class="tab-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></span>
+          <span class="tab-text">Marks & GTU Hub</span>
+        </button>
+      </nav>
     </header>
 
-    <!-- SEMESTER BAR -->
-    <section class="sem-bar" id="semBar"></section>
+    <!-- VIEW 1: PDF TRACKER -->
+    <div id="pdfTrackerView" class="tab-view active">
+      <!-- SEMESTER BAR -->
+      <section class="sem-bar" id="semBar"></section>
 
-    <!-- STATS DASHBOARD -->
-    <section class="stats" id="stats">
-      <div class="stat-card stat-total">
-        <div class="stat-icon">📄</div>
-        <div class="stat-info">
-          <span class="stat-value" id="statTotal">0</span>
-          <span class="stat-label">Total</span>
+      <!-- STATS DASHBOARD -->
+      <section class="stats" id="stats">
+        <div class="stat-card stat-total">
+          <div class="stat-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg></div>
+          <div class="stat-info">
+            <span class="stat-value" id="statTotal">0</span>
+            <span class="stat-label">Total</span>
+          </div>
         </div>
-      </div>
-      <div class="stat-card stat-downloaded">
-        <div class="stat-icon">📥</div>
-        <div class="stat-info">
-          <span class="stat-value" id="statDownloaded">0</span>
-          <span class="stat-label">Downloaded</span>
+        <div class="stat-card stat-downloaded">
+          <div class="stat-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></div>
+          <div class="stat-info">
+            <span class="stat-value" id="statDownloaded">0</span>
+            <span class="stat-label">Downloaded</span>
+          </div>
         </div>
-      </div>
-      <div class="stat-card stat-printed">
-        <div class="stat-icon">🖨️</div>
-        <div class="stat-info">
-          <span class="stat-value" id="statPrinted">0</span>
-          <span class="stat-label">Printed</span>
+        <div class="stat-card stat-printed">
+          <div class="stat-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></div>
+          <div class="stat-info">
+            <span class="stat-value" id="statPrinted">0</span>
+            <span class="stat-label">Printed</span>
+          </div>
         </div>
-      </div>
-      <div class="stat-card stat-pending">
-        <div class="stat-icon">⏳</div>
-        <div class="stat-info">
-          <span class="stat-value" id="statPending">0</span>
-          <span class="stat-label">Pending</span>
+        <div class="stat-card stat-pending">
+          <div class="stat-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div>
+          <div class="stat-info">
+            <span class="stat-value" id="statPending">0</span>
+            <span class="stat-label">Pending</span>
+          </div>
         </div>
-      </div>
+      </section>
 
-    </section>
-
-    <!-- PROGRESS -->
-    <section class="progress-wrap">
-      <div class="progress-top">
-        <div class="progress-left">
-          <span class="progress-label">Overall Download Progress</span>
-          <span class="progress-pct" id="progressPct">0%</span>
+      <!-- PROGRESS -->
+      <section class="progress-wrap">
+        <div class="progress-top">
+          <div class="progress-left">
+            <span class="progress-label">Overall Download Progress</span>
+            <span class="progress-pct" id="progressPct">0%</span>
+          </div>
+          <!-- SVG Ring -->
+          <div class="ring-wrap">
+            <svg class="ring-svg" viewBox="0 0 80 80" width="64" height="64">
+              <defs>
+                <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#34d399" />
+                  <stop offset="100%" stop-color="#60a5fa" />
+                </linearGradient>
+              </defs>
+              <circle class="ring-track" cx="40" cy="40" r="34" />
+              <circle class="ring-fill" id="ringFill" cx="40" cy="40" r="34" />
+            </svg>
+            <span class="ring-center-pct" id="ringCenterPct" aria-hidden="true"></span>
+          </div>
         </div>
-        <!-- SVG Ring -->
-        <div class="ring-wrap">
-          <svg class="ring-svg" viewBox="0 0 80 80" width="64" height="64">
-            <defs>
-              <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stop-color="#34d399" />
-                <stop offset="100%" stop-color="#60a5fa" />
-              </linearGradient>
-            </defs>
-            <circle class="ring-track" cx="40" cy="40" r="34" />
-            <circle class="ring-fill" id="ringFill" cx="40" cy="40" r="34" />
+        <!-- Dual-segment bar: downloaded (green) + printed (purple overlay) -->
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill"></div>
+          <div class="progress-fill-pr" id="progressFillPr"></div>
+        </div>
+        <div class="progress-legend">
+          <span class="legend-dot legend-dl"></span><span class="legend-text">Downloaded</span>
+          <span class="legend-dot legend-pr"></span><span class="legend-text">Printed</span>
+        </div>
+      </section>
+
+      <!-- TOOLBAR -->
+      <section class="toolbar">
+        <div class="search-box">
+          <svg class="search-icon" viewBox="0 0 20 20" fill="currentColor" width="16" height="16"
+            style="width:16px;height:16px;min-width:16px;min-height:16px">
+            <path fill-rule="evenodd"
+              d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+              clip-rule="evenodd" />
           </svg>
-          <span class="ring-center-pct" id="ringCenterPct" aria-hidden="true"></span>
+          <input type="text" id="searchInput" class="search-input" placeholder="Search subjects or parts…" />
         </div>
-      </div>
-      <!-- Dual-segment bar: downloaded (green) + printed (purple overlay) -->
-      <div class="progress-track">
-        <div class="progress-fill" id="progressFill"></div>
-        <div class="progress-fill-pr" id="progressFillPr"></div>
-      </div>
-      <div class="progress-legend">
-        <span class="legend-dot legend-dl"></span><span class="legend-text">Downloaded</span>
-        <span class="legend-dot legend-pr"></span><span class="legend-text">Printed</span>
-      </div>
-    </section>
+        <div class="filters" id="filters">
+          <button class="pill active" data-filter="all">All Status</button>
+          <button class="pill" data-filter="pending">Pending</button>
+          <button class="pill" data-filter="downloaded">Downloaded</button>
+          <button class="pill" data-filter="printed">Printed</button>
+        </div>
+      </section>
 
-    <!-- TOOLBAR -->
-    <section class="toolbar">
-      <div class="search-box">
-        <svg class="search-icon" viewBox="0 0 20 20" fill="currentColor" width="16" height="16"
-          style="width:16px;height:16px;min-width:16px;min-height:16px">
-          <path fill-rule="evenodd"
-            d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-            clip-rule="evenodd" />
-        </svg>
-        <input type="text" id="searchInput" class="search-input" placeholder="Search subjects or parts…" />
-      </div>
-      <div class="filters" id="filters">
-        <button class="pill active" data-filter="all">All Status</button>
-        <button class="pill" data-filter="pending">Pending</button>
-        <button class="pill" data-filter="downloaded">Downloaded</button>
-        <button class="pill" data-filter="printed">Printed</button>
-      </div>
-    </section>
+      <!-- SUBJECTS -->
+      <main class="subjects" id="subjectsContainer"></main>
 
-    <!-- SUBJECTS -->
-    <main class="subjects" id="subjectsContainer"></main>
-
-    <!-- EMPTY STATE -->
-    <div class="empty" id="emptyState" style="display:none">
-      <div class="empty-anim">
-        <svg class="empty-svg" viewBox="0 0 120 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="15" y="20" width="90" height="70" rx="10" fill="#f0ebe4" stroke="#e0d8ce" stroke-width="2" />
-          <rect x="28" y="36" width="64" height="8" rx="4" fill="#d8d0c4" />
-          <rect x="28" y="52" width="44" height="8" rx="4" fill="#e4ddd4" />
-          <rect x="28" y="68" width="52" height="8" rx="4" fill="#e4ddd4" />
-          <circle cx="90" cy="28" r="18" fill="#faf8f5" stroke="#e0d8ce" stroke-width="2" />
-          <path d="M83 28l4 4 8-8" stroke="#c8b898" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
+      <!-- EMPTY STATE -->
+      <div class="empty" id="emptyState" style="display:none">
+        <div class="empty-anim">
+          <svg class="empty-svg" viewBox="0 0 120 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="15" y="20" width="90" height="70" rx="10" fill="#f0ebe4" stroke="#e0d8ce" stroke-width="2" />
+            <rect x="28" y="36" width="64" height="8" rx="4" fill="#d8d0c4" />
+            <rect x="28" y="52" width="44" height="8" rx="4" fill="#e4ddd4" />
+            <rect x="28" y="68" width="52" height="8" rx="4" fill="#e4ddd4" />
+            <circle cx="90" cy="28" r="18" fill="#faf8f5" stroke="#e0d8ce" stroke-width="2" />
+            <path d="M83 28l4 4 8-8" stroke="#c8b898" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+        <p class="empty-title">Nothing found</p>
+        <p class="empty-sub">No results match your search or filter.</p>
       </div>
-      <p class="empty-title">Nothing found</p>
-      <p class="empty-sub">No results match your search or filter.</p>
+    </div>
+
+    <!-- VIEW 2: MARKS & GTU PERFORMANCE HUB -->
+    <div id="marksHubView" class="tab-view" style="display:none">
+      <!-- SUMMARY OVERVIEW GRID -->
+      <section class="marks-summary-grid">
+        <!-- SPI CARD -->
+        <div class="marks-stat-card card-spi">
+          <div class="marks-stat-head">
+            <span class="marks-stat-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg></span>
+            <span class="marks-stat-title">Semester 1 SPI</span>
+          </div>
+          <div class="marks-stat-main">
+            <span class="marks-big-val" id="summarySpiVal">0.00</span>
+            <span class="marks-sub-label" id="summarySpiGrade">-- Grade</span>
+          </div>
+          <div class="marks-stat-foot">GTU Formula · 20 Credits Total</div>
+        </div>
+
+        <!-- TOTAL MARKS CARD -->
+        <div class="marks-stat-card card-marks">
+          <div class="marks-stat-head">
+            <span class="marks-stat-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg></span>
+            <span class="marks-stat-title">Total Marks</span>
+          </div>
+          <div class="marks-stat-main">
+            <span class="marks-big-val" id="summaryTotalMarksVal">0 / 800</span>
+            <span class="marks-sub-label" id="summaryPctVal">0.0%</span>
+          </div>
+          <div class="marks-stat-foot" id="summaryPassStatus">All Papers Evaluated</div>
+        </div>
+
+        <!-- CUMULATIVE CGPA CARD -->
+        <div class="marks-stat-card card-cgpa">
+          <div class="marks-stat-head">
+            <span class="marks-stat-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-4"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path></svg></span>
+            <span class="marks-stat-title">Overall CGPA</span>
+          </div>
+          <div class="marks-stat-main">
+            <span class="marks-big-val" id="summaryCgpaVal">0.00</span>
+            <span class="marks-sub-label" id="summaryCgpaStatus">Sem 1 Weight: 20c</span>
+          </div>
+          <div class="marks-stat-foot">Cumulative Performance</div>
+        </div>
+      </section>
+
+      <!-- TARGET GOAL SEEK BACKTRACKER CARD -->
+      <section class="target-backtracker-card">
+        <div class="target-head">
+          <div class="target-title-wrap">
+            <span class="target-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></span>
+            <div>
+              <h2 class="target-h2">Target Score & Backtracker Engine</h2>
+              <p class="target-sub">Set your target SPI goal and reverse-calculate minimum ESE & internal marks needed.</p>
+            </div>
+          </div>
+          <div class="target-input-badge">
+            <label for="targetSpiInput" class="target-label">Target SPI:</label>
+            <input type="number" id="targetSpiInput" class="target-spi-field" min="4.0" max="10.0" step="0.1" value="8.5" oninput="App.onTargetSpiChange(this.value)" />
+          </div>
+        </div>
+
+        <div class="target-suggestion-box" id="targetSuggestionBox">
+          <!-- Dynamically populated suggestion text -->
+        </div>
+
+        <div class="target-cards-row">
+          <div class="target-mini-card">
+            <span class="target-mini-label">Target ESE Marks (4-Credit)</span>
+            <span class="target-mini-val" id="targetEse4Val">-- / 70</span>
+            <span class="target-mini-sub" id="targetGrade4Val">Grade Required: --</span>
+          </div>
+          <div class="target-mini-card">
+            <span class="target-mini-label">Target ESE Marks (2-Credit)</span>
+            <span class="target-mini-val" id="targetEse2Val">-- / 50</span>
+            <span class="target-mini-sub" id="targetGrade2Val">Grade Required: --</span>
+          </div>
+          <div class="target-mini-card">
+            <span class="target-mini-label">Internal / Practical Target</span>
+            <span class="target-mini-val" id="targetInternalVal">--% Avg</span>
+            <span class="target-mini-sub" id="targetInternalSub">Keep > 75% for Safety</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- SUBJECT MARKS EDITOR SECTION -->
+      <section class="marks-editor-section">
+        <div class="section-title-bar">
+          <div class="section-title-left">
+            <h2 class="section-h2">Subject Marks & Internal Breakdown</h2>
+            <span class="section-badge">6 GTU Subjects</span>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="App.resetAllMarks()">🔄 Reset Marks</button>
+        </div>
+
+        <!-- SUBJECT MARKS GRID -->
+        <div class="marks-subjects-grid" id="marksSubjectsContainer">
+          <!-- Dynamically rendered per subject -->
+        </div>
+      </section>
+
+      <!-- CGPA MULTI-SEMESTER CALCULATOR CARD -->
+      <section class="cgpa-multi-section">
+        <div class="cgpa-head">
+          <h3 class="cgpa-h3">🎓 Multi-Semester CGPA Calculator</h3>
+          <p class="cgpa-sub">Track cumulative SPI & Credits across 3 Years (Sem 1 to Sem 6)</p>
+        </div>
+        <div class="cgpa-table-wrap">
+          <table class="cgpa-table">
+            <thead>
+              <tr>
+                <th>Semester</th>
+                <th>Credits</th>
+                <th>SPI Secured</th>
+                <th>Grade Points</th>
+              </tr>
+            </thead>
+            <tbody id="cgpaTableBody">
+              <!-- Dynamically populated rows -->
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>
 
     <!-- FOOTER -->
@@ -319,10 +462,13 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
-  <!-- APP SCRIPTS -->
-  <script src="data.js"></script>
-  <script src="cloud.js"></script>
-  <script src="app.js"></script>
+  <!-- APP SCRIPTS (MODULAR FOLDER STRUCTURE) -->
+  <script src="js/data.js"></script>
+  <script src="js/cloud.js"></script>
+  <script src="js/pdf-meta.js"></script>
+  <script src="js/pdf-tracker.js"></script>
+  <script src="js/marks-hub.js"></script>
+  <script src="js/app.js"></script>
 </body>
 
 </html>

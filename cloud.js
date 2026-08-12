@@ -18,87 +18,110 @@ const Cloud = (() => {
   let isRemoteUpdate = false;
   let lastSavedJSON = '';
   let onlineResolved = false;
+  let _onDataReceived = null;
 
   function updateStatus(state, text) {
     const badge = document.getElementById('cloudBadge');
     if (!badge) return;
     badge.className = `cloud-badge ${state}`;
-    badge.innerHTML = `<span class="cloud-dot"></span> <span class="cloud-text">${text}</span>`;
+    badge.innerHTML = `<span class="cloud-dot"></span><span class="cloud-text">${text}</span>`;
   }
 
   function init(onDataReceived) {
+    _onDataReceived = onDataReceived;
     updateStatus('syncing', 'Connecting...');
 
-    try {
-      if (typeof firebase === 'undefined') {
-        updateStatus('offline', 'Offline Mode');
-        return;
-      }
+    // If Firebase SDK isn't loaded, go offline immediately
+    if (typeof firebase === 'undefined') {
+      console.warn('Firebase SDK not loaded');
+      updateStatus('offline', 'Offline Mode');
+      return;
+    }
 
+    try {
       if (!firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
       }
       db = firebase.database();
+    } catch(e) {
+      console.error('Firebase init failed:', e);
+      updateStatus('offline', 'Offline Mode');
+      return;
+    }
 
-      // ── Realtime data listener ─────────────────────────────
-      // This fires immediately when Firebase connects and reads data.
-      // If this fires, we ARE online — no need for a separate .info/connected check.
-      db.ref('pdf_tracker').on('value', (snapshot) => {
-        // Mark online as soon as we get any response from Firebase
-        if (!onlineResolved) {
-          onlineResolved = true;
-          updateStatus('online', 'Cloud Synced ✓');
-        }
-
-        const cloudData = snapshot.val();
-        if (cloudData && cloudData.subjects) {
-          const cloudStr = JSON.stringify(cloudData);
-          // Skip if this is identical to what we just saved (prevents echo loop)
-          if (cloudStr === lastSavedJSON) return;
-          lastSavedJSON = cloudStr;
-          isRemoteUpdate = true;
-          onDataReceived(cloudData);
-          isRemoteUpdate = false;
-        } else {
-          // Cloud is empty — seed it with local data so other devices get data
-          const local = loadData() || getDefaultData();
-          save(local);
-        }
-      }, (error) => {
-        console.warn('Firebase listener error:', error.code, error.message);
-        updateStatus('offline', 'Offline Mode');
-      });
-
-      // ── Connection state monitor (shows reconnecting/offline) ──
+    // ── Monitor connection state ──────────────────────────
+    try {
       db.ref('.info/connected').on('value', (snap) => {
         if (snap.val() === true) {
-          onlineResolved = true;
+          if (!onlineResolved) {
+            onlineResolved = true;
+          }
           updateStatus('online', 'Cloud Synced ✓');
         } else if (onlineResolved) {
-          // Only show offline AFTER we were previously connected
           updateStatus('offline', 'Reconnecting...');
         }
       });
+    } catch(e) {
+      console.warn('.info/connected listener error:', e);
+    }
 
-      // ── Fallback timeout: if no response in 8s, show offline ──
-      setTimeout(() => {
-        if (!onlineResolved) {
-          updateStatus('offline', 'Offline — Check Network');
+    // ── Data listener ─────────────────────────────────────
+    try {
+      db.ref('pdf_tracker').on('value',
+        (snapshot) => {
+          // Success — we are definitely online
+          onlineResolved = true;
+          updateStatus('online', 'Cloud Synced ✓');
+
+          const cloudData = snapshot.val();
+          if (cloudData && cloudData.subjects && Array.isArray(cloudData.subjects) && cloudData.subjects.length) {
+            const cloudStr = JSON.stringify(cloudData);
+            if (cloudStr === lastSavedJSON) return; // no change
+            lastSavedJSON = cloudStr;
+            isRemoteUpdate = true;
+            try { _onDataReceived(cloudData); } catch(e) { console.error('onDataReceived error:', e); }
+            isRemoteUpdate = false;
+          } else {
+            // Cloud node empty — push current local data to seed it
+            console.log('Cloud empty, seeding from local data');
+            const local = loadData();
+            if (local && local.subjects && local.subjects.length) {
+              save(local);
+            } else {
+              save(getDefaultData());
+            }
+          }
+        },
+        (error) => {
+          // Firebase read error — most likely PERMISSION_DENIED from DB rules
+          console.error('Firebase read error:', error.code, error.message);
+          if (error.code === 'PERMISSION_DENIED') {
+            updateStatus('offline', 'DB Rules: Allow Read/Write');
+          } else {
+            updateStatus('offline', 'Offline Mode');
+          }
         }
-      }, 8000);
-
-    } catch (e) {
-      console.warn('Firebase init error:', e);
+      );
+    } catch(e) {
+      console.error('db.ref listener error:', e);
       updateStatus('offline', 'Offline Mode');
     }
+
+    // ── Fallback: show offline if no response in 10s ──────
+    setTimeout(() => {
+      if (!onlineResolved) {
+        updateStatus('offline', 'Network Timeout — Check Firebase Rules');
+        console.warn('Firebase: no response after 10s. Check DB rules at console.firebase.google.com → Realtime Database → Rules. Set: {".read":true,".write":true}');
+      }
+    }, 10000);
   }
 
   function save(data) {
-    // Always save locally
+    // Always save to localStorage
     saveData(data);
     lastSavedJSON = JSON.stringify(data);
 
-    // Push to Firebase if connected
+    // Push to Firebase cloud
     if (db && !isRemoteUpdate) {
       updateStatus('syncing', 'Saving...');
       db.ref('pdf_tracker').set(data)
@@ -106,8 +129,12 @@ const Cloud = (() => {
           updateStatus('online', 'Cloud Synced ✓');
         })
         .catch((err) => {
-          console.warn('Firebase save error:', err);
-          updateStatus('offline', 'Offline Mode');
+          console.error('Firebase save error:', err.code, err.message);
+          if (err.code === 'PERMISSION_DENIED') {
+            updateStatus('offline', 'DB Rules: Allow Read/Write');
+          } else {
+            updateStatus('offline', 'Offline Mode');
+          }
         });
     }
   }

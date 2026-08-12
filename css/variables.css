@@ -1,0 +1,93 @@
+/* ============================================================
+   GTU BBA Academic Dashboard — Variables & Reset
+   ============================================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  /* ---- Base Palette ---- */
+  --bg: #faf8f5;
+  --bg-card: #ffffff;
+  --bg-unit: #fdf9f4;
+  --bg-part: #ffffff;
+  --bg-part-done: #f0faf4;
+  --bg-input: #f5f2ee;
+  --bg-hover: #f7f4ef;
+
+  /* ---- Text ---- */
+  --text-dark: #2c2520;
+  --text-base: #4a4440;
+  --text-mid: #7a7470;
+  --text-light: #a8a098;
+  --text-faint: #c8c0b8;
+
+  /* ---- Pastels ---- */
+  --pastel-blue: #b8d4f0;
+  --pastel-green: #b8e8cc;
+  --pastel-purple: #d4c0f0;
+  --pastel-amber: #f0dfb0;
+  --pastel-pink: #f0c0d0;
+  --pastel-cyan: #b0e0e0;
+  --pastel-rose: #f0d0c0;
+  --pastel-mint: #c0ead4;
+
+  /* ---- Accents ---- */
+  --accent: #7c6f5b;
+  --accent-hover: #63584a;
+  --accent-blue: #2563eb;
+  --accent-green: #059669;
+  --accent-purple: #7c3aed;
+  --accent-amber: #d97706;
+  --accent-pink: #e11d48;
+  --accent-cyan: #0d9488;
+
+  /* ---- Borders & Shadows ---- */
+  --border: #ece6de;
+  --border-focus: #c8b898;
+  --border-accent: #d0c4b0;
+
+  --shadow-xs: 0 1px 2px rgba(44, 37, 32, 0.04);
+  --shadow-sm: 0 2px 6px rgba(44, 37, 32, 0.05);
+  --shadow-md: 0 4px 14px rgba(44, 37, 32, 0.06);
+  --shadow-lg: 0 8px 24px rgba(44, 37, 32, 0.08);
+
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 20px;
+  --r-full: 9999px;
+
+  --t-fast: 150ms ease;
+  --t-base: 250ms ease;
+  --t-slow: 400ms cubic-bezier(.4, 0, .2, 1);
+
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text-base);
+  line-height: 1.6;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  position: relative;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
