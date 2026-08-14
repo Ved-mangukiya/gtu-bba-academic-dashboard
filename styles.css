@@ -5524,239 +5524,26 @@ button:active,
   border-color: rgba(16, 185, 129, 0.35);
 }
 
-/* Missing Marks Hub CSS */
-.marks-subjects-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-top: 16px;
-}
-
-@media (min-width: 768px) {
-  .marks-subjects-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    align-items: start;
-  }
-}
-
-.marks-subject-card {
-  background: var(--bg-card);
-  border-radius: var(--r-xl);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-.marks-subject-card:hover {
-  box-shadow: var(--shadow-md);
-  border-color: var(--accent);
-}
-
-.marks-subject-card.open {
-  border-color: var(--accent);
-  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.12);
-}
-
-.marks-card-head {
-  padding: 16px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  user-select: none;
-  background: transparent;
-  transition: background 0.2s;
-}
-
-.marks-card-head:hover {
-  background: var(--bg-hover);
-}
-
-.marks-head-info {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.marks-sub-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--r-lg);
-  background: rgba(99, 102, 241, 0.1);
-  color: var(--accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-}
-
-.marks-head-text {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.marks-sub-name {
-  font-size: 1rem;
-  font-weight: 800;
-  color: var(--text-dark);
-  margin: 0;
-}
-
-.marks-sub-meta {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.sub-meta-pill {
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--text-mid);
-  background: var(--bg-hover);
-  padding: 2px 8px;
-  border-radius: 12px;
-}
-
-.marks-head-right {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.marks-head-status {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-}
-
-.grade-badge-pill {
-  font-size: 0.75rem;
-  font-weight: 800;
-  padding: 3px 10px;
-  border-radius: 12px;
-}
-
-.pass-fail-text {
-  font-size: 0.7rem;
-  font-weight: 800;
-  letter-spacing: 0.5px;
-}
-
-.text-pass { color: #10b981; }
-.text-fail { color: #ef4444; }
-
-.marks-chevron {
-  color: var(--text-mid);
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  display: flex;
-  align-items: center;
-}
-
-.marks-subject-card.open .marks-chevron {
-  transform: rotate(180deg);
-  color: var(--accent);
-}
-
-/* Accordion Body */
-.marks-card-body {
-  display: none;
-  background: var(--bg-card);
-}
-
-.marks-subject-card.open .marks-card-body {
-  display: block;
-  animation: marksCardFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes marksCardFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.marks-card-body-inner {
-  padding: 0 20px 20px 20px;
-}
-
-/* Switch Toggle Row & Widget */
-.switch-toggle-wrap {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  user-select: none;
-}
-
-.switch-label {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--text-mid);
-}
-
-.switch-input {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.switch-slider {
-  position: relative;
-  display: inline-block;
-  width: 36px;
-  height: 20px;
-  background-color: var(--border-accent, #cbd5e1);
-  border-radius: 20px;
-  transition: all 0.22s ease;
-}
-
-.switch-slider::before {
-  position: absolute;
-  content: "";
-  height: 14px;
-  width: 14px;
-  left: 3px;
-  bottom: 3px;
-  background-color: #ffffff;
-  border-radius: 50%;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
-  transition: all 0.22s ease;
-}
-
-.switch-input:checked + .switch-slider {
-  background-color: var(--accent, #6366f1);
-}
-
-.switch-input:checked + .switch-slider::before {
-  transform: translateX(16px);
-}
-
 /* ============================================================
-   MARKS & PERFORMANCE HUB — PC & MOBILE FULL STYLING
+   MARKS & PERFORMANCE HUB — UNIFIED STYLESHEET
+   Clean · Modular · 100% Mobile Responsive · Zero Overflow
    ============================================================ */
 
-/* 1. Summary Overview Cards */
+/* ── 1. TOP SUMMARY CARDS ──────────────────────────────────── */
 .marks-summary-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
-  margin-bottom: 24px;
+  gap: 16px;
+  margin-bottom: 22px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .marks-stat-card {
   background: var(--bg-card, #ffffff);
-  border: 1px solid var(--border, #e2e8f0);
+  border: 1.5px solid var(--border, #e2e8f0);
   border-radius: var(--r-xl, 14px);
-  padding: 18px 20px;
+  padding: 16px 18px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.03);
   display: flex;
   flex-direction: column;
@@ -5764,6 +5551,8 @@ button:active,
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
   position: relative;
   overflow: hidden;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .marks-stat-card::before {
@@ -5773,8 +5562,8 @@ button:active,
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, var(--accent, #6366f1), #a855f7);
-  opacity: 0.85;
+  background: linear-gradient(90deg, #6366f1, #a855f7);
+  opacity: 0.9;
 }
 
 .card-marks::before {
@@ -5800,18 +5589,19 @@ button:active,
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .marks-stat-icon {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: var(--r-md, 8px);
   background: rgba(99, 102, 241, 0.12);
-  color: var(--accent, #6366f1);
+  color: #6366f1;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .card-marks .marks-stat-icon {
@@ -5825,61 +5615,71 @@ button:active,
 }
 
 .marks-stat-title {
-  font-size: 0.84rem;
+  font-size: 0.78rem;
   font-weight: 800;
   color: var(--text-mid, #64748b);
   letter-spacing: 0.02em;
   text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .marks-stat-main {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
 }
 
 .marks-big-val {
-  font-size: 2.1rem;
+  font-size: 1.85rem;
   font-weight: 900;
-  color: var(--text-dark, #0f172a);
+  color: #0f172a;
   letter-spacing: -0.02em;
   line-height: 1;
 }
 
 .dark-mode .marks-big-val {
-  color: var(--text-dark, #f8fafc);
+  color: #f8fafc;
 }
 
 .marks-sub-label {
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   font-weight: 800;
-  padding: 3px 10px;
+  padding: 3px 8px;
   border-radius: 20px;
   background: var(--bg-hover, #f1f5f9);
-  color: var(--text-dark, #334155);
+  color: #334155;
+  white-space: nowrap;
 }
 
 .dark-mode .marks-sub-label {
-  background: var(--bg-hover, #1e1e2d);
-  color: var(--text-dark, #e2e8f0);
+  background: #1e1e2d;
+  color: #e2e8f0;
 }
 
 .marks-stat-foot {
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   font-weight: 600;
   color: var(--text-faint, #94a3b8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* 2. Target Goal Seek Backtracker Card */
+/* ── 2. TARGET GOAL SEEK BACKTRACKER ENGINE ─────────────────── */
 .target-backtracker-card {
   background: var(--bg-card, #ffffff);
   border: 1.5px solid var(--border, #e2e8f0);
   border-radius: var(--r-xl, 16px);
-  padding: 22px;
-  margin-bottom: 26px;
+  padding: 20px;
+  margin-bottom: 24px;
   box-shadow: 0 4px 18px rgba(0,0,0,0.03);
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .dark-mode .target-backtracker-card {
@@ -5893,22 +5693,23 @@ button:active,
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 16px;
-  margin-bottom: 18px;
+  gap: 14px;
+  margin-bottom: 16px;
 }
 
 .target-title-wrap {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
+  min-width: 0;
 }
 
 .target-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--r-lg, 12px);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-lg, 10px);
   background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(168, 85, 247, 0.15));
-  color: var(--accent, #6366f1);
+  color: #6366f1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -5916,10 +5717,10 @@ button:active,
 }
 
 .target-h2 {
-  font-size: 1.12rem;
+  font-size: 1.05rem;
   font-weight: 800;
-  color: var(--text-dark, #0f172a);
-  margin-bottom: 3px;
+  color: #0f172a;
+  margin: 0 0 2px 0;
 }
 
 .dark-mode .target-h2 {
@@ -5927,10 +5728,10 @@ button:active,
 }
 
 .target-sub {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--text-mid, #64748b);
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.35;
 }
 
 .target-input-badge {
@@ -5938,20 +5739,22 @@ button:active,
   align-items: center;
   gap: 10px;
   background: var(--bg-hover, #f8fafc);
-  border: 1px solid var(--border, #e2e8f0);
-  padding: 8px 14px;
+  border: 1.5px solid var(--border, #e2e8f0);
+  padding: 6px 12px;
   border-radius: var(--r-lg, 10px);
+  box-sizing: border-box;
+  max-width: 100%;
 }
 
 .dark-mode .target-input-badge {
-  background: var(--bg-hover, #181824);
-  border-color: var(--border, #262638);
+  background: #181824;
+  border-color: #262638;
 }
 
 .target-label {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 800;
-  color: var(--text-dark, #0f172a);
+  color: #0f172a;
   white-space: nowrap;
 }
 
@@ -5964,13 +5767,15 @@ button:active,
   color: #0f172a !important;
   border: 1.5px solid #94a3b8 !important;
   font-weight: 800 !important;
-  font-size: 0.9rem !important;
-  padding: 8px 14px !important;
+  font-size: 0.86rem !important;
+  padding: 6px 10px !important;
   border-radius: var(--r-md, 8px) !important;
   outline: none !important;
   cursor: pointer !important;
   font-family: inherit !important;
   box-shadow: 0 1px 4px rgba(0,0,0,0.06) !important;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .target-spi-select option {
@@ -5995,15 +5800,17 @@ button:active,
   background: #f0f4ff !important;
   border: 1.5px solid #c7d2fe !important;
   border-radius: var(--r-lg, 12px) !important;
-  padding: 14px 18px !important;
-  margin-bottom: 18px !important;
-  font-size: 0.88rem !important;
-  line-height: 1.6 !important;
+  padding: 12px 16px !important;
+  margin-bottom: 16px !important;
+  font-size: 0.84rem !important;
+  line-height: 1.55 !important;
   color: #1e293b !important;
   display: flex !important;
   align-items: center !important;
-  gap: 14px !important;
+  gap: 12px !important;
   box-shadow: 0 2px 8px rgba(99, 102, 241, 0.06) !important;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .target-suggestion-box strong {
@@ -6011,10 +5818,7 @@ button:active,
   font-weight: 900 !important;
 }
 
-.target-suggestion-box div {
-  color: #1e293b !important;
-}
-
+.target-suggestion-box div,
 .target-suggestion-box span {
   color: #1e293b !important;
 }
@@ -6029,34 +5833,35 @@ button:active,
   color: #a5b4fc !important;
 }
 
-.dark-mode .target-suggestion-box div {
-  color: #f1f5f9 !important;
-}
-
+.dark-mode .target-suggestion-box div,
 .dark-mode .target-suggestion-box span {
   color: #f1f5f9 !important;
 }
 
 .target-sugg-icon {
-  font-size: 1.35rem;
+  font-size: 1.25rem;
   flex-shrink: 0;
 }
 
 .target-cards-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .target-mini-card {
   background: #f8fafc !important;
   border: 1.5px solid #e2e8f0 !important;
   border-radius: var(--r-lg, 10px) !important;
-  padding: 14px 16px !important;
+  padding: 12px 14px !important;
   display: flex !important;
   flex-direction: column !important;
-  gap: 4px !important;
+  gap: 3px !important;
   box-shadow: 0 1px 4px rgba(0,0,0,0.03) !important;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .dark-mode .target-mini-card {
@@ -6065,11 +5870,14 @@ button:active,
 }
 
 .target-mini-label {
-  font-size: 0.74rem !important;
+  font-size: 0.7rem !important;
   font-weight: 800 !important;
   color: #475569 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.02em !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .dark-mode .target-mini-label {
@@ -6077,10 +5885,11 @@ button:active,
 }
 
 .target-mini-val {
-  font-size: 1.4rem !important;
+  font-size: 1.3rem !important;
   font-weight: 900 !important;
   color: #3730a3 !important;
   letter-spacing: -0.01em !important;
+  line-height: 1.1;
 }
 
 .dark-mode .target-mini-val {
@@ -6088,21 +5897,26 @@ button:active,
 }
 
 .target-mini-sub {
-  font-size: 0.74rem !important;
+  font-size: 0.7rem !important;
   font-weight: 700 !important;
   color: #64748b !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .dark-mode .target-mini-sub {
   color: #64748b !important;
 }
 
-/* 3. Subjects Marks Grid & Cards */
+/* ── 3. SUBJECTS GRID & ACCORDION CARDS ────────────────────── */
 .marks-subjects-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
-  gap: 20px;
+  gap: 18px;
   align-items: start;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .marks-subject-card {
@@ -6111,7 +5925,9 @@ button:active,
   border-radius: var(--r-xl, 14px);
   box-shadow: 0 2px 12px rgba(0,0,0,0.03);
   overflow: hidden;
-  transition: all 0.22s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .dark-mode .marks-subject-card {
@@ -6121,25 +5937,27 @@ button:active,
 }
 
 .marks-subject-card.open {
-  border-color: rgba(99, 102, 241, 0.4);
-  box-shadow: 0 6px 24px rgba(99, 102, 241, 0.08);
+  border-color: rgba(99, 102, 241, 0.45);
+  box-shadow: 0 6px 24px rgba(99, 102, 241, 0.09);
 }
 
 .dark-mode .marks-subject-card.open {
-  border-color: rgba(99, 102, 241, 0.45);
+  border-color: rgba(99, 102, 241, 0.5);
   box-shadow: 0 6px 24px rgba(0,0,0,0.5);
 }
 
 .marks-card-head {
-  padding: 16px 18px;
+  padding: 14px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   cursor: pointer;
   user-select: none;
   background: var(--bg-card, #ffffff);
   transition: background 0.18s ease;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .dark-mode .marks-card-head {
@@ -6151,27 +5969,27 @@ button:active,
 }
 
 .dark-mode .marks-card-head:hover {
-  background: var(--bg-hover, #181824);
+  background: #181824;
 }
 
 .marks-head-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   flex: 1;
   min-width: 0;
 }
 
 .marks-sub-icon {
-  width: 38px;
-  height: 38px;
-  border-radius: var(--r-md, 10px);
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-md, 8px);
   background: rgba(99, 102, 241, 0.12);
-  color: var(--accent, #6366f1);
+  color: #6366f1;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   flex-shrink: 0;
 }
 
@@ -6181,10 +5999,10 @@ button:active,
 }
 
 .marks-sub-name {
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   font-weight: 800;
-  color: var(--text-dark, #0f172a);
-  margin: 0 0 4px 0;
+  color: #0f172a;
+  margin: 0 0 3px 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -6196,30 +6014,30 @@ button:active,
 
 .marks-sub-meta {
   display: flex;
-  gap: 6px;
+  gap: 5px;
   flex-wrap: wrap;
 }
 
 .sub-meta-pill {
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   font-weight: 700;
-  padding: 2px 7px;
+  padding: 1.5px 6px;
   border-radius: 6px;
   background: var(--bg-hover, #f1f5f9);
-  color: var(--text-mid, #64748b);
+  color: #64748b;
   border: 1px solid var(--border, #e2e8f0);
 }
 
 .dark-mode .sub-meta-pill {
-  background: var(--bg-hover, #1a1a28);
-  color: var(--text-mid, #94a3b8);
-  border-color: var(--border, #28283c);
+  background: #1a1a28;
+  color: #94a3b8;
+  border-color: #28283c;
 }
 
 .marks-head-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   flex-shrink: 0;
 }
 
@@ -6231,12 +6049,13 @@ button:active,
 }
 
 .grade-badge-pill {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 900;
-  padding: 3px 10px;
-  border-radius: 12px;
+  padding: 2.5px 8px;
+  border-radius: 10px;
   background: rgba(99, 102, 241, 0.14);
-  color: var(--accent, #6366f1);
+  color: #6366f1;
+  white-space: nowrap;
 }
 
 .grade-badge-pill.grade-AA { background: rgba(16, 185, 129, 0.16); color: #059669; }
@@ -6258,9 +6077,10 @@ button:active,
 .dark-mode .grade-badge-pill.grade-FF { color: #f87171; }
 
 .pass-fail-text {
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.04em;
+  white-space: nowrap;
 }
 
 .pass-fail-text.text-pass { color: #10b981; }
@@ -6288,23 +6108,38 @@ button:active,
 
 .marks-subject-card.open .marks-card-body {
   display: block;
-  animation: fadeInDown 0.2s ease;
+  animation: marksCardFadeIn 0.2s ease;
+}
+
+@keyframes marksCardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .marks-card-body-inner {
-  padding: 18px;
+  padding: 16px;
+  box-sizing: border-box;
+  width: 100%;
 }
 
-/* 4. Dynamic Advisor Box & Chips */
+/* ── 4. DYNAMIC ADVISOR ALERT BOX & CHIPS ─────────────────── */
 .marks-target-advisor {
-  padding: 12px 14px;
+  padding: 10px 14px;
   border-radius: var(--r-lg, 10px);
-  margin-bottom: 16px;
-  font-size: 0.8rem;
-  line-height: 1.5;
+  margin-bottom: 14px;
+  font-size: 0.78rem;
+  line-height: 1.45;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .advisor-pass { background: #ecfdf5 !important; color: #065f46 !important; border: 1.5px solid #a7f3d0 !important; }
@@ -6328,15 +6163,15 @@ button:active,
 .dynamic-target-chips {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   flex-wrap: wrap;
 }
 
 .target-chip {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 800;
-  padding: 3px 8px;
-  border-radius: 8px;
+  padding: 2px 7px;
+  border-radius: 6px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -6358,81 +6193,152 @@ button:active,
 .dark-mode .chip-ease { color: #34d399; }
 
 .target-chip-or {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 800;
   color: var(--text-faint, #94a3b8);
 }
 
-/* 5. Inputs & Dynamic Benchmark Badges */
+/* ── 5. FORM INPUTS & TOGGLE SWITCHES ──────────────────────── */
 .internal-block {
   background: var(--bg-hover, #f8fafc);
   border-radius: var(--r-lg, 10px);
-  padding: 14px 16px;
-  margin-bottom: 16px;
-  border: 1px solid var(--border, #e2e8f0);
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  border: 1.5px solid var(--border, #e2e8f0);
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .dark-mode .internal-block {
-  background: var(--bg-hover, #181824);
-  border-color: var(--border, #262638);
+  background: #181824;
+  border-color: #262638;
 }
 
 .internal-toggle-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
+  gap: 8px;
 }
 
 .internal-title {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 800;
-  color: var(--text-dark, #0f172a);
+  color: #0f172a;
 }
 
 .dark-mode .internal-title {
   color: #f1f5f9;
 }
 
+/* Bulletproof Positioned Switch Toggle */
+.switch-toggle-wrap {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  cursor: pointer !important;
+  user-select: none !important;
+}
+
+.switch-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-mid, #64748b);
+}
+
+.switch-input {
+  position: absolute !important;
+  opacity: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  top: 0 !important;
+  left: 0 !important;
+  margin: 0 !important;
+  cursor: pointer !important;
+  z-index: 2 !important;
+}
+
+.switch-slider {
+  position: relative;
+  display: inline-block;
+  width: 32px;
+  height: 18px;
+  background-color: var(--border-accent, #cbd5e1);
+  border-radius: 20px;
+  transition: all 0.22s ease;
+  pointer-events: none;
+}
+
+.switch-slider::before {
+  position: absolute;
+  content: "";
+  height: 12px;
+  width: 12px;
+  left: 3px;
+  bottom: 3px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  transition: all 0.22s ease;
+}
+
+.switch-input:checked + .switch-slider {
+  background-color: #6366f1;
+}
+
+.switch-input:checked + .switch-slider::before {
+  transform: translateX(14px);
+}
+
 .marks-input-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .marks-component-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  margin-bottom: 16px;
+  gap: 12px;
+  margin-bottom: 14px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .marks-field-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
+  min-width: 0;
 }
 
 .field-label-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .field-label {
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   font-weight: 800;
   color: var(--text-mid, #64748b);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .field-benchmark-badge {
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   font-weight: 800;
-  padding: 2px 7px;
-  border-radius: 8px;
+  padding: 1.5px 6px;
+  border-radius: 6px;
   background: rgba(99, 102, 241, 0.12);
-  color: var(--accent, #6366f1);
+  color: #6366f1;
   white-space: nowrap;
 }
 
@@ -6445,10 +6351,10 @@ button:active,
   background: var(--bg-card, #ffffff);
   border: 1.5px solid var(--border, #cbd5e1);
   border-radius: var(--r-md, 8px);
-  padding: 10px 12px;
-  font-size: 0.96rem;
+  padding: 8px 10px;
+  font-size: 0.92rem;
   font-weight: 800;
-  color: var(--text-dark, #0f172a);
+  color: #0f172a;
   font-family: inherit;
   transition: all 0.2s ease;
   width: 100%;
@@ -6456,16 +6362,16 @@ button:active,
 }
 
 .dark-mode .marks-num-input {
-  background: var(--bg-input, #111118);
-  border-color: var(--border, #2c2c3e);
-  color: var(--text-dark, #f1f5f9);
+  background: #111118;
+  border-color: #2c2c3e;
+  color: #f1f5f9;
 }
 
 .marks-num-input::placeholder {
   color: var(--text-faint, #94a3b8);
   font-weight: 600;
   opacity: 0.55;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-style: italic;
 }
 
@@ -6475,25 +6381,28 @@ button:active,
 }
 
 .marks-num-input:focus {
-  border-color: var(--accent, #6366f1);
+  border-color: #6366f1;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
   outline: none;
   background: var(--bg-card, #ffffff);
 }
 
 .dark-mode .marks-num-input:focus {
-  background: var(--bg-card, #13131c);
-  border-color: var(--accent, #818cf8);
+  background: #13131c;
+  border-color: #818cf8;
 }
 
-/* 6. Card Footer */
+/* ── 6. CARD FOOTER & BULLETPROOF SAVE BUTTON ──────────────── */
 .marks-card-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 14px;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 12px;
   border-top: 1px solid var(--border, #e2e8f0);
-  gap: 14px;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .dark-mode .marks-card-footer {
@@ -6503,17 +6412,20 @@ button:active,
 .marks-footer-stats {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
 }
 
 .total-score-val {
-  font-size: 0.88rem;
+  font-size: 0.84rem;
   color: var(--text-mid, #64748b);
+  white-space: nowrap;
 }
 
 .total-score-val strong {
-  font-size: 1.08rem;
-  color: var(--text-dark, #0f172a);
+  font-size: 1.02rem;
+  color: #0f172a;
   font-weight: 900;
 }
 
@@ -6522,26 +6434,38 @@ button:active,
 }
 
 .total-pct-val {
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   font-weight: 900;
-  color: var(--accent, #6366f1);
+  color: #3730a3;
   background: rgba(99, 102, 241, 0.12);
-  padding: 3px 9px;
-  border-radius: 10px;
+  padding: 2.5px 8px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.dark-mode .total-pct-val {
+  color: #a5b4fc;
+  background: rgba(99, 102, 241, 0.2);
 }
 
 .btn-save-marks {
-  padding: 9px 18px;
-  font-size: 0.84rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  font-size: 0.82rem;
   font-weight: 800;
-  white-space: nowrap;
-  background: linear-gradient(135deg, var(--accent, #6366f1), #8b5cf6);
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
   color: #ffffff;
   border: none;
   border-radius: var(--r-md, 8px);
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
   transition: all 0.2s ease;
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .btn-save-marks:hover {
@@ -6549,14 +6473,16 @@ button:active,
   box-shadow: 0 4px 14px rgba(99, 102, 241, 0.38);
 }
 
-/* 7. CGPA Multi-Semester Table */
+/* ── 7. CGPA MULTI-SEMESTER TABLE ─────────────────────────── */
 .cgpa-multi-section {
   background: var(--bg-card, #ffffff);
-  border: 1px solid var(--border, #e2e8f0);
+  border: 1.5px solid var(--border, #e2e8f0);
   border-radius: var(--r-xl, 14px);
-  padding: 22px;
-  margin-top: 30px;
+  padding: 20px;
+  margin-top: 26px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .dark-mode .cgpa-multi-section {
@@ -6566,14 +6492,14 @@ button:active,
 }
 
 .cgpa-head {
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .cgpa-h3 {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 800;
-  color: var(--text-dark, #0f172a);
-  margin-bottom: 4px;
+  color: #0f172a;
+  margin-bottom: 3px;
 }
 
 .dark-mode .cgpa-h3 {
@@ -6581,30 +6507,35 @@ button:active,
 }
 
 .cgpa-sub {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--text-mid, #64748b);
   margin: 0;
 }
 
 .cgpa-table-wrap {
   overflow-x: auto;
+  width: 100%;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
 }
 
 .cgpa-table {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  font-size: 0.88rem;
+  font-size: 0.84rem;
 }
 
 .cgpa-table th {
-  padding: 10px 14px;
+  padding: 9px 12px;
   font-weight: 800;
   color: var(--text-mid, #64748b);
   border-bottom: 2px solid var(--border, #e2e8f0);
   text-transform: uppercase;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   letter-spacing: 0.03em;
+  white-space: nowrap;
 }
 
 .dark-mode .cgpa-table th {
@@ -6612,9 +6543,10 @@ button:active,
 }
 
 .cgpa-table td {
-  padding: 12px 14px;
+  padding: 10px 12px;
   border-bottom: 1px solid var(--border, #e2e8f0);
-  color: var(--text-dark, #1e293b);
+  color: #1e293b;
+  white-space: nowrap;
 }
 
 .dark-mode .cgpa-table td {
@@ -6631,67 +6563,382 @@ button:active,
 }
 
 .active-sem-tag {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 800;
-  color: var(--accent, #6366f1);
+  color: #6366f1;
   background: rgba(99, 102, 241, 0.12);
   padding: 2px 6px;
-  border-radius: 8px;
+  border-radius: 6px;
   margin-left: 6px;
 }
 
 /* ============================================================
    MOBILE RESPONSIVENESS (Screens <= 768px)
+   Zero horizontal overflow · 100% stackable UX
    ============================================================ */
 @media (max-width: 768px) {
+  /* 1. Compact 3-Column Top Stat Bar */
   .marks-summary-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
   }
 
+  .marks-stat-card {
+    padding: 10px 8px;
+    border-radius: var(--r-lg, 10px);
+  }
+
+  .marks-stat-head {
+    gap: 5px;
+    margin-bottom: 5px;
+  }
+
+  .marks-stat-icon {
+    width: 22px;
+    height: 22px;
+    font-size: 0.72rem;
+    border-radius: 6px;
+  }
+
+  .marks-stat-title {
+    font-size: 0.64rem;
+  }
+
+  .marks-big-val {
+    font-size: 1.2rem;
+  }
+
+  .marks-sub-label {
+    font-size: 0.65rem;
+    padding: 1px 5px;
+  }
+
+  .marks-stat-foot {
+    font-size: 0.6rem;
+  }
+
+  /* 2. Compact Backtracker Engine */
   .target-backtracker-card {
-    padding: 16px;
+    padding: 12px;
+    border-radius: var(--r-lg, 12px);
+    margin-bottom: 14px;
   }
 
   .target-head {
     flex-direction: column;
     align-items: stretch;
-    gap: 12px;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .target-title-wrap {
+    gap: 8px;
+  }
+
+  .target-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+  }
+
+  .target-h2 {
+    font-size: 0.92rem;
+  }
+
+  .target-sub {
+    font-size: 0.7rem;
   }
 
   .target-input-badge {
+    padding: 6px 8px;
     justify-content: space-between;
+    width: 100%;
+  }
+
+  .target-label {
+    font-size: 0.72rem;
+  }
+
+  .target-spi-select {
+    font-size: 0.78rem !important;
+    padding: 4px 6px !important;
+    min-width: 140px;
+    max-width: 100%;
+  }
+
+  .target-suggestion-box {
+    padding: 8px 10px !important;
+    font-size: 0.75rem !important;
+    line-height: 1.4 !important;
+    margin-bottom: 10px !important;
+    gap: 8px !important;
+  }
+
+  .target-sugg-icon {
+    font-size: 1.05rem;
   }
 
   .target-cards-row {
-    grid-template-columns: 1fr;
-    gap: 10px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
   }
 
+  .target-mini-card {
+    padding: 7px 6px !important;
+    border-radius: 8px !important;
+    gap: 2px !important;
+  }
+
+  .target-mini-label {
+    font-size: 0.58rem !important;
+  }
+
+  .target-mini-val {
+    font-size: 1.02rem !important;
+  }
+
+  .target-mini-sub {
+    font-size: 0.58rem !important;
+  }
+
+  /* 3. Sleek Stackable Subject Cards */
   .marks-subjects-grid {
     grid-template-columns: 1fr;
-    gap: 14px;
+    gap: 10px;
   }
 
+  .marks-subject-card {
+    border-radius: var(--r-lg, 12px);
+  }
+
+  .marks-card-head {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .marks-sub-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 0.95rem;
+    border-radius: 7px;
+  }
+
+  .marks-sub-name {
+    font-size: 0.84rem;
+    margin-bottom: 2px;
+  }
+
+  .sub-meta-pill {
+    font-size: 0.58rem;
+    padding: 1px 4px;
+  }
+
+  .grade-badge-pill {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+  }
+
+  .pass-fail-text {
+    font-size: 0.56rem;
+  }
+
+  .marks-card-body-inner {
+    padding: 10px 12px 14px 12px;
+  }
+
+  .marks-target-advisor {
+    padding: 7px 9px;
+    font-size: 0.72rem;
+    margin-bottom: 8px;
+    gap: 5px;
+  }
+
+  .target-chip {
+    font-size: 0.64rem;
+    padding: 2px 5px;
+  }
+
+  .internal-block {
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+  }
+
+  .internal-toggle-row {
+    margin-bottom: 6px;
+  }
+
+  .internal-title {
+    font-size: 0.74rem;
+  }
+
+  .switch-slider {
+    width: 28px;
+    height: 16px;
+  }
+
+  .switch-slider::before {
+    width: 10px;
+    height: 10px;
+    left: 3px;
+    bottom: 3px;
+  }
+
+  .switch-input:checked + .switch-slider::before {
+    transform: translateX(12px);
+  }
+
+  /* 3-Column Compact Breakdown Grid */
   .marks-input-row {
-    grid-template-columns: 1fr;
-    gap: 10px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
   }
 
+  /* 2-Column Compact Practical & ESE Grid */
   .marks-component-grid {
-    grid-template-columns: 1fr;
-    gap: 10px;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 8px;
   }
 
+  .marks-field-group {
+    gap: 3px;
+  }
+
+  .field-label {
+    font-size: 0.64rem;
+  }
+
+  .field-benchmark-badge {
+    font-size: 0.55rem;
+    padding: 1px 3px;
+  }
+
+  .marks-num-input {
+    padding: 5px 6px;
+    font-size: 0.85rem;
+    height: 32px;
+    border-radius: 6px;
+  }
+
+  .marks-num-input::placeholder {
+    font-size: 0.68rem;
+  }
+
+  /* 4. Perfect Full-Width Stacked Footer for Mobile */
   .marks-card-footer {
+    display: flex;
     flex-direction: column;
     align-items: stretch;
-    gap: 12px;
+    gap: 8px;
+    padding-top: 8px;
+    width: 100%;
+  }
+
+  .marks-footer-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  .total-score-val {
+    font-size: 0.76rem;
+  }
+
+  .total-score-val strong {
+    font-size: 0.94rem;
+  }
+
+  .total-pct-val {
+    font-size: 0.84rem;
+    padding: 2px 6px;
   }
 
   .btn-save-marks {
     width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     text-align: center;
-    padding: 12px;
+    padding: 9px 12px;
+    font-size: 0.78rem;
+    border-radius: 6px;
+  }
+
+  /* 5. Compact CGPA Multi-Semester Table */
+  .cgpa-multi-section {
+    padding: 12px 10px;
+    margin-top: 14px;
+    border-radius: var(--r-lg, 12px);
+  }
+
+  .cgpa-h3 {
+    font-size: 0.92rem;
+  }
+
+  .cgpa-sub {
+    font-size: 0.7rem;
+  }
+
+  .cgpa-table th {
+    padding: 5px 6px;
+    font-size: 0.6rem;
+  }
+
+  .cgpa-table td {
+    padding: 7px 6px;
+    font-size: 0.72rem;
+  }
+
+  .active-sem-tag {
+    font-size: 0.58rem;
+    padding: 1px 3px;
+  }
+}
+
+/* Extra Small Mobile (<= 380px) */
+@media (max-width: 380px) {
+  .marks-summary-grid {
+    gap: 4px;
+  }
+
+  .marks-stat-card {
+    padding: 8px 5px;
+  }
+
+  .marks-big-val {
+    font-size: 1.05rem;
+  }
+
+  .marks-stat-title {
+    font-size: 0.58rem;
+  }
+
+  .target-cards-row {
+    gap: 3px;
+  }
+
+  .target-mini-card {
+    padding: 5px 4px !important;
+  }
+
+  .target-mini-val {
+    font-size: 0.88rem !important;
+  }
+
+  .marks-input-row {
+    gap: 3px;
+  }
+
+  .marks-component-grid {
+    gap: 4px;
+  }
+
+  .marks-num-input {
+    padding: 4px 5px;
+    font-size: 0.8rem;
+    height: 30px;
   }
 }
