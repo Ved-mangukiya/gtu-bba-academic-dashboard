@@ -215,13 +215,26 @@
           <div class="target-title-wrap">
             <span class="target-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></span>
             <div>
-              <h2 class="target-h2">Target Score & Backtracker Engine</h2>
-              <p class="target-sub">Set your target SPI goal and reverse-calculate minimum ESE & internal marks needed.</p>
+              <h2 class="target-h2">Target Score & Dynamic Backtracker Engine</h2>
+              <p class="target-sub">Select your target CGPA/SPI goal. Shortfalls in any component automatically rebalance remaining targets.</p>
             </div>
           </div>
           <div class="target-input-badge">
-            <label for="targetSpiInput" class="target-label">Target SPI:</label>
-            <input type="number" id="targetSpiInput" class="target-spi-field" min="4.0" max="10.0" step="0.1" value="8.5" oninput="App.onTargetSpiChange(this.value)" />
+            <label for="targetSpiSelect" class="target-label">Target SPI / CGPA:</label>
+            <select id="targetSpiSelect" class="target-spi-select" onchange="App.onTargetSpiChange(this.value)">
+              <option value="10.0">10.0 SPI — Grade AA (Outstanding · 85%+)</option>
+              <option value="9.5">9.5 SPI — Distinction (85%+)</option>
+              <option value="9.0">9.0 SPI — Grade AB (Excellent · 80%+)</option>
+              <option value="8.5" selected>8.5 SPI — Grade AB (Very Good · 75%+)</option>
+              <option value="8.0">8.0 SPI — Grade BB (Good · 70%+)</option>
+              <option value="7.5">7.5 SPI — Grade BB (Above Avg · 65%+)</option>
+              <option value="7.0">7.0 SPI — Grade BC (Average · 60%+)</option>
+              <option value="6.5">6.5 SPI — Grade BC (Fair · 55%+)</option>
+              <option value="6.0">6.0 SPI — Grade CC (Satisfactory · 50%+)</option>
+              <option value="5.5">5.5 SPI — Grade CC (Passing · 45%+)</option>
+              <option value="5.0">5.0 SPI — Grade CD (Pass · 40%+)</option>
+              <option value="4.0">4.0 SPI — Grade DD (Minimum Pass · 35%+)</option>
+            </select>
           </div>
         </div>
 
@@ -255,7 +268,12 @@
             <h2 class="section-h2">Subject Marks & Internal Breakdown</h2>
             <span class="section-badge">6 GTU Subjects</span>
           </div>
-          <button class="btn btn-ghost btn-sm" onclick="App.resetAllMarks()">🔄 Reset Marks</button>
+          <div class="section-title-actions">
+            <button class="btn btn-guide btn-sm" onclick="App.openGtuGuideModal()" title="View GTU marking scheme & animated formula explanation">
+              <span class="guide-sparkle">✨</span> How GTU Grading & SPI Works
+            </button>
+            <button class="btn btn-ghost btn-sm" onclick="App.resetAllMarks()">🔄 Reset Marks</button>
+          </div>
         </div>
 
         <!-- SUBJECT MARKS GRID -->
@@ -451,6 +469,205 @@
       <div class="modal-btns">
         <button class="btn btn-ghost" onclick="App.closeConfirm(false)" id="confirmCancelBtn">Cancel</button>
         <button class="btn btn-accent" onclick="App.closeConfirm(true)" id="confirmYesBtn">Yes, Proceed</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GTU GRADING & RESULT INTERACTIVE GUIDE MODAL -->
+  <div class="overlay" id="gtuGuideModal">
+    <div class="modal modal-gtu-guide">
+      <div class="modal-head">
+        <div class="guide-head-title">
+          <span class="guide-icon">🎓</span>
+          <div>
+            <h3>How GTU BBA Grading & Results Are Made</h3>
+            <p class="guide-head-sub">GTU Evaluation Scheme, Letter Grades, SPI Formula & Dynamic Rebalancing</p>
+          </div>
+        </div>
+        <button class="modal-close" onclick="App.closeModal('gtuGuideModal')">✕</button>
+      </div>
+
+      <div class="guide-body">
+        <!-- STEP 1: Component Breakdown & Weightages -->
+        <div class="guide-step-card">
+          <div class="guide-step-badge">Step 1</div>
+          <h4 class="guide-step-h4">Evaluation Components & Credit Weightages</h4>
+          <p class="guide-step-desc">Each GTU BBA subject is evaluated out of 100% marks divided into 3 distinct components:</p>
+
+          <div class="guide-breakdown-grid">
+            <div class="breakdown-card">
+              <div class="breakdown-head">
+                <span class="breakdown-pill pill-4c">4-Credit Subjects (Max 150)</span>
+                <span class="breakdown-sub-text">PPM, FA, BSL, ENG</span>
+              </div>
+              <ul class="breakdown-list">
+                <li><span class="dot dot-blue"></span> <strong>ESE University Exam:</strong> 70 Marks (Min 25/70 needed)</li>
+                <li><span class="dot dot-green"></span> <strong>Practical / Viva / Report:</strong> 50 Marks</li>
+                <li><span class="dot dot-purple"></span> <strong>College Internal:</strong> 30 Marks (Mid 20 + Att 5 + Beh 5)</li>
+              </ul>
+            </div>
+
+            <div class="breakdown-card">
+              <div class="breakdown-head">
+                <span class="breakdown-pill pill-2c">2-Credit Subjects (Max 100)</span>
+                <span class="breakdown-sub-text">IKS, ESG</span>
+              </div>
+              <ul class="breakdown-list">
+                <li><span class="dot dot-blue"></span> <strong>ESE University Exam:</strong> 50 Marks (Min 18/50 needed)</li>
+                <li><span class="dot dot-green"></span> <strong>Practical / Activity:</strong> 20 Marks</li>
+                <li><span class="dot dot-purple"></span> <strong>College Internal:</strong> 30 Marks (Mid 20 + Att 5 + Beh 5)</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="guide-alert-box">
+            <strong>⚠️ Mandatory GTU Passing Rule:</strong> A student must secure at least <strong>35% in the ESE paper</strong> (25/70 in 4-credit, 18/50 in 2-credit) AND at least <strong>35% aggregate overall</strong> to pass. Failing ESE marks directly awards an <strong>FF Grade (0 Grade Points)</strong>.
+          </div>
+        </div>
+
+        <!-- STEP 2: GTU 10-Point Grade Matrix -->
+        <div class="guide-step-card">
+          <div class="guide-step-badge">Step 2</div>
+          <h4 class="guide-step-h4">GTU 10-Point Letter Grading Scale</h4>
+          <div class="gtu-scale-table-wrap">
+            <table class="gtu-scale-table">
+              <thead>
+                <tr>
+                  <th>Percentage</th>
+                  <th>Grade</th>
+                  <th>Grade Points (GP)</th>
+                  <th>Performance</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="row-AA"><td>85% – 100%</td><td><span class="grade-pill grade-AA">AA</span></td><td><strong>10</strong></td><td>Outstanding</td></tr>
+                <tr class="row-AB"><td>75% – 84.99%</td><td><span class="grade-pill grade-AB">AB</span></td><td><strong>9</strong></td><td>Excellent</td></tr>
+                <tr class="row-BB"><td>65% – 74.99%</td><td><span class="grade-pill grade-BB">BB</span></td><td><strong>8</strong></td><td>Very Good</td></tr>
+                <tr class="row-BC"><td>55% – 64.99%</td><td><span class="grade-pill grade-BC">BC</span></td><td><strong>7</strong></td><td>Good</td></tr>
+                <tr class="row-CC"><td>45% – 54.99%</td><td><span class="grade-pill grade-CC">CC</span></td><td><strong>6</strong></td><td>Fair / Average</td></tr>
+                <tr class="row-CD"><td>40% – 44.99%</td><td><span class="grade-pill grade-CD">CD</span></td><td><strong>5</strong></td><td>Pass</td></tr>
+                <tr class="row-DD"><td>35% – 39.99%</td><td><span class="grade-pill grade-DD">DD</span></td><td><strong>4</strong></td><td>Minimum Pass</td></tr>
+                <tr class="row-FF"><td>&lt; 35% or ESE &lt; 35%</td><td><span class="grade-pill grade-FF">FF</span></td><td><strong>0</strong></td><td>Fail (Re-attempt)</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- STEP 3: Animated Formula & SPI/CGPA Calculation -->
+        <div class="guide-step-card">
+          <div class="guide-step-badge">Step 3</div>
+          <h4 class="guide-step-h4">How Semester SPI & CGPA Are Calculated</h4>
+          
+          <div class="formula-card">
+            <div class="formula-title">Semester Performance Index (SPI) Formula:</div>
+            <div class="formula-math-box">
+              <span class="formula-eq">$$\text{SPI} = \frac{\sum (\text{Subject Credits } C_i \times \text{Grade Point } GP_i)}{\sum \text{Total Semester Credits } (20)}$$</span>
+            </div>
+            <p class="formula-explain">4-Credit subjects carry <strong>double the weight (4×)</strong> of 2-Credit subjects (2×). Scoring an AA (10 GP) in a 4-credit subject contributes 40 credit points, while in a 2-credit subject it contributes 20 points.</p>
+          </div>
+        </div>
+
+        <!-- STEP 4: Interactive Live Simulator with Animations -->
+        <div class="guide-step-card sim-card-wrap">
+          <div class="guide-step-badge">Step 4 · Interactive Simulator</div>
+          <h4 class="guide-step-h4">Interactive GTU Calculation Simulator</h4>
+          <p class="guide-step-desc">Test different marks and watch the live calculation animate letter grades, credit points, and final SPI in real time:</p>
+
+          <div class="sim-presets-row">
+            <span class="sim-preset-label">Test Presets:</span>
+            <button class="sim-preset-btn" onclick="App.setSimulatorPreset('aa')">🌟 Target 10.0 SPI (AA)</button>
+            <button class="sim-preset-btn active" onclick="App.setSimulatorPreset('ab')">🎯 Target 8.5 SPI (AB)</button>
+            <button class="sim-preset-btn" onclick="App.setSimulatorPreset('bb')">📈 Target 7.5 SPI (BB)</button>
+            <button class="sim-preset-btn" onclick="App.setSimulatorPreset('pass_edge')">⚠️ Minimum Pass (DD)</button>
+          </div>
+
+          <div class="sim-grid">
+            <!-- Sample 4-Credit Subject -->
+            <div class="sim-sub-card">
+              <div class="sim-sub-head">
+                <span class="sim-sub-title">Sample 4-Credit Subject (Max 150)</span>
+                <span class="sim-badge" id="sim4Grade">AB (9 GP)</span>
+              </div>
+              <div class="sim-inputs-grid">
+                <div class="sim-field">
+                  <label>Mid (20)</label>
+                  <input type="number" min="0" max="20" value="18" oninput="App.updateSimulator('c4Mid', this.value)" />
+                </div>
+                <div class="sim-field">
+                  <label>Att (5)</label>
+                  <input type="number" min="0" max="5" value="5" oninput="App.updateSimulator('c4Att', this.value)" />
+                </div>
+                <div class="sim-field">
+                  <label>Beh (5)</label>
+                  <input type="number" min="0" max="5" value="4" oninput="App.updateSimulator('c4Beh', this.value)" />
+                </div>
+                <div class="sim-field">
+                  <label>Pract (50)</label>
+                  <input type="number" min="0" max="50" value="42" oninput="App.updateSimulator('c4Pract', this.value)" />
+                </div>
+                <div class="sim-field">
+                  <label>ESE (70)</label>
+                  <input type="number" min="0" max="70" value="55" oninput="App.updateSimulator('c4Ese', this.value)" />
+                </div>
+              </div>
+              <div class="sim-sub-foot">
+                <span>Score: <strong id="sim4Total">124 / 150</strong> (<span id="sim4Pct">82.7%</span>)</span>
+                <span id="sim4Cp" class="sim-cp-tag">4c × 9 = 36 pts</span>
+              </div>
+            </div>
+
+            <!-- Sample 2-Credit Subject -->
+            <div class="sim-sub-card">
+              <div class="sim-sub-head">
+                <span class="sim-sub-title">Sample 2-Credit Subject (Max 100)</span>
+                <span class="sim-badge" id="sim2Grade">AB (9 GP)</span>
+              </div>
+              <div class="sim-inputs-grid">
+                <div class="sim-field">
+                  <label>Mid (20)</label>
+                  <input type="number" min="0" max="20" value="18" oninput="App.updateSimulator('c2Mid', this.value)" />
+                </div>
+                <div class="sim-field">
+                  <label>Att (5)</label>
+                  <input type="number" min="0" max="5" value="4" oninput="App.updateSimulator('c2Att', this.value)" />
+                </div>
+                <div class="sim-field">
+                  <label>Beh (5)</label>
+                  <input type="number" min="0" max="5" value="4" oninput="App.updateSimulator('c2Beh', this.value)" />
+                </div>
+                <div class="sim-field">
+                  <label>Pract (20)</label>
+                  <input type="number" min="0" max="20" value="17" oninput="App.updateSimulator('c2Pract', this.value)" />
+                </div>
+                <div class="sim-field">
+                  <label>ESE (50)</label>
+                  <input type="number" min="0" max="50" value="39" oninput="App.updateSimulator('c2Ese', this.value)" />
+                </div>
+              </div>
+              <div class="sim-sub-foot">
+                <span>Score: <strong id="sim2Total">82 / 100</strong> (<span id="sim2Pct">82.0%</span>)</span>
+                <span id="sim2Cp" class="sim-cp-tag">2c × 9 = 18 pts</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Animated Result Outcome Card -->
+          <div class="sim-result-box">
+            <div class="sim-result-left">
+              <span class="sim-result-label">Calculated Sem 1 SPI</span>
+              <span class="sim-spi-val" id="simResultSpi">8.50</span>
+            </div>
+            <div class="sim-result-right">
+              <span class="sim-result-title">Weighted Credit Calculation:</span>
+              <div class="sim-formula-text" id="simResultFormula">(4 × 36 + 2 × 18) ÷ 20 Credits = <strong>8.50 SPI</strong></div>
+              <span class="sim-degree-tag">🎓 Result Equivalent: First Class with Distinction (AB Grade)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-btns">
+        <button class="btn btn-accent btn-full" onclick="App.closeModal('gtuGuideModal')">Got it, Let's Track Marks!</button>
       </div>
     </div>
   </div>

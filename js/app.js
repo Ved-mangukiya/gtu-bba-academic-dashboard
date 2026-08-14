@@ -241,19 +241,71 @@ const App = (() => {
     }).join('');
   }
 
-  // ── Actions ────────────────────────────────────────────
+  // ── Actions (Optimistic In-Place Updates) ─────────────
+  function updateSubjectCardMiniProgress(subId) {
+    const subCard = document.querySelector(`.subject-card[data-id="${subId}"]`);
+    if (!subCard) return;
+    const s = data.subjects.find(x => x.id === subId);
+    if (!s) return;
+    let stotal = 0, sdl = 0, spr = 0;
+    if (s.units && Array.isArray(s.units)) {
+      s.units.forEach(u => {
+        if (u && Array.isArray(u.parts)) {
+          u.parts.forEach(p => { stotal++; if (p.downloaded) sdl++; if (p.printed) spr++; });
+        }
+      });
+    }
+    const spct = stotal ? Math.round((sdl / stotal) * 100) : 0;
+    const sprPct = stotal ? Math.round((spr / stotal) * 100) : 0;
+    const miniDl = subCard.querySelector('.mini-bar-dl');
+    const miniPr = subCard.querySelector('.mini-bar-pr');
+    const miniPct = subCard.querySelector('.mini-pct');
+    if (miniDl) miniDl.style.width = spct + '%';
+    if (miniPr) miniPr.style.width = sprPct + '%';
+    if (miniPct) miniPct.textContent = spct + '%';
+  }
+
   function toggleDl(subId, unitId, partId) {
     const { p } = find(subId, unitId, partId);
     if (!p) return;
     p.downloaded = !p.downloaded;
-    persist(); render();
+    persist();
+
+    // Optimistic DOM updates (Instant Feedback)
+    const partCard = document.querySelector(`.part-card[data-part-id="${partId}"]`);
+    if (partCard) {
+      partCard.classList.toggle('done', p.downloaded);
+      const dlBtn = partCard.querySelector('.ck-dl');
+      if (dlBtn) {
+        dlBtn.classList.toggle('checked', p.downloaded);
+        dlBtn.innerHTML = p.downloaded ? `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>` : '';
+        dlBtn.title = p.downloaded ? 'Mark as Pending' : 'Mark as Downloaded';
+      }
+    }
+    updateStats();
+    renderReadinessGrid();
+    updateSubjectCardMiniProgress(subId);
   }
 
   function togglePr(subId, unitId, partId) {
     const { p } = find(subId, unitId, partId);
     if (!p) return;
     p.printed = !p.printed;
-    persist(); render();
+    persist();
+
+    // Optimistic DOM updates (Instant Feedback)
+    const partCard = document.querySelector(`.part-card[data-part-id="${partId}"]`);
+    if (partCard) {
+      partCard.classList.toggle('printed', p.printed);
+      const prBtn = partCard.querySelector('.ck-pr');
+      if (prBtn) {
+        prBtn.classList.toggle('checked', p.printed);
+        prBtn.title = p.printed ? 'Mark as Unprinted' : 'Mark as Printed';
+      }
+    }
+    updateStats();
+    renderReadinessGrid();
+    updateSubjectCardMiniProgress(subId);
   }
 
   function markUnitDl(subId, unitId) {
@@ -261,7 +313,8 @@ const App = (() => {
     if (!u || !Array.isArray(u.parts)) return;
     const allDl = u.parts.every(p => p.downloaded);
     u.parts.forEach(p => { p.downloaded = !allDl; });
-    persist(); render();
+    persist();
+    render();
   }
 
   function toggleSubject(subId) {
@@ -368,8 +421,10 @@ const App = (() => {
       const num = parseFloat(value);
       s.marks[fieldKey] = isNaN(num) ? null : Math.max(0, num);
     }
-    persist();
-    MarksHub.renderMarksHub();
+    // Optimistic debounced save (Immediate LocalStorage + 400ms Throttled Firebase Sync)
+    Cloud.saveDebounced(data, 400);
+    // Surgical In-Place DOM Update — Keeps <input> focused & mobile keyboard open!
+    MarksHub.updateSubjectCardLive(subId);
   }
 
   function onTargetSpiChange(val) {
@@ -378,7 +433,7 @@ const App = (() => {
     if (!data.settings) data.settings = {};
     data.settings.targetSpi = Math.min(Math.max(targetVal, 4.0), 10.0);
     persist();
-    MarksHub.renderTargetBacktracker();
+    MarksHub.renderMarksHub();
   }
 
   function resetAllMarks() {
@@ -681,7 +736,10 @@ const App = (() => {
     toggleLumpsumMode,
     onMarksInput,
     onTargetSpiChange,
-    resetAllMarks
+    resetAllMarks,
+    openGtuGuideModal: () => MarksHub.openGtuGuideModal(),
+    updateSimulator: (f, v) => MarksHub.updateSimulator(f, v),
+    setSimulatorPreset: (p) => MarksHub.setSimulatorPreset(p)
   };
 
 })();
