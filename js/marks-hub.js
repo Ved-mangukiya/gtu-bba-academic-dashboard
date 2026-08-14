@@ -93,13 +93,20 @@ const MarksHub = (() => {
     };
   }
 
+  let activeMarksSem = 1;
+
+  function setActiveMarksSem(sem) {
+    activeMarksSem = sem;
+    renderMarksHub();
+  }
+
   function calcOverallMarksStats() {
     const data = d();
-    const sem1Subs = (data.subjects || []).filter(s => (s.sem || 1) === 1);
+    const semSubs = (data.subjects || []).filter(s => (s.sem || 1) === activeMarksSem);
 
     let totalObtained = 0, totalMaxMarks = 0, weightedGpSum = 0, totalCreditsSum = 0, failCount = 0;
 
-    sem1Subs.forEach(s => {
+    semSubs.forEach(s => {
       const res = calcSubjectMarks(s);
       totalObtained += res.totalScore;
       totalMaxMarks += res.maxMarks;
@@ -275,7 +282,7 @@ const MarksHub = (() => {
     // 4. Footer Total & Percentage
     const totalScoreVal = cardEl.querySelector('.total-score-val');
     if (totalScoreVal) {
-      totalScoreVal.textContent = `Subject Total: ${res.totalScore} / ${res.maxMarks}`;
+      totalScoreVal.innerHTML = `Subject Total: <strong>${res.totalScore} / ${res.maxMarks}</strong>`;
     }
     const totalPctVal = cardEl.querySelector('.total-pct-val');
     if (totalPctVal) {
@@ -397,123 +404,182 @@ const MarksHub = (() => {
     }
   }
 
+  const expandedMarksSubs = new Set();
+
+  function toggleMarksSubject(subId) {
+    if (expandedMarksSubs.has(subId)) {
+      expandedMarksSubs.delete(subId);
+    } else {
+      expandedMarksSubs.add(subId);
+    }
+    const card = document.querySelector(`.marks-subject-card[data-sub-id="${subId}"]`);
+    if (card) {
+      card.classList.toggle('open', expandedMarksSubs.has(subId));
+    }
+  }
+
   // ── FULL RENDER (Used on tab switch / reset) ──────────────
   function renderMarksHub() {
     renderTargetBacktracker();
 
     const data = d();
     const targetSpi = (data.settings && typeof data.settings.targetSpi === 'number') ? data.settings.targetSpi : 8.5;
-    const sem1Subs = (data.subjects || []).filter(s => (s.sem || 1) === 1);
+    
+    // Get visible semesters from settings (which are controlled by PDF Tracker tabs)
+    const visibleSems = (data.settings && Array.isArray(data.settings.visibleSems)) ? data.settings.visibleSems : [1, 2, 3, 4, 5, 6];
+    
+    // Auto-select the first visible semester if activeMarksSem is not visible
+    if (!visibleSems.includes(activeMarksSem)) {
+      activeMarksSem = visibleSems.length ? visibleSems[0] : 1;
+    }
+
+    const marksSemFiltersEl = document.getElementById('marksSemFilters');
+    if (marksSemFiltersEl) {
+      marksSemFiltersEl.innerHTML = visibleSems.map(sem => `
+        <button class="pill ${sem === activeMarksSem ? 'active' : ''}" onclick="MarksHub.setActiveMarksSem(${sem})">
+          Semester ${sem}
+        </button>
+      `).join('');
+    }
+
+    const semSubs = (data.subjects || []).filter(s => (s.sem || 1) === activeMarksSem);
     const container = document.getElementById('marksSubjectsContainer');
 
     if (container) {
-      container.innerHTML = sem1Subs.map(s => {
-        const m = s.marks || {};
-        const res = calcSubjectMarks(s);
-        const dynTarget = calcDynamicSubjectTargets(s, targetSpi);
-        const isLumpsum = !!m.isLumpsum;
-        const icon = App.getSubjectIcon(s.code, s.colorIndex || 0);
-        const esc = App.esc;
+      if (semSubs.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state-card" style="grid-column: 1 / -1; text-align: center; padding: 48px 20px; background: var(--bg-card); border-radius: var(--r-xl); border: 2px dashed var(--border);">
+            <div style="font-size: 2.8rem; margin-bottom: 10px;">📋</div>
+            <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-dark); margin-bottom: 6px;">No Subjects in Semester ${activeMarksSem} Yet</h3>
+            <p style="font-size: 0.84rem; color: var(--text-mid); max-width: 440px; margin: 0 auto 18px; line-height: 1.5;">
+              Add your GTU Semester ${activeMarksSem} subjects to record marks, calculate SPI, and balance shortfall targets across your 3-year degree.
+            </p>
+            <button class="btn btn-accent btn-sm" onclick="App.openAddSubjectModal(${activeMarksSem})">
+              ➕ Add Subject for Sem ${activeMarksSem}
+            </button>
+          </div>
+        `;
+      } else {
+        container.innerHTML = semSubs.map(s => {
+          const m = s.marks || {};
+          const res = calcSubjectMarks(s);
+          const dynTarget = calcDynamicSubjectTargets(s, targetSpi);
+          const isLumpsum = !!m.isLumpsum;
+          const icon = App.getSubjectIcon(s.code, s.colorIndex || 0);
+          const esc = App.esc;
+          const isOpen = expandedMarksSubs.has(s.id);
 
         return `
-          <div class="marks-subject-card" data-sub-id="${s.id}">
-            <div class="marks-card-head">
+          <div class="marks-subject-card ${isOpen ? 'open' : ''}" data-sub-id="${s.id}">
+            <div class="marks-card-head" onclick="MarksHub.toggleMarksSubject('${s.id}')">
               <div class="marks-head-info">
                 <div class="marks-sub-icon">${icon}</div>
-                <div>
+                <div class="marks-head-text">
                   <h3 class="marks-sub-name">${esc(s.name)}</h3>
                   <div class="marks-sub-meta">
                     <span class="sub-meta-pill">${esc(s.code)}</span>
-                    <span class="sub-meta-pill">${res.credits} Credits</span>
+                    <span class="sub-meta-pill">${res.credits} Credits · ${(res.credits === 2 ? '3 Units' : '5 Units')}</span>
                     <span class="sub-meta-pill">Max ${res.maxMarks}</span>
                   </div>
                 </div>
               </div>
-              <div class="marks-head-status">
-                <span class="grade-badge-pill grade-${res.grade}">${res.grade} (${res.gp})</span>
-                <span class="pass-fail-text ${res.pass ? 'text-pass' : 'text-fail'}">${res.pass ? 'PASS' : 'FAIL'}</span>
+              <div class="marks-head-right">
+                <div class="marks-head-status">
+                  <span class="grade-badge-pill grade-${res.grade}">${res.grade} (${res.gp})</span>
+                  <span class="pass-fail-text ${res.pass ? 'text-pass' : 'text-fail'}">${res.pass ? 'PASS' : 'FAIL'}</span>
+                </div>
+                <span class="marks-chevron">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </span>
               </div>
             </div>
 
-            <!-- Dynamic Target & Shortfall Balancer Card Header -->
-            <div class="marks-target-advisor advisor-${dynTarget.adviceType}">
-              ${dynTarget.adviceHtml}
-            </div>
-
-            <div class="internal-block">
-              <div class="internal-toggle-row">
-                <span class="internal-title">Internal Score (${res.internalTotal} / ${res.maxInternal})</span>
-                <label class="switch-toggle-wrap" title="Toggle Lumpsum mode">
-                  <span class="switch-label">${isLumpsum ? 'Lumpsum' : 'Breakdown'}</span>
-                  <input type="checkbox" class="switch-input" ${isLumpsum ? 'checked' : ''} onchange="App.toggleLumpsumMode('${s.id}')" />
-                  <span class="switch-slider"></span>
-                </label>
+            <div class="marks-card-body">
+              <!-- Dynamic Target & Shortfall Balancer Card Header -->
+              <div class="marks-target-advisor advisor-${dynTarget.adviceType}">
+                ${dynTarget.adviceHtml}
               </div>
 
-              ${isLumpsum ? `
+              <div class="internal-block">
+                <div class="internal-toggle-row">
+                  <span class="internal-title">Internal Score (${res.internalTotal} / ${res.maxInternal})</span>
+                  <label class="switch-toggle-wrap" title="Toggle Lumpsum mode">
+                    <span class="switch-label">${isLumpsum ? 'Lumpsum' : 'Breakdown'}</span>
+                    <input type="checkbox" class="switch-input" ${isLumpsum ? 'checked' : ''} onchange="App.toggleLumpsumMode('${s.id}')" />
+                    <span class="switch-slider"></span>
+                  </label>
+                </div>
+
+                ${isLumpsum ? `
+                  <div class="marks-field-group">
+                    <div class="field-label-row">
+                      <label class="field-label">Internal Total Marks (Max ${res.maxInternal})</label>
+                      <span class="field-benchmark-badge">Target: ${dynTarget.baseInternal}</span>
+                    </div>
+                    <input type="number" class="marks-num-input" min="0" max="${res.maxInternal}" placeholder="0 - ${res.maxInternal}"
+                           value="${m.internalLumpsum !== null && m.internalLumpsum !== undefined ? m.internalLumpsum : ''}"
+                           oninput="App.onMarksInput('${s.id}', 'internalLumpsum', this.value)" />
+                  </div>
+                ` : `
+                  <div class="marks-input-row">
+                    <div class="marks-field-group">
+                      <div class="field-label-row">
+                        <label class="field-label">Mid-Sem (20)</label>
+                      </div>
+                      <input type="number" class="marks-num-input" min="0" max="20" placeholder="0-20"
+                             value="${m.internalMid !== null && m.internalMid !== undefined ? m.internalMid : ''}"
+                             oninput="App.onMarksInput('${s.id}', 'internalMid', this.value)" />
+                    </div>
+                    <div class="marks-field-group">
+                      <div class="field-label-row">
+                        <label class="field-label">Attend. (5)</label>
+                      </div>
+                      <input type="number" class="marks-num-input" min="0" max="5" placeholder="0-5"
+                             value="${m.internalAtt !== null && m.internalAtt !== undefined ? m.internalAtt : ''}"
+                             oninput="App.onMarksInput('${s.id}', 'internalAtt', this.value)" />
+                    </div>
+                    <div class="marks-field-group">
+                      <div class="field-label-row">
+                        <label class="field-label">Beh/Assign (5)</label>
+                      </div>
+                      <input type="number" class="marks-num-input" min="0" max="5" placeholder="0-5"
+                             value="${m.internalBeh !== null && m.internalBeh !== undefined ? m.internalBeh : ''}"
+                             oninput="App.onMarksInput('${s.id}', 'internalBeh', this.value)" />
+                    </div>
+                  </div>
+                `}
+              </div>
+
+              <div class="marks-component-grid">
                 <div class="marks-field-group">
                   <div class="field-label-row">
-                    <label class="field-label">Internal Total Marks (Max ${res.maxInternal})</label>
-                    <span class="field-benchmark-badge">Target: ${dynTarget.baseInternal}</span>
+                    <label class="field-label">Practical / Viva (Max ${res.maxPractical})</label>
+                    <span class="field-benchmark-badge">Target: ${dynTarget.basePractical}</span>
                   </div>
-                  <input type="number" class="marks-num-input" min="0" max="${res.maxInternal}" placeholder="0 - ${res.maxInternal}"
-                         value="${m.internalLumpsum !== null && m.internalLumpsum !== undefined ? m.internalLumpsum : ''}"
-                         oninput="App.onMarksInput('${s.id}', 'internalLumpsum', this.value)" />
+                  <input type="number" class="marks-num-input" min="0" max="${res.maxPractical}" placeholder="0-${res.maxPractical}"
+                         value="${m.practical !== null && m.practical !== undefined ? m.practical : ''}"
+                         oninput="App.onMarksInput('${s.id}', 'practical', this.value)" />
                 </div>
-              ` : `
-                <div class="marks-input-row">
-                  <div class="marks-field-group">
-                    <div class="field-label-row">
-                      <label class="field-label">Mid-Sem (20)</label>
-                    </div>
-                    <input type="number" class="marks-num-input" min="0" max="20" placeholder="0-20"
-                           value="${m.internalMid !== null && m.internalMid !== undefined ? m.internalMid : ''}"
-                           oninput="App.onMarksInput('${s.id}', 'internalMid', this.value)" />
+                <div class="marks-field-group">
+                  <div class="field-label-row">
+                    <label class="field-label">GTU ESE Exam (Max ${res.maxEse})</label>
+                    <span class="field-benchmark-badge">Min ${Math.ceil(res.maxEse * 0.35)} | Target: ${dynTarget.baseEse}</span>
                   </div>
-                  <div class="marks-field-group">
-                    <div class="field-label-row">
-                      <label class="field-label">Attend. (5)</label>
-                    </div>
-                    <input type="number" class="marks-num-input" min="0" max="5" placeholder="0-5"
-                           value="${m.internalAtt !== null && m.internalAtt !== undefined ? m.internalAtt : ''}"
-                           oninput="App.onMarksInput('${s.id}', 'internalAtt', this.value)" />
-                  </div>
-                  <div class="marks-field-group">
-                    <div class="field-label-row">
-                      <label class="field-label">Beh/Assign (5)</label>
-                    </div>
-                    <input type="number" class="marks-num-input" min="0" max="5" placeholder="0-5"
-                           value="${m.internalBeh !== null && m.internalBeh !== undefined ? m.internalBeh : ''}"
-                           oninput="App.onMarksInput('${s.id}', 'internalBeh', this.value)" />
-                  </div>
+                  <input type="number" class="marks-num-input" min="0" max="${res.maxEse}" placeholder="0-${res.maxEse}"
+                         value="${m.ese !== null && m.ese !== undefined ? m.ese : ''}"
+                         oninput="App.onMarksInput('${s.id}', 'ese', this.value)" />
                 </div>
-              `}
-            </div>
-
-            <div class="marks-component-grid">
-              <div class="marks-field-group">
-                <div class="field-label-row">
-                  <label class="field-label">Practical / Viva (Max ${res.maxPractical})</label>
-                  <span class="field-benchmark-badge">Target: ${dynTarget.basePractical}</span>
-                </div>
-                <input type="number" class="marks-num-input" min="0" max="${res.maxPractical}" placeholder="0-${res.maxPractical}"
-                       value="${m.practical !== null && m.practical !== undefined ? m.practical : ''}"
-                       oninput="App.onMarksInput('${s.id}', 'practical', this.value)" />
               </div>
-              <div class="marks-field-group">
-                <div class="field-label-row">
-                  <label class="field-label">GTU ESE Exam (Max ${res.maxEse})</label>
-                  <span class="field-benchmark-badge">Min ${Math.ceil(res.maxEse * 0.35)} | Target: ${dynTarget.baseEse}</span>
-                </div>
-                <input type="number" class="marks-num-input" min="0" max="${res.maxEse}" placeholder="0-${res.maxEse}"
-                       value="${m.ese !== null && m.ese !== undefined ? m.ese : ''}"
-                       oninput="App.onMarksInput('${s.id}', 'ese', this.value)" />
-              </div>
-            </div>
 
-            <div class="marks-card-footer">
-              <span class="total-score-val">Subject Total: ${res.totalScore} / ${res.maxMarks}</span>
-              <span class="total-pct-val">${res.pct.toFixed(1)}%</span>
+              <div class="marks-card-footer">
+                <div class="marks-footer-stats">
+                  <span class="total-score-val">Subject Total: <strong>${res.totalScore} / ${res.maxMarks}</strong></span>
+                  <span class="total-pct-val">${res.pct.toFixed(1)}%</span>
+                </div>
+                <button class="btn btn-accent btn-full btn-save-marks" onclick="App.saveSubjectMarks('${s.id}')">
+                  💾 Save & Sync ${s.code} Marks
+                </button>
+              </div>
             </div>
           </div>
         `;
@@ -660,6 +726,8 @@ const MarksHub = (() => {
     updateLiveSummary,
     renderTargetBacktracker,
     renderMarksHub,
+    toggleMarksSubject,
+    setActiveMarksSem,
     openGtuGuideModal,
     updateSimulator,
     setSimulatorPreset,

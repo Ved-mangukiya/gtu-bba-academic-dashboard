@@ -421,10 +421,17 @@ const App = (() => {
       const num = parseFloat(value);
       s.marks[fieldKey] = isNaN(num) ? null : Math.max(0, num);
     }
-    // Optimistic debounced save (Immediate LocalStorage + 400ms Throttled Firebase Sync)
-    Cloud.saveDebounced(data, 400);
-    // Surgical In-Place DOM Update — Keeps <input> focused & mobile keyboard open!
+    // Update local storage in-memory & surgical DOM calculation without spamming Firebase
+    saveData(data);
     MarksHub.updateSubjectCardLive(subId);
+  }
+
+  function saveSubjectMarks(subId) {
+    const s = data.subjects.find(x => x.id === subId);
+    if (!s) return;
+    persist(); // Commits to LocalStorage and triggers instant Cloud Sync
+    MarksHub.updateSubjectCardLive(subId);
+    toast(`💾 Saved & Synced ${s.code} marks to database!`);
   }
 
   function onTargetSpiChange(val) {
@@ -432,8 +439,38 @@ const App = (() => {
     if (isNaN(targetVal)) return;
     if (!data.settings) data.settings = {};
     data.settings.targetSpi = Math.min(Math.max(targetVal, 4.0), 10.0);
+    saveData(data);
+    Cloud.saveDebounced(data, 1000);
+    MarksHub.renderTargetBacktracker();
+    if (Array.isArray(data.subjects)) {
+      data.subjects.forEach(s => {
+        MarksHub.updateSubjectCardLive(s.id);
+      });
+    }
+  }
+
+  function updateStudentProfile(field, val) {
+    if (!data.settings) data.settings = {};
+    data.settings[field] = val;
+    saveData(data);
+    Cloud.saveDebounced(data, 1000);
+    toast(`Updated ${field}`);
+  }
+
+  function setCurrentSem(sem) {
+    const semNum = parseInt(sem) || 1;
+    if (!data.settings) data.settings = {};
+    data.settings.currentSem = semNum;
+    if (!Array.isArray(data.settings.visibleSems)) data.settings.visibleSems = [1];
+    if (!data.settings.visibleSems.includes(semNum)) {
+      data.settings.visibleSems.push(semNum);
+    }
     persist();
-    MarksHub.renderMarksHub();
+    render();
+    if (typeof MarksHub.setActiveMarksSem === 'function') {
+      MarksHub.setActiveMarksSem(semNum);
+    }
+    toast(`Switched active academic semester to Sem ${semNum}`);
   }
 
   function resetAllMarks() {
@@ -534,6 +571,7 @@ const App = (() => {
                 <div class="subject-meta">
                   <span class="subject-sem-badge">Sem ${orig.sem || 1}</span>
                   <span class="subject-code-badge">${esc(orig.code)}</span>
+                  <span class="subject-credits-badge">${(orig.credits || 4)} Credits · ${(orig.credits === 2 ? '3 Units' : '5 Units')}</span>
                 </div>
                 <div class="subject-name editable" contenteditable="true"
                      onfocus="this.dataset.prev=this.textContent"
@@ -585,12 +623,93 @@ const App = (() => {
 
   function openSettingsModal() {
     const m = document.getElementById('settingsModal');
-    if (m) m.classList.add('show');
+    if (!m) return;
+
+    // Populate Academic Profile fields
+    const sNameEl = document.getElementById('settingStudentName');
+    const sEnrollEl = document.getElementById('settingEnrollment');
+    const sCollegeEl = document.getElementById('settingCollege');
+    const sCurSemEl = document.getElementById('settingCurrentSem');
+    const sTargetCgpaEl = document.getElementById('settingTargetCgpa');
+    const sExamDateEl = document.getElementById('settingExamDate');
+
+    if (sNameEl) sNameEl.value = (data.settings && data.settings.studentName) || '';
+    if (sEnrollEl) sEnrollEl.value = (data.settings && data.settings.enrollmentNo) || '';
+    if (sCollegeEl) sCollegeEl.value = (data.settings && data.settings.collegeName) || '';
+    if (sCurSemEl) sCurSemEl.value = String((data.settings && data.settings.currentSem) || 1);
+    if (sTargetCgpaEl) sTargetCgpaEl.value = (data.settings && (data.settings.targetCgpa || data.settings.targetSpi)) || '8.5';
+    if (sExamDateEl) sExamDateEl.value = (data.settings && data.settings.examDate) || '';
+
+    // Populate Sem checkboxes
+    const vis = (data.settings && Array.isArray(data.settings.visibleSems)) ? data.settings.visibleSems : [1, 2, 3, 4, 5, 6];
+    for (let i = 1; i <= 6; i++) {
+      const cb = document.getElementById(`semCheck_${i}`);
+      if (cb) cb.checked = vis.includes(i);
+    }
+
+    renderTrashList();
+    m.classList.add('show');
   }
 
-  function openAddSubjectModal() {
+  function openAddSubjectModal(semNum) {
     const m = document.getElementById('addSubjectModal');
-    if (m) m.classList.add('show');
+    if (!m) return;
+    const semEl = document.getElementById('newSubSem');
+    if (semEl && semNum) {
+      semEl.value = String(semNum);
+    }
+    m.classList.add('show');
+  }
+
+  function renderTrashList() {
+    const list = document.getElementById('trashList');
+    const clearBtn = document.getElementById('btnClearTrash');
+    if (!list) return;
+    const trash = (data.trash && Array.isArray(data.trash)) ? data.trash : [];
+    if (trash.length === 0) {
+      list.innerHTML = '<div style="font-size:0.8rem;color:var(--text-mid);text-align:center;padding:12px;">Recycle bin is empty.</div>';
+      if (clearBtn) clearBtn.style.display = 'none';
+      return;
+    }
+    if (clearBtn) clearBtn.style.display = 'block';
+    list.innerHTML = trash.map(item => `
+      <div class="trash-item" style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
+        <div style="font-size:0.8rem;color:var(--text-dark);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:240px;">
+          <strong>${esc(item.name || 'Untitled')}</strong>
+          <span style="font-size:0.7rem;color:var(--text-mid);">(${item.type || 'part'})</span>
+        </div>
+        <button class="btn-xs btn-ghost" onclick="App.restoreTrashItem('${item.id}')">Restore</button>
+      </div>
+    `).join('');
+  }
+
+  function restoreTrashItem(id) {
+    if (!data.trash) return;
+    const idx = data.trash.findIndex(x => x.id === id);
+    if (idx === -1) return;
+    const item = data.trash.splice(idx, 1)[0];
+    if (item.type === 'part' && item.meta && item.payload) {
+      const { subId, unitId } = item.meta;
+      const { u } = find(subId, unitId);
+      if (u) {
+        if (!u.parts) u.parts = [];
+        u.parts.push(item.payload);
+        persist(); render();
+        renderTrashList();
+        toast(`Restored: ${item.name}`);
+        return;
+      }
+    }
+    persist(); render();
+    renderTrashList();
+    toast(`Restored item`);
+  }
+
+  function clearTrash() {
+    data.trash = [];
+    persist();
+    renderTrashList();
+    toast('Recycle bin cleared');
   }
 
   function addSubject() {
@@ -666,6 +785,114 @@ const App = (() => {
     toast('Reset to GTU BBA Sem 1 syllabus defaults');
   }
 
+  function recoverMissingSyllabus() {
+    let recoveredCount = 0;
+
+    SUBJECT_SEED.forEach(seed => {
+      // Find subject in user data
+      let userSub = (data.subjects || []).find(s => s.code === seed.code);
+      if (!userSub) {
+        // Match by name if code was altered
+        userSub = (data.subjects || []).find(s => (s.sem || 1) === (seed.sem || 1) && s.name && s.name.toLowerCase().includes(seed.name.substring(0, 10).toLowerCase()));
+      }
+
+      if (!userSub) {
+        // Entire subject missing, restore full subject!
+        const newSub = {
+          id: uid(),
+          name: seed.name,
+          code: seed.code,
+          sem: seed.sem || 1,
+          credits: seed.credits,
+          maxMarks: seed.maxMarks,
+          maxEse: seed.maxEse,
+          maxInternal: seed.maxInternal,
+          maxPractical: seed.maxPractical,
+          marks: createDefaultMarks(),
+          colorIndex: seed.colorIndex,
+          expanded: false,
+          units: buildUnits(seed.code, seed.unitNames)
+        };
+        if (!data.subjects) data.subjects = [];
+        data.subjects.push(newSub);
+        recoveredCount += seed.unitNames.length;
+      } else {
+        // Subject exists, ensure all syllabus units and parts exist
+        if (!Array.isArray(userSub.units)) userSub.units = [];
+
+        seed.unitNames.forEach((unitName, i) => {
+          const unitNum = i + 1;
+          // Look for unit by number OR name
+          let userUnit = userSub.units.find(u => u.number === unitNum);
+          if (!userUnit) {
+            userUnit = userSub.units.find(u => u.name && (u.name === unitName || u.name.includes(unitName.substring(0, 15))));
+          }
+
+          if (!userUnit) {
+            // Unit was deleted! Restore unit with its default part!
+            const newUnit = {
+              id: uid(),
+              number: unitNum,
+              name: unitName,
+              expanded: false,
+              parts: [
+                {
+                  id: uid(),
+                  number: 1,
+                  name: `${seed.code}-U${unitNum}-P1`,
+                  downloaded: false,
+                  printed: false,
+                  priority: 'none',
+                  note: '',
+                  pdfFileName: '',
+                  pdfPageCount: null,
+                  showPdfMeta: false
+                }
+              ]
+            };
+            userSub.units.push(newUnit);
+            recoveredCount++;
+          } else {
+            // Unit is present, ensure correct number and syllabus name
+            userUnit.number = unitNum;
+            if (!userUnit.name || userUnit.name.startsWith('Unit ')) {
+              userUnit.name = unitName;
+            }
+            // Check if parts inside unit were deleted
+            if (!Array.isArray(userUnit.parts) || userUnit.parts.length === 0) {
+              userUnit.parts = [
+                {
+                  id: uid(),
+                  number: 1,
+                  name: `${seed.code}-U${unitNum}-P1`,
+                  downloaded: false,
+                  printed: false,
+                  priority: 'none',
+                  note: '',
+                  pdfFileName: '',
+                  pdfPageCount: null,
+                  showPdfMeta: false
+                }
+              ];
+              recoveredCount++;
+            }
+          }
+        });
+
+        // Ensure units are neatly ordered 1..5 or 1..3
+        userSub.units.sort((a, b) => (a.number || 0) - (b.number || 0));
+      }
+    });
+
+    if (recoveredCount > 0) {
+      persist(); 
+      render();
+      toast(`✅ Successfully recovered ${recoveredCount} missing syllabus unit(s)/part(s)!`);
+    } else {
+      toast(`ℹ️ All GTU syllabus units and parts are already intact!`);
+    }
+  }
+
   // ── Init: Cloud sync & event listeners ────────────────
   // Search
   const searchInput = document.getElementById('searchInput');
@@ -688,20 +915,23 @@ const App = (() => {
   // Countdown tick
   setInterval(updateCountdown, 60000);
 
-  // Initial render
-  render();
+  function init() {
+    // Initial render
+    render();
 
-  // Cloud sync — load from Firebase on init, then listen for changes
-  Cloud.init((newCloudData) => {
-    const sanitized = sanitizeData(newCloudData);
-    if (sanitized && Array.isArray(sanitized.subjects) && sanitized.subjects.length) {
-      data = sanitized;
-      saveData(data);
-      render();
-    }
-  });
+    // Cloud sync — load from Firebase on init, then listen for changes
+    Cloud.init((newCloudData) => {
+      const sanitized = sanitizeData(newCloudData);
+      if (sanitized && Array.isArray(sanitized.subjects) && sanitized.subjects.length) {
+        data = sanitized;
+        saveData(data);
+        render();
+      }
+    });
+  }
 
   return {
+    init,
     getData,
     setData,
     // expose helpers for sub-modules
@@ -732,14 +962,25 @@ const App = (() => {
     exportData,
     importData,
     resetToSyllabusDefaults,
+    recoverMissingSyllabus,
     switchTab,
     toggleLumpsumMode,
     onMarksInput,
+    saveSubjectMarks,
     onTargetSpiChange,
     resetAllMarks,
+    updateStudentProfile,
+    setCurrentSem,
+    restoreTrashItem,
+    clearTrash,
     openGtuGuideModal: () => MarksHub.openGtuGuideModal(),
     updateSimulator: (f, v) => MarksHub.updateSimulator(f, v),
     setSimulatorPreset: (p) => MarksHub.setSimulatorPreset(p)
   };
 
 })();
+
+// Boot up the application once the module is fully defined
+document.addEventListener('DOMContentLoaded', () => {
+  App.init();
+});

@@ -128,17 +128,16 @@ const PdfTracker = (() => {
   function renderUnit(subId, u, ci, s) {
     const partsCount = u.parts ? u.parts.length : 0;
     const dlCount = u.parts ? u.parts.filter(p => p.downloaded).length : 0;
-    const isAllDl = partsCount > 0 && dlCount === partsCount;
 
     return `
       <div class="unit-card ${u.expanded ? 'open' : ''}" data-unit-id="${u.id}">
         <div class="unit-head" onclick="App.toggleUnit('${subId}','${u.id}')">
-          <span class="unit-title">${App.esc(u.name)}</span>
+          <div class="unit-title-wrap">
+            <span class="unit-num-tag">Unit ${u.number || 1}</span>
+            <span class="unit-title-text">${App.esc(u.name)}</span>
+          </div>
           <div class="unit-actions" onclick="event.stopPropagation()">
-            <span class="unit-badge">${dlCount}/${partsCount}</span>
-            <button class="btn-xs ${isAllDl ? 'btn-success' : 'btn-ghost'}" onclick="App.markUnitDl('${subId}','${u.id}')" title="${isAllDl ? 'Unmark All Downloaded' : 'Mark All Parts Downloaded'}">
-              ${isAllDl ? `${SVG.check} All DL` : `${SVG.download} All DL`}
-            </button>
+            <span class="unit-badge" title="${dlCount} of ${partsCount} parts downloaded">${dlCount}/${partsCount} DL</span>
             <button class="btn-xs btn-ghost" onclick="App.addPart('${subId}','${u.id}')" title="Add Part">
               ${SVG.plus} Part
             </button>

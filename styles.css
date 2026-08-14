@@ -2779,21 +2779,27 @@ body.dark-mode {
 
 .marks-subjects-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 16px;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+@media (min-width: 768px) {
+  .marks-subjects-grid {
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 18px;
+  }
 }
 
 .marks-subject-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
-  padding: 16px;
   box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
-  gap: 14px;
   position: relative;
-  transition: transform var(--t-fast), border-color var(--t-fast);
+  overflow: hidden;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .marks-subject-card:hover {
@@ -2804,14 +2810,72 @@ body.dark-mode {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--border);
+  padding: 14px 16px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  background: var(--bg-card);
+  transition: background 0.15s ease;
+  width: 100%;
+}
+
+.marks-card-head:hover {
+  background: var(--bg-hover);
+}
+
+.marks-card-head:active {
+  background: rgba(0, 0, 0, 0.04);
 }
 
 .marks-head-info {
   display: flex;
   align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.marks-head-text {
+  min-width: 0;
+  flex: 1;
+}
+
+.marks-head-right {
+  display: flex;
+  align-items: center;
   gap: 10px;
+  flex-shrink: 0;
+}
+
+.marks-chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-mid);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
+}
+
+.marks-subject-card.open .marks-chevron {
+  transform: rotate(180deg);
+  color: var(--accent);
+}
+
+.marks-card-body {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease, padding 0.35s ease;
+}
+
+.marks-subject-card.open .marks-card-body {
+  max-height: 1400px;
+  opacity: 1;
+  padding: 14px 16px 18px;
+  border-top: 1px solid var(--border);
 }
 
 .marks-sub-icon {
@@ -2823,26 +2887,29 @@ body.dark-mode {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .marks-sub-name {
   font-size: 0.92rem;
   font-weight: 800;
   color: var(--text-dark);
-  line-height: 1.2;
+  line-height: 1.25;
+  word-break: break-word;
 }
 
 .marks-sub-meta {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-top: 2px;
+  margin-top: 3px;
+  flex-wrap: wrap;
 }
 
 .sub-meta-pill {
   font-size: 0.66rem;
   font-weight: 700;
-  padding: 1px 6px;
+  padding: 1.5px 6px;
   border-radius: var(--r-sm);
   background: var(--bg-input);
   color: var(--text-mid);
@@ -2856,9 +2923,9 @@ body.dark-mode {
 }
 
 .grade-badge-pill {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 900;
-  padding: 3px 10px;
+  padding: 2.5px 9px;
   border-radius: var(--r-full);
   display: inline-flex;
   align-items: center;
@@ -3037,21 +3104,54 @@ body.dark-mode {
 
 .marks-card-footer {
   display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+  font-size: 0.82rem;
+}
+
+.marks-footer-stats {
+  display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 8px;
-  border-top: 1px dashed var(--border);
-  font-size: 0.78rem;
+  width: 100%;
 }
 
 .total-score-val {
-  font-weight: 900;
+  font-weight: 800;
   color: var(--text-dark);
 }
 
+.total-score-val strong {
+  color: var(--accent, #6366f1);
+}
+
 .total-pct-val {
-  font-weight: 700;
-  color: var(--text-mid);
+  font-weight: 800;
+  color: var(--text-dark);
+  background: var(--bg-input);
+  padding: 2px 8px;
+  border-radius: var(--r-full);
+}
+
+.btn-save-marks {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  font-size: 0.88rem;
+  font-weight: 800;
+  border-radius: var(--r-md);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-save-marks:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.35);
 }
 
 /* ── MULTI SEMESTER CGPA TABLE ──────────────────────────── */
@@ -3335,6 +3435,45 @@ body.dark-mode {
 
 .unit-head:active {
   background: rgba(0, 0, 0, 0.04);
+}
+
+.unit-title-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.unit-num-tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--accent, #6366f1);
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.22);
+  padding: 2px 7px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.dark-mode .unit-num-tag {
+  color: #a5b4fc;
+  background: rgba(99, 102, 241, 0.18);
+  border-color: rgba(99, 102, 241, 0.35);
+}
+
+.unit-title-text {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
 }
 
 .unit-title {
@@ -4282,8 +4421,8 @@ button:active,
 .sem-tab:active,
 .pill:active,
 .ck-btn:active {
-  transform: scale(0.94) !important;
-  transition: transform 0.05s ease !important;
+  transform: scale(0.97) !important;
+  transition: transform 0.08s cubic-bezier(0.2, 0, 0, 1) !important;
 }
 
 .marks-subjects-grid {
@@ -5263,4 +5402,126 @@ button:active,
   background: var(--bg-unit);
   border-color: var(--border);
   color: var(--text-dark);
-}
+}
+
+/* ── UI / UX ENHANCEMENTS: DROPDOWNS & MODALS ANIMATIONS ── */
+
+.target-spi-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  font-family: var(--font, 'Inter', sans-serif) !important;
+  font-size: 0.86rem !important;
+  font-weight: 800 !important;
+  padding: 6px 36px 6px 14px !important;
+  border-radius: var(--r-md) !important;
+  border: 1.5px solid #c7d2fe !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18) !important;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="%23334155" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>') !important;
+  background-repeat: no-repeat !important;
+  background-position: right 12px center !important;
+  background-size: 14px !important;
+  cursor: pointer !important;
+  outline: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.target-spi-select option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  font-weight: 700 !important;
+  padding: 8px 12px !important;
+}
+
+.dark-mode .target-spi-select {
+  background-color: #1e1b4b !important;
+  color: #f8fafc !important;
+  border-color: #4338ca !important;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="%23cbd5e1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>') !important;
+}
+
+.dark-mode .target-spi-select option {
+  background-color: #1e1b4b !important;
+  color: #f8fafc !important;
+}
+
+.target-spi-select:hover, .target-spi-select:focus {
+  border-color: #818cf8 !important;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.25) !important;
+  transform: translateY(-1px);
+}
+
+/* Modals Smooth Slide-In Animation (Drop Up & Drop Down support) */
+.modal {
+  animation: modalDropUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes modalDropUp {
+  0% { transform: translateY(80px) scale(0.96); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+@media (min-width: 640px) {
+  /* Dynamic Desktop UI: Drop DOWN from top instead of sliding UP from bottom */
+  .modal {
+    border-radius: var(--r-xl);
+    margin-top: 8vh;
+    margin-bottom: 8vh;
+    animation: modalDropDown 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  
+  .overlay {
+    align-items: flex-start;
+  }
+
+  @keyframes modalDropDown {
+    0% { transform: translateY(-50px) scale(0.96); opacity: 0; }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
+  }
+}
+
+/* ── SUBJECT META BADGES (SEM, CODE, CREDITS, UNITS) ────── */
+.subject-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 2px;
+}
+
+.subject-sem-badge,
+.subject-code-badge,
+.subject-credits-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 1.5px 6px;
+  border-radius: 5px;
+  line-height: 1.3;
+}
+
+.subject-sem-badge {
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--accent, #6366f1);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.subject-code-badge {
+  background: var(--bg-hover, #f1f5f9);
+  color: var(--text-dark, #334155);
+  border: 1px solid var(--border, #e2e8f0);
+}
+
+.subject-credits-badge {
+  background: rgba(16, 185, 129, 0.09);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.22);
+}
+
+.dark-mode .subject-credits-badge {
+  background: rgba(16, 185, 129, 0.18);
+  color: #6ee7b7;
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+

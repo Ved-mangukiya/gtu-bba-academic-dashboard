@@ -266,7 +266,6 @@
         <div class="section-title-bar">
           <div class="section-title-left">
             <h2 class="section-h2">Subject Marks & Internal Breakdown</h2>
-            <span class="section-badge">6 GTU Subjects</span>
           </div>
           <div class="section-title-actions">
             <button class="btn btn-guide btn-sm" onclick="App.openGtuGuideModal()" title="View GTU marking scheme & animated formula explanation">
@@ -274,6 +273,10 @@
             </button>
             <button class="btn btn-ghost btn-sm" onclick="App.resetAllMarks()">🔄 Reset Marks</button>
           </div>
+        </div>
+
+        <div class="filters-scroll" id="marksSemFilters" style="margin-bottom: 20px;">
+          <!-- Dynamically populated semester tabs for Marks Hub -->
         </div>
 
         <!-- SUBJECT MARKS GRID -->
@@ -347,21 +350,82 @@
     </div>
   </div>
 
-  <!-- SETTINGS MODAL -->
+  <!-- SETTINGS & 3-YEAR DEGREE MANAGEMENT SUITE MODAL -->
   <div class="overlay" id="settingsModal">
     <div class="modal modal-settings">
       <div class="modal-head">
-        <h3>⚙️ Tracker Control Center</h3>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.3rem;">⚙️</span>
+          <div>
+            <h3 style="margin: 0; font-size: 1.05rem;">GTU BBA 3-Year Degree Suite</h3>
+            <span style="font-size: 0.72rem; color: var(--text-mid);">Manage profile, semesters 1-6, cloud sync & syllabus</span>
+          </div>
+        </div>
         <button class="modal-close" onclick="App.closeModal('settingsModal')">✕</button>
       </div>
 
-      <!-- Quick Action: Add Subject -->
+      <!-- 1. Student Academic Profile -->
+      <div class="settings-group">
+        <div class="settings-group-header">
+          <span class="settings-icon">🎓</span>
+          <div>
+            <span class="settings-title">Student Profile & Academic Goal</span>
+            <span class="settings-sub">Saved across your 3-year GTU BBA degree</span>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+          <div class="field" style="margin: 0;">
+            <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-mid);">Student Full Name</label>
+            <input type="text" id="settingStudentName" class="input" placeholder="e.g. Ved Mangukiya" onchange="App.updateStudentProfile('studentName', this.value)" />
+          </div>
+          <div class="field" style="margin: 0;">
+            <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-mid);">Enrollment / Roll No</label>
+            <input type="text" id="settingEnrollment" class="input" placeholder="e.g. 240010111001" onchange="App.updateStudentProfile('enrollmentNo', this.value)" />
+          </div>
+          <div class="field" style="margin: 0;">
+            <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-mid);">Current Active Semester</label>
+            <select id="settingCurrentSem" class="input" onchange="App.setCurrentSem(this.value)">
+              <option value="1">Semester 1 (Year 1)</option>
+              <option value="2">Semester 2 (Year 1)</option>
+              <option value="3">Semester 3 (Year 2)</option>
+              <option value="4">Semester 4 (Year 2)</option>
+              <option value="5">Semester 5 (Year 3)</option>
+              <option value="6">Semester 6 (Year 3)</option>
+            </select>
+          </div>
+          <div class="field" style="margin: 0;">
+            <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-mid);">Target 3-Year CGPA Goal</label>
+            <input type="number" id="settingTargetCgpa" class="input" min="4.0" max="10.0" step="0.1" placeholder="8.50" onchange="App.updateStudentProfile('targetCgpa', this.value)" />
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Semester Visibility (3 Years) -->
+      <div class="settings-group">
+        <div class="settings-group-header">
+          <span class="settings-icon">📅</span>
+          <div>
+            <span class="settings-title">Semester Visibility (Sem 1 to 6)</span>
+            <span class="settings-sub">Toggle visible semesters on your dashboard tabs</span>
+          </div>
+        </div>
+        <div class="sem-check-grid" id="semCheckGrid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px;">
+          <label class="sem-check-item"><input type="checkbox" id="semCheck_1" value="1" onchange="App.toggleSemVisibility(1)" /> <strong>Sem 1</strong> (Yr 1)</label>
+          <label class="sem-check-item"><input type="checkbox" id="semCheck_2" value="2" onchange="App.toggleSemVisibility(2)" /> <strong>Sem 2</strong> (Yr 1)</label>
+          <label class="sem-check-item"><input type="checkbox" id="semCheck_3" value="3" onchange="App.toggleSemVisibility(3)" /> <strong>Sem 3</strong> (Yr 2)</label>
+          <label class="sem-check-item"><input type="checkbox" id="semCheck_4" value="4" onchange="App.toggleSemVisibility(4)" /> <strong>Sem 4</strong> (Yr 2)</label>
+          <label class="sem-check-item"><input type="checkbox" id="semCheck_5" value="5" onchange="App.toggleSemVisibility(5)" /> <strong>Sem 5</strong> (Yr 3)</label>
+          <label class="sem-check-item"><input type="checkbox" id="semCheck_6" value="6" onchange="App.toggleSemVisibility(6)" /> <strong>Sem 6</strong> (Yr 3)</label>
+        </div>
+      </div>
+
+      <!-- 3. Quick Action: Add Subject to Any Semester -->
       <div class="settings-group primary-group">
         <div class="settings-group-header">
           <span class="settings-icon">➕</span>
           <div>
-            <span class="settings-title">Add New Subject</span>
-            <span class="settings-sub">Create a subject for any semester with custom units</span>
+            <span class="settings-title">Add Subjects to Any Semester</span>
+            <span class="settings-sub">Easily expand your dashboard for Sem 2, 3, 4, 5, 6</span>
           </div>
         </div>
         <button class="btn btn-accent btn-full" onclick="App.closeModal('settingsModal'); App.openAddSubjectModal();">
@@ -370,35 +434,11 @@
               d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
               clip-rule="evenodd" />
           </svg>
-          + Add New Subject
+          + Add New Subject (Sem 1 - 6)
         </button>
       </div>
 
-      <!-- Semester Visibility -->
-      <div class="settings-group">
-        <div class="settings-group-header">
-          <span class="settings-icon">🎓</span>
-          <div>
-            <span class="settings-title">Semester Visibility (3 Years)</span>
-            <span class="settings-sub">Toggle semesters to show or hide on your dashboard</span>
-          </div>
-        </div>
-        <div class="sem-check-grid" id="semCheckGrid">
-          <label class="sem-check-item"><input type="checkbox" value="1" onchange="App.toggleSemVisibility(1)" /> Sem
-            1</label>
-          <label class="sem-check-item"><input type="checkbox" value="2" onchange="App.toggleSemVisibility(2)" /> Sem
-            2</label>
-          <label class="sem-check-item"><input type="checkbox" value="3" onchange="App.toggleSemVisibility(3)" /> Sem
-            3</label>
-          <label class="sem-check-item"><input type="checkbox" value="4" onchange="App.toggleSemVisibility(4)" /> Sem
-            4</label>
-          <label class="sem-check-item"><input type="checkbox" value="5" onchange="App.toggleSemVisibility(5)" /> Sem
-            5</label>
-          <label class="sem-check-item"><input type="checkbox" value="6" onchange="App.toggleSemVisibility(6)" /> Sem 6</label>
-        </div>
-      </div>
-
-      <!-- Recycle Bin / Trash -->
+      <!-- 4. Recycle Bin / Trash -->
       <div class="settings-group">
         <div class="settings-group-header">
           <span class="settings-icon">🗑️</span>
@@ -417,13 +457,13 @@
         </div>
       </div>
 
-      <!-- Backup & Restore -->
+      <!-- 5. Backup & Deep Recovery -->
       <div class="settings-group">
         <div class="settings-group-header">
           <span class="settings-icon">☁️</span>
           <div>
-            <span class="settings-title">Data Backup & Reset</span>
-            <span class="settings-sub">Cloud synced. Export JSON backup or reset syllabus defaults</span>
+            <span class="settings-title">Data Backup & Deep Recovery</span>
+            <span class="settings-sub">Cloud synced · Export backup or recover missing syllabus units</span>
           </div>
         </div>
         <div class="settings-btn-row">
@@ -443,8 +483,11 @@
             </svg>
             Import Backup
           </button>
+          <button class="btn btn-ghost" onclick="App.recoverMissingSyllabus()">
+            ✨ Recover Missing Units
+          </button>
           <button class="btn btn-ghost btn-danger-text" onclick="App.resetToSyllabusDefaults()">
-            🔄 Reset Syllabus
+            🔄 Reset Sem 1 Syllabus
           </button>
           <input type="file" id="importInput" accept=".json" onchange="App.importData(event)" hidden />
         </div>
