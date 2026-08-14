@@ -160,3 +160,7 @@ const PdfTracker = (() => {
     renderUnit
   };
 })();
+
+if (typeof window !== 'undefined') {
+  window.PdfTracker = PdfTracker;
+}

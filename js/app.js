@@ -32,18 +32,20 @@ const App = (() => {
   }
 
   function persist() {
+    saveData(data);
     Cloud.save(data);
   }
 
   function getVisibleSubjects() {
     const visibleSems = data.settings && Array.isArray(data.settings.visibleSems) && data.settings.visibleSems.length ? data.settings.visibleSems : [1, 2, 3, 4, 5, 6];
-    let list = data.subjects.filter(s => {
+    let list = (data.subjects || []).filter(s => {
+      if (!s) return false;
       const sSem = s.sem || 1;
       const isSemVisible = visibleSems.includes(sSem);
       const isSemMatch = (semFilter === 'all' || sSem === parseInt(semFilter));
       return isSemVisible && isSemMatch;
     });
-    if (!list.length && semFilter === 'all' && data.subjects.length) {
+    if (!list.length && (data.subjects || []).length) {
       list = data.subjects;
     }
     return list;
@@ -418,11 +420,26 @@ const App = (() => {
     if (value === '' || value === null || value === undefined) {
       s.marks[fieldKey] = null;
     } else {
-      const num = parseFloat(value);
-      s.marks[fieldKey] = isNaN(num) ? null : Math.max(0, num);
+      let num = parseFloat(value);
+      if (isNaN(num)) {
+        s.marks[fieldKey] = null;
+      } else {
+        const credits = s.credits || 4;
+        const maxInternal = s.maxInternal || 30;
+        const maxPractical = s.maxPractical || (credits === 2 ? 20 : 50);
+        const maxEse = s.maxEse || (credits === 2 ? 50 : 70);
+
+        if (fieldKey === 'internalMid') num = Math.min(Math.max(0, num), 20);
+        else if (fieldKey === 'internalAtt') num = Math.min(Math.max(0, num), 5);
+        else if (fieldKey === 'internalBeh') num = Math.min(Math.max(0, num), 5);
+        else if (fieldKey === 'internalLumpsum') num = Math.min(Math.max(0, num), maxInternal);
+        else if (fieldKey === 'practical') num = Math.min(Math.max(0, num), maxPractical);
+        else if (fieldKey === 'ese') num = Math.min(Math.max(0, num), maxEse);
+        s.marks[fieldKey] = num;
+      }
     }
-    // Update local storage in-memory & surgical DOM calculation without spamming Firebase
     saveData(data);
+    Cloud.saveDebounced(data, 1000);
     MarksHub.updateSubjectCardLive(subId);
   }
 
@@ -439,9 +456,14 @@ const App = (() => {
     if (isNaN(targetVal)) return;
     if (!data.settings) data.settings = {};
     data.settings.targetSpi = Math.min(Math.max(targetVal, 4.0), 10.0);
+    data.settings.targetCgpa = data.settings.targetSpi; // Sync CGPA
     saveData(data);
     Cloud.saveDebounced(data, 1000);
     MarksHub.renderTargetBacktracker();
+    
+    // Update settings modal input if it exists
+    const sTargetCgpaEl = document.getElementById('settingTargetCgpa');
+    if (sTargetCgpaEl) sTargetCgpaEl.value = data.settings.targetSpi;
     if (Array.isArray(data.subjects)) {
       data.subjects.forEach(s => {
         MarksHub.updateSubjectCardLive(s.id);
@@ -452,6 +474,21 @@ const App = (() => {
   function updateStudentProfile(field, val) {
     if (!data.settings) data.settings = {};
     data.settings[field] = val;
+    
+    // Sync CGPA to SPI
+    if (field === 'targetCgpa') {
+      const spiVal = parseFloat(val);
+      if (!isNaN(spiVal)) {
+        data.settings.targetSpi = Math.min(Math.max(spiVal, 4.0), 10.0);
+        MarksHub.renderTargetBacktracker();
+        if (Array.isArray(data.subjects)) {
+          data.subjects.forEach(s => {
+            MarksHub.updateSubjectCardLive(s.id);
+          });
+        }
+      }
+    }
+    
     saveData(data);
     Cloud.saveDebounced(data, 1000);
     toast(`Updated ${field}`);
@@ -517,23 +554,27 @@ const App = (() => {
     const activeSubjects = getVisibleSubjects();
 
     const filtered = activeSubjects.map(s => {
-      if (!s || !Array.isArray(s.units)) return null;
-      const sMatch = !term || s.name.toLowerCase().includes(term) || (s.code && s.code.toLowerCase().includes(term));
+      if (!s) return null;
+      s.units = ensureArray(s.units);
+      const sMatch = !term || (s.name && s.name.toLowerCase().includes(term)) || (s.code && s.code.toLowerCase().includes(term));
 
       const units = s.units.map(u => {
-        if (!u || !Array.isArray(u.parts)) return null;
-        const uMatch = !term || u.name.toLowerCase().includes(term) || sMatch;
+        if (!u) return null;
+        u.parts = ensureArray(u.parts);
+        const uMatch = !term || (u.name && u.name.toLowerCase().includes(term)) || sMatch;
         const parts = u.parts.filter(p => {
-          const pMatch = !term || p.name.toLowerCase().includes(term) || uMatch;
+          const pMatch = !term || (p.name && p.name.toLowerCase().includes(term)) || uMatch;
           let fMatch = true;
           if (filter === 'pending') fMatch = !p.downloaded;
           else if (filter === 'downloaded') fMatch = p.downloaded;
           else if (filter === 'printed') fMatch = p.printed;
           return pMatch && fMatch;
         });
-        return parts.length ? { ...u, parts } : null;
+        if (filter === 'all' && !term) return u;
+        return parts.length ? { ...u, parts } : (filter === 'all' ? u : null);
       }).filter(Boolean);
 
+      if (filter === 'all' && !term) return s;
       return units.length ? { ...s, units } : null;
     }).filter(Boolean);
 
@@ -707,6 +748,7 @@ const App = (() => {
 
   function clearTrash() {
     data.trash = [];
+    saveData(data);
     persist();
     renderTrashList();
     toast('Recycle bin cleared');
@@ -916,6 +958,13 @@ const App = (() => {
   setInterval(updateCountdown, 60000);
 
   function init() {
+    // Force default view to PDF Tracker on start
+    if (!data.settings) data.settings = {};
+    data.settings.activeTab = 'pdf';
+    semFilter = 'all';
+    filter = 'all';
+    search = '';
+
     // Initial render
     render();
 
@@ -924,6 +973,8 @@ const App = (() => {
       const sanitized = sanitizeData(newCloudData);
       if (sanitized && Array.isArray(sanitized.subjects) && sanitized.subjects.length) {
         data = sanitized;
+        if (!data.settings) data.settings = {};
+        if (!data.settings.activeTab) data.settings.activeTab = 'pdf';
         saveData(data);
         render();
       }
@@ -981,6 +1032,9 @@ const App = (() => {
 })();
 
 // Boot up the application once the module is fully defined
+if (typeof window !== 'undefined') {
+  window.App = App;
+}
 document.addEventListener('DOMContentLoaded', () => {
   App.init();
 });

@@ -46,7 +46,8 @@ const Cloud = (() => {
       onlineResolved = true;
       updateStatus('online', 'Cloud Synced ✓');
 
-      if (cloudData && Array.isArray(cloudData.subjects) && cloudData.subjects.length) {
+      const subs = cloudData ? ensureArray(cloudData.subjects) : [];
+      if (subs.length > 0) {
         const cloudStr = JSON.stringify(cloudData);
         if (cloudStr !== lastSavedJSON) {
           lastSavedJSON = cloudStr;
@@ -150,7 +151,8 @@ const Cloud = (() => {
           onlineResolved = true;
           updateStatus('online', 'Cloud Synced ✓');
           const cloudData = snapshot.val();
-          if (cloudData && Array.isArray(cloudData.subjects) && cloudData.subjects.length) {
+          const subs = cloudData ? ensureArray(cloudData.subjects) : [];
+          if (subs.length > 0) {
             const cloudStr = JSON.stringify(cloudData);
             if (cloudStr !== lastSavedJSON) {
               lastSavedJSON = cloudStr;
@@ -185,6 +187,9 @@ const Cloud = (() => {
 
       // 3. Also push via Firebase SDK if connected
       if (db) {
+        if (Array.isArray(data.trash) && data.trash.length === 0) {
+          try { db.ref('pdf_tracker/trash').remove(); } catch (_) {}
+        }
         db.ref('pdf_tracker').set(data)
           .then(() => {
             onlineResolved = true;
@@ -208,3 +213,7 @@ const Cloud = (() => {
 
   return { init, save, saveDebounced, syncNow };
 })();
+
+if (typeof window !== 'undefined') {
+  window.Cloud = Cloud;
+}

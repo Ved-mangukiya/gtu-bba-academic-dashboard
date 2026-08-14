@@ -189,11 +189,29 @@ function getDefaultData() {
   };
 }
 
+// Helper: converts arrays or Firebase object maps { "0": {...}, "1": {...} } to standard Array
+function ensureArray(val) {
+  if (!val) return [];
+  if (Array.isArray(val)) return val;
+  if (typeof val === 'object') {
+    return Object.keys(val).sort((a, b) => {
+      const na = parseInt(a), nb = parseInt(b);
+      return (!isNaN(na) && !isNaN(nb)) ? na - nb : a.localeCompare(b);
+    }).map(k => val[k]).filter(Boolean);
+  }
+  return [];
+}
+
 // Sanitize & Migration Helper
 function sanitizeData(d) {
-  if (!d || !Array.isArray(d.subjects) || !d.subjects.length) return getDefaultData();
+  if (!d) return getDefaultData();
+  
+  d.subjects = ensureArray(d.subjects);
+  if (!d.subjects.length) return getDefaultData();
+
   if (!d.settings || typeof d.settings !== 'object') d.settings = {};
-  if (!Array.isArray(d.settings.visibleSems) || !d.settings.visibleSems.length) {
+  d.settings.visibleSems = ensureArray(d.settings.visibleSems);
+  if (!d.settings.visibleSems.length) {
     d.settings.visibleSems = [1, 2, 3, 4, 5, 6];
   }
   if (!d.settings.theme) d.settings.theme = 'light';
@@ -201,87 +219,87 @@ function sanitizeData(d) {
   if (typeof d.settings.hideReadiness !== 'boolean') d.settings.hideReadiness = false;
   if (!d.settings.activeTab) d.settings.activeTab = 'pdf';
   if (typeof d.settings.targetSpi !== 'number') d.settings.targetSpi = 8.5;
-  if (!Array.isArray(d.trash)) {
-    d.trash = [];
-  }
-  if (Array.isArray(d.subjects)) {
-    // Purge legacy pre-seeded placeholder subjects for Sem 2-6
-    d.subjects = d.subjects.filter(s => {
-      if (!s.sem) {
-        const m = s.code ? s.code.match(/S(\d)/i) : null;
-        s.sem = m ? parseInt(m[1]) : 1;
-      }
-      if (s.sem > 1 && ['S2-AFA', 'S2-OB', 'S3-CA', 'S3-HRM', 'S4-COST', 'S5-SM', 'S6-GBE'].includes(s.code)) {
-        return false;
-      }
-      return true;
-    });
+  if (typeof d.settings.targetCgpa !== 'number') d.settings.targetCgpa = d.settings.targetSpi;
+  
+  d.trash = ensureArray(d.trash);
 
-    d.subjects.forEach(s => {
-      const seedMatch = SUBJECT_SEED.find(seed => seed.code === s.code);
-      if (seedMatch) {
-        s.credits = s.credits || seedMatch.credits;
-        s.maxMarks = s.maxMarks || seedMatch.maxMarks;
-        s.maxEse = s.maxEse || seedMatch.maxEse;
-        s.maxInternal = s.maxInternal || seedMatch.maxInternal;
-        s.maxPractical = s.maxPractical || seedMatch.maxPractical;
-        if (s.units.length > seedMatch.unitNames.length && (s.code === 'S1-IKS' || s.code === 'S1-ESG')) {
-          s.units = s.units.slice(0, seedMatch.unitNames.length);
-        }
-        if (s.sem === 1) {
-          s.units.forEach((u, idx) => {
-            if (seedMatch.unitNames[idx]) {
-              if (u.name.startsWith('Unit ') ||
-                u.name.includes('Introduction to Management') ||
-                u.name.includes('Introduction to Accounting') ||
-                u.name.includes('Introduction to Statistics') ||
-                u.name.includes('Communication Fundamentals') ||
-                u.name.includes('Introduction to IKS') ||
-                u.name.includes('Introduction to ESG') ||
-                u.name.includes('Environmental Factors') ||
-                u.name.includes('Ancient Indian Sciences') ||
-                u.name.includes('Modern Relevance')) {
-                u.name = seedMatch.unitNames[idx];
-              }
+  // Purge legacy pre-seeded placeholder subjects for Sem 2-6
+  d.subjects = d.subjects.filter(s => {
+    if (!s) return false;
+    if (!s.sem) {
+      const m = s.code ? s.code.match(/S(\d)/i) : null;
+      s.sem = m ? parseInt(m[1]) : 1;
+    }
+    if (s.sem > 1 && ['S2-AFA', 'S2-OB', 'S3-CA', 'S3-HRM', 'S4-COST', 'S5-SM', 'S6-GBE'].includes(s.code)) {
+      return false;
+    }
+    return true;
+  });
+
+  d.subjects.forEach(s => {
+    const seedMatch = SUBJECT_SEED.find(seed => seed.code === s.code);
+    if (seedMatch) {
+      s.credits = s.credits || seedMatch.credits;
+      s.maxMarks = s.maxMarks || seedMatch.maxMarks;
+      s.maxEse = s.maxEse || seedMatch.maxEse;
+      s.maxInternal = s.maxInternal || seedMatch.maxInternal;
+      s.maxPractical = s.maxPractical || seedMatch.maxPractical;
+      s.units = ensureArray(s.units);
+      if (s.units.length > seedMatch.unitNames.length && (s.code === 'S1-IKS' || s.code === 'S1-ESG')) {
+        s.units = s.units.slice(0, seedMatch.unitNames.length);
+      }
+      if (s.sem === 1) {
+        s.units.forEach((u, idx) => {
+          if (seedMatch.unitNames[idx]) {
+            if (u.name.startsWith('Unit ') ||
+              u.name.includes('Introduction to Management') ||
+              u.name.includes('Introduction to Accounting') ||
+              u.name.includes('Introduction to Statistics') ||
+              u.name.includes('Communication Fundamentals') ||
+              u.name.includes('Introduction to IKS') ||
+              u.name.includes('Introduction to ESG') ||
+              u.name.includes('Environmental Factors') ||
+              u.name.includes('Ancient Indian Sciences') ||
+              u.name.includes('Modern Relevance')) {
+              u.name = seedMatch.unitNames[idx];
             }
-          });
+          }
+        });
+      }
+    } else {
+      if (!s.credits) s.credits = 4;
+      if (!s.maxInternal) s.maxInternal = 30;
+      if (!s.maxEse) s.maxEse = 70;
+      if (!s.maxPractical) s.maxPractical = 50;
+      s.maxMarks = s.maxEse + s.maxInternal + s.maxPractical;
+    }
+
+    // Ensure marks object exists & structure is valid
+    if (!s.marks || typeof s.marks !== 'object') {
+      s.marks = createDefaultMarks();
+    } else {
+      if (typeof s.marks.isLumpsum !== 'boolean') s.marks.isLumpsum = false;
+      ['internalMid', 'internalAtt', 'internalBeh', 'internalLumpsum', 'practical', 'ese'].forEach(k => {
+        if (s.marks[k] !== undefined && s.marks[k] !== null && typeof s.marks[k] !== 'number') {
+          const num = parseFloat(s.marks[k]);
+          s.marks[k] = isNaN(num) ? null : num;
         }
-      } else {
-        if (!s.credits) s.credits = 4;
-        if (!s.maxInternal) s.maxInternal = 30;
-        if (!s.maxEse) s.maxEse = 70;
-        if (!s.maxPractical) s.maxPractical = 50;
-        s.maxMarks = s.maxEse + s.maxInternal + s.maxPractical;
-      }
+      });
+    }
 
-      // Ensure marks object exists & structure is valid
-      if (!s.marks || typeof s.marks !== 'object') {
-        s.marks = createDefaultMarks();
-      } else {
-        if (typeof s.marks.isLumpsum !== 'boolean') s.marks.isLumpsum = false;
-        ['internalMid', 'internalAtt', 'internalBeh', 'internalLumpsum', 'practical', 'ese'].forEach(k => {
-          if (s.marks[k] !== undefined && s.marks[k] !== null && typeof s.marks[k] !== 'number') {
-            const num = parseFloat(s.marks[k]);
-            s.marks[k] = isNaN(num) ? null : num;
-          }
-        });
-      }
-
-      if (Array.isArray(s.units)) {
-        s.units.forEach(u => {
-          if (Array.isArray(u.parts)) {
-            u.parts.forEach(p => {
-              if (!p.priority) p.priority = 'none';
-              if (typeof p.note !== 'string') p.note = '';
-              if (typeof p.pdfFileName !== 'string') p.pdfFileName = '';
-              if (typeof p.pdfPageCount !== 'number') p.pdfPageCount = null;
-              if (typeof p.showPdfMeta !== 'boolean') p.showPdfMeta = false;
-            });
-          }
-        });
-      }
+    s.units = ensureArray(s.units);
+    s.units.forEach(u => {
+      u.parts = ensureArray(u.parts);
+      u.parts.forEach(p => {
+        if (!p.priority) p.priority = 'none';
+        if (typeof p.note !== 'string') p.note = '';
+        if (typeof p.pdfFileName !== 'string') p.pdfFileName = '';
+        if (typeof p.pdfPageCount !== 'number') p.pdfPageCount = null;
+        if (typeof p.showPdfMeta !== 'boolean') p.showPdfMeta = false;
+      });
     });
-  }
+  });
+
   return d;
 }
 
@@ -300,4 +318,16 @@ function saveData(data) {
   } catch (_) {
     // storage full edge case
   }
+}
+
+if (typeof window !== 'undefined') {
+  window.loadData = loadData;
+  window.saveData = saveData;
+  window.sanitizeData = sanitizeData;
+  window.getDefaultData = getDefaultData;
+  window.createDefaultMarks = createDefaultMarks;
+  window.ensureArray = ensureArray;
+  window.uid = uid;
+  window.buildUnits = buildUnits;
+  window.SUBJECT_SEED = SUBJECT_SEED;
 }
