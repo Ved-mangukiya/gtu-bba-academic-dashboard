@@ -337,35 +337,55 @@ const MarksHub = (() => {
       adviceBox.innerHTML = dynTarget.adviceHtml;
     }
 
-    // 6. Update Dynamic Watermark Placeholders & Benchmark Badges
+    // 6. Update Dynamic Watermark Placeholders, Benchmark Badges & Values (without interrupting active typing)
+    const m = s.marks || {};
+
     const midInput = cardEl.querySelector('input[data-field="internalMid"]');
     const midBadge = cardEl.querySelector('.field-benchmark-badge[data-benchmark-for="internalMid"]');
-    if (midInput) midInput.placeholder = `Target: ${dynTarget.dynMid}`;
+    if (midInput) {
+      midInput.placeholder = `Target: ${dynTarget.dynMid}`;
+      if (document.activeElement !== midInput) midInput.value = (m.internalMid !== null && m.internalMid !== undefined) ? m.internalMid : '';
+    }
     if (midBadge) midBadge.textContent = `Target: ${dynTarget.dynMid} / 20`;
 
     const attInput = cardEl.querySelector('input[data-field="internalAtt"]');
     const attBadge = cardEl.querySelector('.field-benchmark-badge[data-benchmark-for="internalAtt"]');
-    if (attInput) attInput.placeholder = `Target: ${dynTarget.dynAtt}`;
+    if (attInput) {
+      attInput.placeholder = `Target: ${dynTarget.dynAtt}`;
+      if (document.activeElement !== attInput) attInput.value = (m.internalAtt !== null && m.internalAtt !== undefined) ? m.internalAtt : '';
+    }
     if (attBadge) attBadge.textContent = `Target: ${dynTarget.dynAtt} / 5`;
 
     const behInput = cardEl.querySelector('input[data-field="internalBeh"]');
     const behBadge = cardEl.querySelector('.field-benchmark-badge[data-benchmark-for="internalBeh"]');
-    if (behInput) behInput.placeholder = `Target: ${dynTarget.dynBeh}`;
+    if (behInput) {
+      behInput.placeholder = `Target: ${dynTarget.dynBeh}`;
+      if (document.activeElement !== behInput) behInput.value = (m.internalBeh !== null && m.internalBeh !== undefined) ? m.internalBeh : '';
+    }
     if (behBadge) behBadge.textContent = `Target: ${dynTarget.dynBeh} / 5`;
 
     const lumpInput = cardEl.querySelector('input[data-field="internalLumpsum"]');
     const lumpBadge = cardEl.querySelector('.field-benchmark-badge[data-benchmark-for="internalLumpsum"]');
-    if (lumpInput) lumpInput.placeholder = `Target: ${dynTarget.dynLump}`;
+    if (lumpInput) {
+      lumpInput.placeholder = `Target: ${dynTarget.dynLump}`;
+      if (document.activeElement !== lumpInput) lumpInput.value = (m.internalLumpsum !== null && m.internalLumpsum !== undefined) ? m.internalLumpsum : '';
+    }
     if (lumpBadge) lumpBadge.textContent = `Target: ${dynTarget.dynLump} / ${res.maxInternal}`;
 
     const prInput = cardEl.querySelector('input[data-field="practical"]');
     const prBadge = cardEl.querySelector('.field-benchmark-badge[data-benchmark-for="practical"]');
-    if (prInput) prInput.placeholder = `Target: ${dynTarget.dynPractical}`;
+    if (prInput) {
+      prInput.placeholder = `Target: ${dynTarget.dynPractical}`;
+      if (document.activeElement !== prInput) prInput.value = (m.practical !== null && m.practical !== undefined) ? m.practical : '';
+    }
     if (prBadge) prBadge.textContent = `Target: ${dynTarget.dynPractical} / ${res.maxPractical}`;
 
     const eseInput = cardEl.querySelector('input[data-field="ese"]');
     const eseBadge = cardEl.querySelector('.field-benchmark-badge[data-benchmark-for="ese"]');
-    if (eseInput) eseInput.placeholder = `Target: ${dynTarget.dynEse}`;
+    if (eseInput) {
+      eseInput.placeholder = `Target: ${dynTarget.dynEse}`;
+      if (document.activeElement !== eseInput) eseInput.value = (m.ese !== null && m.ese !== undefined) ? m.ese : '';
+    }
     if (eseBadge) eseBadge.textContent = `Min ${Math.ceil(res.maxEse * 0.35)} | Target: ${dynTarget.dynEse} / ${res.maxEse}`;
 
     // 7. Update global dashboard summaries in place
@@ -897,7 +917,8 @@ const MarksHub = (() => {
     openGtuGuideModal,
     updateSimulator,
     setSimulatorPreset,
-    renderSimulator
+    renderSimulator,
+    getActiveMarksSem: () => activeMarksSem
   };
 })();
 

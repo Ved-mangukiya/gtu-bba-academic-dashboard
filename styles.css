@@ -965,59 +965,15 @@ svg.search-icon,
   border-radius: var(--r-lg);
   overflow: hidden;
   box-shadow: var(--sub-shadow, var(--shadow-xs));
-  transition: box-shadow var(--t-base), transform var(--t-fast);
-  animation: slideUp 0.35s ease both;
+  transition: box-shadow var(--t-base), transform var(--t-fast), border-color var(--t-fast);
   width: 100%;
   max-width: 100%;
+  contain: paint;
 }
 
 .subject-card:hover {
   box-shadow: var(--shadow-md);
   transform: translateY(-1px);
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.subject-card:nth-child(1) {
-  animation-delay: 0ms;
-}
-
-.subject-card:nth-child(2) {
-  animation-delay: 40ms;
-}
-
-.subject-card:nth-child(3) {
-  animation-delay: 80ms;
-}
-
-.subject-card:nth-child(4) {
-  animation-delay: 120ms;
-}
-
-.subject-card:nth-child(5) {
-  animation-delay: 160ms;
-}
-
-.subject-card:nth-child(6) {
-  animation-delay: 200ms;
-}
-
-.subject-card:nth-child(7) {
-  animation-delay: 240ms;
-}
-
-.subject-card:nth-child(8) {
-  animation-delay: 280ms;
 }
 
 /* Subject header */

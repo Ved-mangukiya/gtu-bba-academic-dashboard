@@ -1,6 +1,7 @@
 // ============================================================
 //  GTU BBA Academic Dashboard — Hybrid Ultra-Fast Cloud Storage
 //  Instant REST (50-200ms) + Realtime Firebase WebSocket Sync
+//  Smooth Anti-Jank Echo Suppression & Debounced Pipelines
 // ============================================================
 
 const Cloud = (() => {
@@ -18,13 +19,34 @@ const Cloud = (() => {
 
   let db = null;
   let isRemoteUpdate = false;
-  let lastSavedJSON = '';
+  let lastSavedCanonical = '';
+  let lastLocalSaveTime = 0;
   let onlineResolved = false;
   let _onDataReceived = null;
   let _saveDebounceTimer = null;
   let _dataRef = null;
   let _infoRef = null;
   let _pollInterval = null;
+
+  // Fast canonical serializer for reliable, jitter-free comparison
+  function canonicalize(obj) {
+    if (obj === null || typeof obj !== 'object') return obj;
+    if (Array.isArray(obj)) return obj.map(canonicalize);
+    const sorted = {};
+    Object.keys(obj).sort().forEach(k => {
+      const val = obj[k];
+      if (val !== undefined) sorted[k] = canonicalize(val);
+    });
+    return sorted;
+  }
+
+  function getCanonicalJSON(obj) {
+    try {
+      return JSON.stringify(canonicalize(obj));
+    } catch (_) {
+      return '';
+    }
+  }
 
   function updateStatus(state, text) {
     const badge = document.getElementById('cloudBadge');
@@ -48,18 +70,19 @@ const Cloud = (() => {
 
       const subs = cloudData ? ensureArray(cloudData.subjects) : [];
       if (subs.length > 0) {
-        const cloudStr = JSON.stringify(cloudData);
-        if (cloudStr !== lastSavedJSON) {
-          lastSavedJSON = cloudStr;
+        const cloudCanonical = getCanonicalJSON(cloudData);
+        // Suppress self-echo if saved locally recently with identical data
+        const isRecentLocalSave = (Date.now() - lastLocalSaveTime) < 3000;
+        if (cloudCanonical && cloudCanonical !== lastSavedCanonical && !isRecentLocalSave) {
+          lastSavedCanonical = cloudCanonical;
           isRemoteUpdate = true;
           if (typeof _onDataReceived === 'function') {
-            _onDataReceived(cloudData);
+            _onDataReceived(cloudData, { isRemote: true });
           }
           isRemoteUpdate = false;
         }
       } else {
         // Cloud node is empty — push current local data to seed cloud immediately
-        console.log('Seeding cloud from local data...');
         const local = loadData();
         if (local && local.subjects && local.subjects.length) {
           save(local);
@@ -118,10 +141,10 @@ const Cloud = (() => {
     // 2. Periodic background pulse for multi-device synchronization
     if (_pollInterval) clearInterval(_pollInterval);
     _pollInterval = setInterval(() => {
-      if (!document.hidden && !isRemoteUpdate) {
+      if (!document.hidden && !isRemoteUpdate && (Date.now() - lastLocalSaveTime > 4000)) {
         fetchFromCloud();
       }
-    }, 15000);
+    }, 20000);
 
     // 3. Initialize Firebase Realtime DB SDK for live push streams
     if (typeof firebase !== 'undefined') {
@@ -153,11 +176,18 @@ const Cloud = (() => {
           const cloudData = snapshot.val();
           const subs = cloudData ? ensureArray(cloudData.subjects) : [];
           if (subs.length > 0) {
-            const cloudStr = JSON.stringify(cloudData);
-            if (cloudStr !== lastSavedJSON) {
-              lastSavedJSON = cloudStr;
+            const cloudCanonical = getCanonicalJSON(cloudData);
+            const isRecentLocalSave = (Date.now() - lastLocalSaveTime) < 3000;
+            if (cloudCanonical && cloudCanonical !== lastSavedCanonical && !isRecentLocalSave) {
+              lastSavedCanonical = cloudCanonical;
               isRemoteUpdate = true;
-              try { _onDataReceived(cloudData); } catch(e) { console.error('onDataReceived error:', e); }
+              try {
+                if (typeof _onDataReceived === 'function') {
+                  _onDataReceived(cloudData, { isRemote: true });
+                }
+              } catch(e) {
+                console.error('onDataReceived error:', e);
+              }
               isRemoteUpdate = false;
             }
           }
@@ -178,7 +208,8 @@ const Cloud = (() => {
   function save(data, onError) {
     // 1. Optimistic Local Save immediately (0ms)
     saveData(data);
-    lastSavedJSON = JSON.stringify(data);
+    lastSavedCanonical = getCanonicalJSON(data);
+    lastLocalSaveTime = Date.now();
 
     // 2. Push immediately via REST (fastest & most reliable)
     if (!isRemoteUpdate) {
@@ -203,15 +234,17 @@ const Cloud = (() => {
   }
 
   // Throttled / Debounced Cloud Save for frequent keystrokes
-  function saveDebounced(data, delay = 400, onError) {
+  function saveDebounced(data, delay = 500, onError) {
     saveData(data);
+    lastSavedCanonical = getCanonicalJSON(data);
+    lastLocalSaveTime = Date.now();
     if (_saveDebounceTimer) clearTimeout(_saveDebounceTimer);
     _saveDebounceTimer = setTimeout(() => {
       save(data, onError);
     }, delay);
   }
 
-  return { init, save, saveDebounced, syncNow };
+  return { init, save, saveDebounced, syncNow, getCanonicalJSON };
 })();
 
 if (typeof window !== 'undefined') {

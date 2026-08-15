@@ -51,22 +51,37 @@ const App = (() => {
     return list;
   }
 
-  // ── Stats ──────────────────────────────────────────────
+  // ── Stats (Fluid, Anti-Jitter Counter Engine) ──────────
   const _statPrev = { total: 0, dl: 0, pr: 0, pending: 0 };
 
-  function animateCount(el, from, to, duration) {
+  function animateCount(el, from, to, duration = 380) {
     if (!el) return;
-    if (from === to) { el.textContent = to; return; }
-    const start = performance.now();
-    const diff = to - from;
-    function step(now) {
-      const elapsed = Math.min((now - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - elapsed, 3);
-      el.textContent = Math.round(from + diff * eased);
-      if (elapsed < 1) requestAnimationFrame(step);
-      else el.textContent = to;
+    if (el._rafId) {
+      cancelAnimationFrame(el._rafId);
+      el._rafId = null;
     }
-    requestAnimationFrame(step);
+    const currentVal = parseFloat(el.textContent.replace(/[^0-9.-]/g, ''));
+    const startVal = !isNaN(currentVal) ? currentVal : from;
+    if (startVal === to) {
+      el.textContent = to;
+      return;
+    }
+    const startTime = performance.now();
+    const diff = to - startVal;
+
+    function step(now) {
+      const elapsed = Math.min((now - startTime) / duration, 1);
+      // Smooth quintic easeOut for ultra fluid glide
+      const eased = 1 - Math.pow(1 - elapsed, 4);
+      el.textContent = Math.round(startVal + diff * eased);
+      if (elapsed < 1) {
+        el._rafId = requestAnimationFrame(step);
+      } else {
+        el.textContent = to;
+        el._rafId = null;
+      }
+    }
+    el._rafId = requestAnimationFrame(step);
   }
 
   function updateStats() {
@@ -89,10 +104,10 @@ const App = (() => {
     const pct = total ? Math.round((dl / total) * 100) : 0;
     const prPct = total ? Math.round((pr / total) * 100) : 0;
 
-    animateCount(document.getElementById('statTotal'), _statPrev.total, total, 500);
-    animateCount(document.getElementById('statDownloaded'), _statPrev.dl, dl, 500);
-    animateCount(document.getElementById('statPrinted'), _statPrev.pr, pr, 500);
-    animateCount(document.getElementById('statPending'), _statPrev.pending, pending, 500);
+    animateCount(document.getElementById('statTotal'), _statPrev.total, total);
+    animateCount(document.getElementById('statDownloaded'), _statPrev.dl, dl);
+    animateCount(document.getElementById('statPrinted'), _statPrev.pr, pr);
+    animateCount(document.getElementById('statPending'), _statPrev.pending, pending);
     _statPrev.total = total; _statPrev.dl = dl; _statPrev.pr = pr; _statPrev.pending = pending;
 
     const ringFill = document.getElementById('ringFill');
@@ -222,12 +237,35 @@ const App = (() => {
     }
 
     const visibleSems = (data.settings && Array.isArray(data.settings.visibleSems)) ? data.settings.visibleSems : [1, 2, 3, 4, 5, 6];
+    
+    // In-place update to preserve CSS bar width transitions smoothly
+    const existingCards = grid.querySelectorAll('.readiness-card');
+    if (existingCards.length === visibleSems.length) {
+      visibleSems.forEach((semNum, idx) => {
+        const card = existingCards[idx];
+        if (!card) return;
+        const stats = semMap[semNum] || { total: 0, dl: 0, pr: 0 };
+        const pct = stats.total ? Math.round((stats.dl / stats.total) * 100) : 0;
+        const statusBadge = pct >= 80 ? '🟢 Exam Ready' : pct >= 40 ? '🟡 Progressing' : '🔴 Needs Study';
+
+        const badgeEl = card.querySelector('.readiness-status-badge');
+        const fillEl = card.querySelector('.readiness-bar-fill');
+        const footers = card.querySelectorAll('.readiness-card-footer span');
+
+        if (badgeEl) badgeEl.textContent = statusBadge;
+        if (fillEl) fillEl.style.width = `${pct}%`;
+        if (footers[0]) footers[0].textContent = `${pct}% Downloaded`;
+        if (footers[1]) footers[1].textContent = `${stats.dl}/${stats.total} Parts`;
+      });
+      return;
+    }
+
     grid.innerHTML = visibleSems.map(semNum => {
       const stats = semMap[semNum] || { total: 0, dl: 0, pr: 0 };
       const pct = stats.total ? Math.round((stats.dl / stats.total) * 100) : 0;
       const statusBadge = pct >= 80 ? '🟢 Exam Ready' : pct >= 40 ? '🟡 Progressing' : '🔴 Needs Study';
       return `
-        <div class="readiness-card">
+        <div class="readiness-card" data-sem="${semNum}">
           <div class="readiness-card-head">
             <span class="readiness-sem-title">Sem ${semNum}</span>
             <span class="readiness-status-badge">${statusBadge}</span>
@@ -957,6 +995,90 @@ const App = (() => {
   // Countdown tick
   setInterval(updateCountdown, 60000);
 
+  function isUserInteracting() {
+    const el = document.activeElement;
+    if (!el) return false;
+    const tag = el.tagName ? el.tagName.toUpperCase() : '';
+    return tag === 'INPUT' || tag === 'TEXTAREA' || el.isContentEditable;
+  }
+
+  function handleRemoteCloudUpdate(newCloudData) {
+    const sanitized = sanitizeData(newCloudData);
+    if (!sanitized || !Array.isArray(sanitized.subjects) || !sanitized.subjects.length) return;
+
+    const prevTab = (data.settings && data.settings.activeTab) ? data.settings.activeTab : 'pdf';
+    data = sanitized;
+    if (!data.settings) data.settings = {};
+    if (!data.settings.activeTab) data.settings.activeTab = prevTab;
+    saveData(data);
+
+    // If user is currently typing/editing, update stats & in-place states without disturbing focus
+    if (isUserInteracting()) {
+      updateStats();
+      renderReadinessGrid();
+      if (data.settings.activeTab === 'marks' && typeof MarksHub.updateLiveSummary === 'function') {
+        MarksHub.updateLiveSummary();
+      }
+      return;
+    }
+
+    const activeTab = data.settings.activeTab || 'pdf';
+    if (activeTab === 'pdf') {
+      const container = document.getElementById('subjectsContainer');
+      const existingCards = container ? container.querySelectorAll('.subject-card') : [];
+      const visibleSubjects = getVisibleSubjects();
+
+      // If existing card count matches visible subjects, update cards surgically in-place
+      if (existingCards.length > 0 && existingCards.length === visibleSubjects.length) {
+        updateStats();
+        renderReadinessGrid();
+        renderSemBar();
+
+        visibleSubjects.forEach(s => {
+          updateSubjectCardMiniProgress(s.id);
+          if (s.units && Array.isArray(s.units)) {
+            s.units.forEach(u => {
+              if (u.parts && Array.isArray(u.parts)) {
+                u.parts.forEach(p => {
+                  const partCard = document.querySelector(`.part-card[data-part-id="${p.id}"]`);
+                  if (partCard) {
+                    partCard.classList.toggle('done', !!p.downloaded);
+                    partCard.classList.toggle('printed', !!p.printed);
+                    const dlBtn = partCard.querySelector('.ck-dl');
+                    if (dlBtn) {
+                      dlBtn.classList.toggle('checked', !!p.downloaded);
+                      dlBtn.innerHTML = p.downloaded ? `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>` : '';
+                    }
+                    const prBtn = partCard.querySelector('.ck-pr');
+                    if (prBtn) {
+                      prBtn.classList.toggle('checked', !!p.printed);
+                    }
+                  }
+                });
+              }
+            });
+          }
+        });
+        return;
+      }
+    } else if (activeTab === 'marks') {
+      const marksContainer = document.getElementById('marksSubjectsContainer');
+      const existingMarksCards = marksContainer ? marksContainer.querySelectorAll('.marks-subject-card') : [];
+      const activeSem = (typeof MarksHub.getActiveMarksSem === 'function') ? MarksHub.getActiveMarksSem() : 1;
+      const semSubs = (data.subjects || []).filter(s => (s.sem || 1) === activeSem);
+
+      if (existingMarksCards.length > 0 && existingMarksCards.length === semSubs.length) {
+        semSubs.forEach(s => {
+          MarksHub.updateSubjectCardLive(s.id);
+        });
+        MarksHub.updateLiveSummary();
+        return;
+      }
+    }
+
+    render();
+  }
+
   function init() {
     // Force default view to PDF Tracker on start
     if (!data.settings) data.settings = {};
@@ -968,16 +1090,9 @@ const App = (() => {
     // Initial render
     render();
 
-    // Cloud sync — load from Firebase on init, then listen for changes
+    // Cloud sync — load from Firebase on init, then listen for changes smoothly
     Cloud.init((newCloudData) => {
-      const sanitized = sanitizeData(newCloudData);
-      if (sanitized && Array.isArray(sanitized.subjects) && sanitized.subjects.length) {
-        data = sanitized;
-        if (!data.settings) data.settings = {};
-        if (!data.settings.activeTab) data.settings.activeTab = 'pdf';
-        saveData(data);
-        render();
-      }
+      handleRemoteCloudUpdate(newCloudData);
     });
   }
 
