@@ -5105,38 +5105,204 @@ button:active,
 .grade-DD { background: #f1f5f9; color: #475569; }
 .grade-FF { background: #ef4444; color: #ffffff; }
 
-/* ── FORMULA CARD ────────────────────────────────────────── */
+/* ── FORMULA CARD & MATH NOTATION ────────────────────────── */
+.formula-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .formula-card {
   background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
   color: #fff;
   border-radius: var(--r-md);
-  padding: 14px;
+  padding: 14px 16px;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.15);
+}
+
+.formula-card-cpi {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #1e3a5f 100%);
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+.formula-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
 }
 
 .formula-title {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.8);
-  margin-bottom: 6px;
+  color: rgba(255, 255, 255, 0.95);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.formula-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border-radius: var(--r-full);
+  background: rgba(99, 102, 241, 0.3);
+  border: 1px solid rgba(165, 180, 252, 0.4);
+  color: #c7d2fe;
+}
+
+.badge-cpi {
+  background: rgba(14, 165, 233, 0.25);
+  border-color: rgba(56, 189, 248, 0.4);
+  color: #7dd3fc;
 }
 
 .formula-math-box {
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: var(--r-sm);
-  padding: 10px;
-  text-align: center;
-  font-size: 0.88rem;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  overflow-x: auto;
+}
+
+.math-eq-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  min-width: fit-content;
+}
+
+.math-target {
+  font-size: 1.15rem;
   font-weight: 800;
-  color: #7dd3fc;
-  margin-bottom: 8px;
+  color: #38bdf8;
+  letter-spacing: 0.03em;
+  text-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
   font-family: var(--font);
 }
 
-.formula-explain {
+.math-target-cpi {
+  color: #34d399;
+  text-shadow: 0 0 12px rgba(52, 211, 153, 0.4);
+}
+
+.math-eq-sign {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.math-fraction {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+
+.math-numerator {
+  padding: 2px 8px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #f8fafc;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.math-divider {
+  width: 100%;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 1px;
+  margin: 2px 0;
+}
+
+.math-denominator {
+  padding: 2px 8px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #93c5fd;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.math-sigma {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #fbbf24;
+  margin-right: 2px;
+}
+
+.math-sym {
+  color: #e2e8f0;
+  font-weight: 700;
+}
+
+.math-sym sub, .math-numerator sub, .math-denominator sub {
+  font-size: 0.7em;
+  color: #94a3b8;
+  font-weight: 600;
+  vertical-align: sub;
+}
+
+.math-fraction-desc .math-numerator {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #cbd5e1;
+}
+
+.math-fraction-desc .math-denominator {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #7dd3fc;
+}
+
+.formula-legend-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 6px;
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: var(--r-sm);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.formula-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 0.72rem;
-  color: rgba(255, 255, 255, 0.8);
-  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.legend-badge {
+  background: rgba(99, 102, 241, 0.35);
+  border: 1px solid rgba(129, 140, 248, 0.4);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  color: #a5b4fc;
+  font-size: 0.68rem;
+  white-space: nowrap;
+}
+
+.formula-explain {
+  font-size: 0.73rem;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.45;
 }
 
 /* ── INTERACTIVE SIMULATOR ───────────────────────────────── */

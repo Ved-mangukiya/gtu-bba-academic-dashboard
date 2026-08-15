@@ -601,12 +601,93 @@
           <div class="guide-step-badge">Step 3</div>
           <h4 class="guide-step-h4">How Semester SPI & CGPA Are Calculated</h4>
           
-          <div class="formula-card">
-            <div class="formula-title">Semester Performance Index (SPI) Formula:</div>
-            <div class="formula-math-box">
-              <span class="formula-eq">$$\text{SPI} = \frac{\sum (\text{Subject Credits } C_i \times \text{Grade Point } GP_i)}{\sum \text{Total Semester Credits } (20)}$$</span>
+          <div class="formula-grid">
+            <!-- SPI Formula Card -->
+            <div class="formula-card">
+              <div class="formula-card-top">
+                <div class="formula-title">
+                  <span>📐 Semester Performance Index (SPI) Formula</span>
+                </div>
+                <span class="formula-badge">Single Semester (20 Credits)</span>
+              </div>
+
+              <div class="formula-math-box">
+                <div class="math-eq-row">
+                  <span class="math-target">SPI</span>
+                  <span class="math-eq-sign">=</span>
+                  <div class="math-fraction">
+                    <div class="math-numerator">
+                      <span class="math-sigma">∑</span> ( <span class="math-sym">C<sub>i</sub></span> × <span class="math-sym">GP<sub>i</sub></span> )
+                    </div>
+                    <div class="math-divider"></div>
+                    <div class="math-denominator">
+                      <span class="math-sigma">∑</span> <span class="math-sym">C<sub>i</sub></span>
+                    </div>
+                  </div>
+                  <span class="math-eq-sign">=</span>
+                  <div class="math-fraction math-fraction-desc">
+                    <div class="math-numerator">Total Credit Points Earned (∑ CP)</div>
+                    <div class="math-divider"></div>
+                    <div class="math-denominator">Total Semester Credits (20)</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="formula-legend-grid">
+                <div class="formula-legend-item">
+                  <span class="legend-badge">C<sub>i</sub></span>
+                  <span>Subject Credits (4c or 2c)</span>
+                </div>
+                <div class="formula-legend-item">
+                  <span class="legend-badge">GP<sub>i</sub></span>
+                  <span>Grade Point Scored (0 to 10)</span>
+                </div>
+                <div class="formula-legend-item">
+                  <span class="legend-badge">∑ C<sub>i</sub></span>
+                  <span>Total Sem Credits = 20</span>
+                </div>
+                <div class="formula-legend-item">
+                  <span class="legend-badge">C<sub>i</sub> × GP<sub>i</sub></span>
+                  <span>Credit Points (e.g. 4 × 9 = 36)</span>
+                </div>
+              </div>
+
+              <p class="formula-explain">4-Credit subjects carry <strong>double the weight (4×)</strong> of 2-Credit subjects (2×). Scoring an AA (10 GP) in a 4-credit subject contributes <strong>40 credit points</strong>, while in a 2-credit subject it contributes <strong>20 points</strong>.</p>
             </div>
-            <p class="formula-explain">4-Credit subjects carry <strong>double the weight (4×)</strong> of 2-Credit subjects (2×). Scoring an AA (10 GP) in a 4-credit subject contributes 40 credit points, while in a 2-credit subject it contributes 20 points.</p>
+
+            <!-- CPI / CGPA Formula Card -->
+            <div class="formula-card formula-card-cpi">
+              <div class="formula-card-top">
+                <div class="formula-title">
+                  <span>📊 Cumulative Performance Index (CPI / CGPA)</span>
+                </div>
+                <span class="formula-badge badge-cpi">All Completed Semesters</span>
+              </div>
+
+              <div class="formula-math-box">
+                <div class="math-eq-row">
+                  <span class="math-target math-target-cpi">CPI</span>
+                  <span class="math-eq-sign">=</span>
+                  <div class="math-fraction">
+                    <div class="math-numerator">
+                      <span class="math-sigma">∑</span> ( <span class="math-sym">C<sub>i</sub></span> × <span class="math-sym">GP<sub>i</sub></span> )<sub>all semesters</sub>
+                    </div>
+                    <div class="math-divider"></div>
+                    <div class="math-denominator">
+                      <span class="math-sigma">∑</span> <span class="math-sym">C<sub>i</sub></span> <sub>all semesters</sub>
+                    </div>
+                  </div>
+                  <span class="math-eq-sign">=</span>
+                  <div class="math-fraction math-fraction-desc">
+                    <div class="math-numerator">Total Credit Points (All Semesters)</div>
+                    <div class="math-divider"></div>
+                    <div class="math-denominator">Total Credits Attempted</div>
+                  </div>
+                </div>
+              </div>
+
+              <p class="formula-explain">CPI measures cumulative academic excellence across your entire degree by dividing the sum of all earned credit points by total credits across all semesters.</p>
+            </div>
           </div>
         </div>
 
