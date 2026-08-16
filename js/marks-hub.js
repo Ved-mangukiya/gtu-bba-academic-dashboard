@@ -1,6 +1,6 @@
 // ============================================================
 //  GTU BBA Academic Dashboard — Marks & GTU Performance Hub Controller
-//  Optimistic UI Updates · Live Dynamic Shortfall Balancer · GTU Grading Engine
+//  Summary → Detail Architecture · Dynamic Shortfall Balancer · Progressive Disclosure
 // ============================================================
 
 const MarksHub = (() => {
@@ -121,10 +121,7 @@ const MarksHub = (() => {
     return { totalObtained, totalMaxMarks, overallPct, spi, totalCreditsSum, weightedGpSum, failCount };
   }
 
-  // ── DYNAMIC SHORTFALL BALANCER ALGORITHM ──────────────────
-  // Calculates real-time minimum requirements for remaining components
-  // If one component drops (e.g. got 26 vs baseline 27), the deficit (+1)
-  // is dynamically distributed to the remaining components (Practical or ESE).
+  // Dynamic shortfall balancer algorithm
   function calcDynamicSubjectTargets(s, targetSpi) {
     const res = calcSubjectMarks(s);
     const m = s.marks || {};
@@ -136,158 +133,73 @@ const MarksHub = (() => {
     const maxInternal = s.maxInternal || 30;
     const maxPractical = s.maxPractical || (credits === 2 ? 20 : 50);
     const maxEse = s.maxEse || (credits === 2 ? 50 : 70);
-    const eseMinPassing = Math.ceil(maxEse * 0.35); // GTU mandatory 35% in ESE
+    const eseMinPassing = Math.ceil(maxEse * 0.35);
 
-    // Baseline standard targets proportional to target SPI
     let baseInternal = Math.round(maxInternal * (targetPct / 100));
     let basePractical = Math.round(maxPractical * (targetPct / 100));
-    let baseEse = Math.max(eseMinPassing, targetTotalMarks - (baseInternal + basePractical));
 
-    if (targetSpi >= 9.5) { // AA (85%+)
+    if (targetSpi >= 9.5) {
       baseInternal = credits === 4 ? 28 : 27;
       basePractical = credits === 4 ? 44 : 18;
-      baseEse = credits === 4 ? 58 : 42;
-    } else if (targetSpi >= 8.5) { // AB (75%+)
-      baseInternal = credits === 4 ? 27 : 26;
-      basePractical = credits === 4 ? 41 : 16;
-      baseEse = credits === 4 ? 56 : 38;
-    } else if (targetSpi >= 7.5) { // BB (65%+)
-      baseInternal = credits === 4 ? 22 : 21;
-      basePractical = credits === 4 ? 34 : 14;
-      baseEse = credits === 4 ? 46 : 32;
-    } else if (targetSpi >= 6.5) { // BC (55%+)
-      baseInternal = credits === 4 ? 18 : 17;
-      basePractical = credits === 4 ? 28 : 11;
-      baseEse = credits === 4 ? 38 : 28;
-    }
-
-    let baseMid = Math.min(20, Math.ceil(baseInternal * (20 / 30)));
-    let baseAtt = Math.min(5, Math.ceil(baseInternal * (5 / 30)));
-    let baseBeh = Math.max(0, baseInternal - (baseMid + baseAtt));
-
-    // Dynamic field targets calculation based on entered inputs
-    const hasMid = typeof m.internalMid === 'number';
-    const hasAtt = typeof m.internalAtt === 'number';
-    const hasBeh = typeof m.internalBeh === 'number';
-    const hasLump = typeof m.internalLumpsum === 'number';
-    const hasPr = typeof m.practical === 'number';
-    const hasEse = typeof m.ese === 'number';
-
-    let dynMid = baseMid;
-    let dynAtt = baseAtt;
-    let dynBeh = baseBeh;
-    let dynLump = baseInternal;
-    let dynPractical = basePractical;
-    let dynEse = baseEse;
-
-    // Calculate shortfall or surplus in entered components
-    let enteredSum = 0;
-    let baselineSumOfEntered = 0;
-
-    if (m.isLumpsum) {
-      if (hasLump) {
-        enteredSum += m.internalLumpsum;
-        baselineSumOfEntered += baseInternal;
-      }
+    } else if (targetSpi >= 8.5) {
+      baseInternal = credits === 4 ? 26 : 25;
+      basePractical = credits === 4 ? 40 : 16;
+    } else if (targetSpi >= 7.5) {
+      baseInternal = credits === 4 ? 23 : 22;
+      basePractical = credits === 4 ? 35 : 14;
+    } else if (targetSpi >= 6.5) {
+      baseInternal = credits === 4 ? 20 : 19;
+      basePractical = credits === 4 ? 30 : 12;
     } else {
-      if (hasMid) { enteredSum += m.internalMid; baselineSumOfEntered += baseMid; }
-      if (hasAtt) { enteredSum += m.internalAtt; baselineSumOfEntered += baseAtt; }
-      if (hasBeh) { enteredSum += m.internalBeh; baselineSumOfEntered += baseBeh; }
+      baseInternal = credits === 4 ? 16 : 15;
+      basePractical = credits === 4 ? 24 : 10;
     }
 
-    if (hasPr) {
-      enteredSum += m.practical;
-      baselineSumOfEntered += basePractical;
-    }
-    if (hasEse) {
-      enteredSum += m.ese;
-      baselineSumOfEntered += baseEse;
-    }
+    const actualInternal = res.hasInternalEntered ? res.internalTotal : baseInternal;
+    const actualPractical = res.hasPracticalEntered ? res.practical : basePractical;
 
-    const netShortfall = baselineSumOfEntered - enteredSum; // positive = shortfall, negative = bonus surplus
+    const remainingForEse = targetTotalMarks - (actualInternal + actualPractical);
+    const dynEse = Math.min(Math.max(remainingForEse, eseMinPassing), maxEse);
 
-    const isIntFullyDone = m.isLumpsum ? hasLump : (hasMid && hasAtt && hasBeh);
-    const unenteredBuckets = (!isIntFullyDone ? 1 : 0) + (!hasPr ? 1 : 0) + (!hasEse ? 1 : 0);
+    const intDiff = res.hasInternalEntered ? res.internalTotal - baseInternal : 0;
+    const practDiff = res.hasPracticalEntered ? res.practical - basePractical : 0;
+    const totalDiff = intDiff + practDiff;
 
-    if (unenteredBuckets > 0 && netShortfall !== 0) {
-      const sharePerBucket = Math.ceil(netShortfall / unenteredBuckets);
-
-      if (!hasEse) {
-        dynEse = Math.min(maxEse, Math.max(eseMinPassing, baseEse + sharePerBucket));
-      }
-      if (!hasPr) {
-        dynPractical = Math.min(maxPractical, Math.max(0, basePractical + sharePerBucket));
-      }
-      if (m.isLumpsum && !hasLump) {
-        dynLump = Math.min(maxInternal, Math.max(0, baseInternal + sharePerBucket));
-      } else if (!m.isLumpsum && !isIntFullyDone) {
-        const remainingIntFields = (!hasMid ? 1 : 0) + (!hasAtt ? 1 : 0) + (!hasBeh ? 1 : 0);
-        const subShare = Math.ceil(sharePerBucket / (remainingIntFields || 1));
-        if (!hasMid) dynMid = Math.min(20, Math.max(0, baseMid + subShare));
-        if (!hasAtt) dynAtt = Math.min(5, Math.max(0, baseAtt + subShare));
-        if (!hasBeh) dynBeh = Math.min(5, Math.max(0, baseBeh + subShare));
-      }
-    } else if (!hasEse && hasPr && isIntFullyDone) {
-      const sumBeforeEse = res.internalTotal + res.practical;
-      dynEse = Math.min(maxEse, Math.max(eseMinPassing, targetTotalMarks - sumBeforeEse));
-    }
-
-    // Dynamic advice HTML generator
-    let adviceType = 'neutral';
+    let adviceType = 'normal';
     let adviceHtml = '';
 
-    const allEntered = isIntFullyDone && hasPr && hasEse;
-    if (allEntered) {
-      if (res.totalScore >= targetTotalMarks && res.pass) {
-        adviceType = 'pass';
-        adviceHtml = `<strong>🎉 Target Secured!</strong> Scored <strong>${res.totalScore} / ${s.maxMarks}</strong> (${res.pct.toFixed(1)}% · <strong>${res.grade} Grade</strong>). Meets target ${targetDetails.grade}!`;
-      } else {
-        const diff = targetTotalMarks - res.totalScore;
-        adviceType = 'fail';
-        adviceHtml = `<strong>⚠️ Scored ${res.totalScore} / ${s.maxMarks}</strong> (${res.grade} Grade). Shortfall of <strong>${diff} marks</strong> to reach ${targetDetails.grade} (${targetTotalMarks} pts).`;
-      }
-    } else if (netShortfall > 0) {
-      adviceType = 'warn';
-      adviceHtml = `<span>⚠️ <strong>${netShortfall} Mark Shortfall</strong> in entered marks. Live targets for remaining fields dynamically increased:</span>
-        <div class="dynamic-target-chips">
-          ${!hasPr ? `<span class="target-chip chip-boost">Practical: <strong>${dynPractical}/${maxPractical}</strong></span>` : ''}
-          ${!hasPr && !hasEse ? `<span class="target-chip-or">·</span>` : ''}
-          ${!hasEse ? `<span class="target-chip chip-boost">ESE Exam: <strong>${dynEse}/${maxEse}</strong></span>` : ''}
-        </div>`;
-    } else if (netShortfall < 0) {
-      const bonus = Math.abs(netShortfall);
-      adviceType = 'pass';
-      adviceHtml = `<span>🎉 <strong>+${bonus} Bonus Marks Secured</strong>! Live targets for remaining fields relaxed:</span>
-        <div class="dynamic-target-chips">
-          ${!hasPr ? `<span class="target-chip chip-ease">Practical: <strong>${dynPractical}/${maxPractical}</strong></span>` : ''}
-          ${!hasPr && !hasEse ? `<span class="target-chip-or">·</span>` : ''}
-          ${!hasEse ? `<span class="target-chip chip-ease">ESE Exam: <strong>${dynEse}/${maxEse}</strong></span>` : ''}
-        </div>`;
+    if (res.hasEseEntered && res.isEseFailed) {
+      adviceType = 'shortfall';
+      adviceHtml = `⚠️ <strong>ESE Passing Threshold:</strong> Minimum ${eseMinPassing}/${maxEse} required to pass. Current ESE is below threshold.`;
+    } else if (totalDiff > 0) {
+      adviceType = 'ahead';
+      adviceHtml = `🟢 <strong>Target Balanced:</strong> Strong internal/practical (+${totalDiff} pts) lowers ESE target to <strong>${dynEse}/${maxEse}</strong> for ${targetDetails.grade} grade.`;
+    } else if (totalDiff < 0) {
+      adviceType = 'tight';
+      adviceHtml = `⚡ <strong>Target Rebalanced:</strong> Internal shortfall (${totalDiff} pts) raised required ESE target to <strong>${dynEse}/${maxEse}</strong> for ${targetDetails.grade} grade.`;
     } else {
-      adviceType = 'neutral';
-      adviceHtml = `<span>🎯 <strong>Target ${targetDetails.grade} (${targetSpi} SPI · ${targetTotalMarks}/${s.maxMarks} pts)</strong>: Aim for Internal <strong>${baseInternal}/${maxInternal}</strong>, Practical <strong>${basePractical}/${maxPractical}</strong>, ESE <strong>${baseEse}/${maxEse}</strong>.</span>`;
+      adviceHtml = `🎯 <strong>Baseline Target:</strong> Aim for Internal ${baseInternal}/${maxInternal}, Practical ${basePractical}/${maxPractical}, and ESE ${dynEse}/${maxEse} for ${targetDetails.grade} grade.`;
     }
+
+    const dynMid = Math.round(baseInternal * (20 / 30));
+    const dynAtt = Math.round(baseInternal * (5 / 30));
+    const dynBeh = Math.round(baseInternal * (5 / 30));
 
     return {
       targetTotalMarks,
-      targetGrade: targetDetails.grade,
-      baseInternal,
-      basePractical,
-      baseEse,
+      dynEse,
+      dynInternal: baseInternal,
+      dynPractical: basePractical,
+      dynLump: baseInternal,
       dynMid,
       dynAtt,
       dynBeh,
-      dynLump,
-      dynPractical,
-      dynEse,
       adviceType,
       adviceHtml
     };
   }
 
-  // ── LIVE SURGICAL DOM UPDATER (Fixes Keyboard 1-Digit Bug) ──
-  // Updates only the computed text nodes and classes in place,
-  // preventing inputs from re-rendering and losing focus/keyboard.
+  // ── IN-PLACE SUBJECT CARD UPDATER (Non-destructive for active typing) ──
   function updateSubjectCardLive(subId) {
     const cardEl = document.querySelector(`.marks-subject-card[data-sub-id="${subId}"]`);
     if (!cardEl) return;
@@ -303,7 +215,6 @@ const MarksHub = (() => {
     // 1. Grade Badge Pill
     const gradeBadge = cardEl.querySelector('.grade-badge-pill');
     if (gradeBadge) {
-      gradeBadge.className = `grade-badge-pill grade-${res.grade}`;
       gradeBadge.textContent = `${res.grade} (${res.gp})`;
     }
 
@@ -320,75 +231,49 @@ const MarksHub = (() => {
       internalTitle.textContent = `Internal Score (${res.internalTotal} / ${res.maxInternal})`;
     }
 
-    // 4. Footer Total & Percentage
+    // 4. Header Score summary
+    const headScore = cardEl.querySelector('.marks-sub-meta');
+    if (headScore) {
+      headScore.innerHTML = `<span>${App.esc(s.code)}</span> · <span>${res.credits} Credits</span> · <span>Score: <strong>${res.totalScore}/${res.maxMarks}</strong> (${res.pct.toFixed(1)}%)</span>`;
+    }
+
+    // 5. Footer Total & Percentage
     const totalScoreVal = cardEl.querySelector('.total-score-val');
     if (totalScoreVal) {
-      totalScoreVal.innerHTML = `Subject Total: <strong>${res.totalScore} / ${res.maxMarks}</strong>`;
+      totalScoreVal.innerHTML = `Total: <strong>${res.totalScore} / ${res.maxMarks}</strong>`;
     }
     const totalPctVal = cardEl.querySelector('.total-pct-val');
     if (totalPctVal) {
       totalPctVal.textContent = `${res.pct.toFixed(1)}%`;
     }
 
-    // 5. Dynamic Shortfall Balancer Advice Box
+    // 6. Dynamic Shortfall Balancer Advice Box
     const adviceBox = cardEl.querySelector('.marks-target-advisor');
     if (adviceBox) {
       adviceBox.className = `marks-target-advisor advisor-${dynTarget.adviceType}`;
       adviceBox.innerHTML = dynTarget.adviceHtml;
     }
 
-    // 6. Update Dynamic Watermark Placeholders, Benchmark Badges & Values (without interrupting active typing)
-    const m = s.marks || {};
-
-    const midInput = cardEl.querySelector('input[data-field="internalMid"]');
+    // 7. Update benchmarks & placeholders
     const midBadge = cardEl.querySelector('.field-benchmark-badge[data-benchmark-for="internalMid"]');
-    if (midInput) {
-      midInput.placeholder = `Target: ${dynTarget.dynMid}`;
-      if (document.activeElement !== midInput) midInput.value = (m.internalMid !== null && m.internalMid !== undefined) ? m.internalMid : '';
-    }
     if (midBadge) midBadge.textContent = `Target: ${dynTarget.dynMid} / 20`;
 
-    const attInput = cardEl.querySelector('input[data-field="internalAtt"]');
     const attBadge = cardEl.querySelector('.field-benchmark-badge[data-benchmark-for="internalAtt"]');
-    if (attInput) {
-      attInput.placeholder = `Target: ${dynTarget.dynAtt}`;
-      if (document.activeElement !== attInput) attInput.value = (m.internalAtt !== null && m.internalAtt !== undefined) ? m.internalAtt : '';
-    }
     if (attBadge) attBadge.textContent = `Target: ${dynTarget.dynAtt} / 5`;
 
-    const behInput = cardEl.querySelector('input[data-field="internalBeh"]');
     const behBadge = cardEl.querySelector('.field-benchmark-badge[data-benchmark-for="internalBeh"]');
-    if (behInput) {
-      behInput.placeholder = `Target: ${dynTarget.dynBeh}`;
-      if (document.activeElement !== behInput) behInput.value = (m.internalBeh !== null && m.internalBeh !== undefined) ? m.internalBeh : '';
-    }
     if (behBadge) behBadge.textContent = `Target: ${dynTarget.dynBeh} / 5`;
 
-    const lumpInput = cardEl.querySelector('input[data-field="internalLumpsum"]');
     const lumpBadge = cardEl.querySelector('.field-benchmark-badge[data-benchmark-for="internalLumpsum"]');
-    if (lumpInput) {
-      lumpInput.placeholder = `Target: ${dynTarget.dynLump}`;
-      if (document.activeElement !== lumpInput) lumpInput.value = (m.internalLumpsum !== null && m.internalLumpsum !== undefined) ? m.internalLumpsum : '';
-    }
     if (lumpBadge) lumpBadge.textContent = `Target: ${dynTarget.dynLump} / ${res.maxInternal}`;
 
-    const prInput = cardEl.querySelector('input[data-field="practical"]');
     const prBadge = cardEl.querySelector('.field-benchmark-badge[data-benchmark-for="practical"]');
-    if (prInput) {
-      prInput.placeholder = `Target: ${dynTarget.dynPractical}`;
-      if (document.activeElement !== prInput) prInput.value = (m.practical !== null && m.practical !== undefined) ? m.practical : '';
-    }
     if (prBadge) prBadge.textContent = `Target: ${dynTarget.dynPractical} / ${res.maxPractical}`;
 
-    const eseInput = cardEl.querySelector('input[data-field="ese"]');
     const eseBadge = cardEl.querySelector('.field-benchmark-badge[data-benchmark-for="ese"]');
-    if (eseInput) {
-      eseInput.placeholder = `Target: ${dynTarget.dynEse}`;
-      if (document.activeElement !== eseInput) eseInput.value = (m.ese !== null && m.ese !== undefined) ? m.ese : '';
-    }
     if (eseBadge) eseBadge.textContent = `Min ${Math.ceil(res.maxEse * 0.35)} | Target: ${dynTarget.dynEse} / ${res.maxEse}`;
 
-    // 7. Update global dashboard summaries in place
+    // 8. Update global dashboard summaries in place
     updateLiveSummary();
   }
 
@@ -397,16 +282,15 @@ const MarksHub = (() => {
     const stats = calcOverallMarksStats();
     const data = d();
 
-    // 1. SPI Card (Reflects active semester)
+    // 1. SPI Card
     const spiValEl = document.getElementById('summarySpiVal');
     const spiGradeEl = document.getElementById('summarySpiGrade');
-    const spiTitleEl = document.querySelector('.card-spi .marks-stat-title');
+    const spiTitleEl = document.getElementById('summarySpiTitle');
     if (spiTitleEl) spiTitleEl.textContent = `Semester ${activeMarksSem} SPI`;
     if (spiValEl) spiValEl.textContent = stats.spi.toFixed(2);
     if (spiGradeEl) {
       const gInfo = getGtuGradeAndPoints(stats.overallPct, stats.failCount > 0);
-      spiGradeEl.textContent = `${gInfo.grade} Grade`;
-      spiGradeEl.className = `marks-sub-label grade-${gInfo.grade}`;
+      spiGradeEl.textContent = `${gInfo.grade} Grade · ${gInfo.text}`;
     }
 
     // 2. Total Marks Card
@@ -417,8 +301,8 @@ const MarksHub = (() => {
     if (pctValEl) pctValEl.textContent = `${stats.overallPct.toFixed(1)}%`;
     if (passStatusEl) {
       passStatusEl.textContent = stats.failCount === 0
-        ? '🟢 All Subjects Clear (Pass)'
-        : `🔴 ${stats.failCount} Subject(s) Need Re-attempt`;
+        ? '🟢 All Papers Passing'
+        : `🔴 ${stats.failCount} Paper(s) Require Re-attempt`;
     }
 
     // 3. Multi-Semester CGPA Card & Table
@@ -448,52 +332,46 @@ const MarksHub = (() => {
       let semWeighted = 0, semCreds = 0, hasAnyEntered = false;
       subsInSem.forEach(s => {
         const res = calcSubjectMarks(s);
+        semWeighted += res.credits * res.gp;
+        semCreds += res.credits;
         if (res.hasInternalEntered || res.hasPracticalEntered || res.hasEseEntered) {
           hasAnyEntered = true;
         }
-        semWeighted += res.credits * res.gp;
-        semCreds += res.credits;
       });
-
-      const semSpi = semCreds ? semWeighted / semCreds : 0;
-      semSpiMap[sNum] = { hasData: hasAnyEntered, spi: semSpi, credits: semCreds || 20, gp: semWeighted };
-      if (hasAnyEntered && semCreds > 0) {
+      const semSpi = semCreds ? (semWeighted / semCreds) : 0;
+      semSpiMap[sNum] = { hasData: hasAnyEntered, spi: semSpi, credits: semCreds, gp: semWeighted };
+      if (hasAnyEntered) {
         totalWeightedPoints += semWeighted;
         totalCredits += semCreds;
       }
     }
 
     const cgpa = totalCredits ? (totalWeightedPoints / totalCredits) : (semSpiMap[activeMarksSem]?.spi || 0);
-    return { cgpa, totalCredits, totalWeightedPoints, semSpiMap };
+    return { cgpa, semSpiMap };
   }
 
-  // ── TARGET BACKTRACKER TOP ENGINE ─────────────────────────
+  // ── TARGET BACKTRACKER RENDER ──────────────────────────────
   function renderTargetBacktracker() {
     const data = d();
     const targetSpi = (data.settings && typeof data.settings.targetSpi === 'number') ? data.settings.targetSpi : 8.5;
-
-    // Sync dropdown menu if present
-    const selectEl = document.getElementById('targetSpiSelect');
-    if (selectEl) {
-      const matchOption = Array.from(selectEl.options).find(o => Math.abs(parseFloat(o.value) - targetSpi) < 0.01);
-      if (matchOption) {
-        selectEl.value = matchOption.value;
-      } else {
-        selectEl.value = targetSpi.toFixed(1);
-      }
-    }
-
     const targetDetails = getTargetGradeDetails(targetSpi);
     const targetPct = targetDetails.minPct;
+
+    const semEl = document.getElementById('targetActiveSemNum');
+    if (semEl) semEl.textContent = activeMarksSem;
+
+    const selectEl = document.getElementById('targetSpiSelect');
+    if (selectEl) selectEl.value = targetSpi.toFixed(1);
+
+    const semSubs = (data.subjects || []).filter(s => (s.sem || 1) === activeMarksSem);
+    let count4 = 0, count2 = 0;
+    let sumIntPr4 = 0, maxIntPr4 = 0;
+    let sumIntPr2 = 0, maxIntPr2 = 0;
 
     const targetTotal4 = Math.ceil(150 * (targetPct / 100));
     const targetTotal2 = Math.ceil(100 * (targetPct / 100));
 
-    const currentSemSubs = (data.subjects || []).filter(s => (s.sem || 1) === activeMarksSem);
-    let count4 = 0, sumIntPr4 = 0, maxIntPr4 = 0;
-    let count2 = 0, sumIntPr2 = 0, maxIntPr2 = 0;
-
-    currentSemSubs.forEach(s => {
+    semSubs.forEach(s => {
       const res = calcSubjectMarks(s);
       const intPrSum = res.internalTotal + res.practical;
       const intPrMax = res.maxInternal + res.maxPractical;
@@ -519,29 +397,28 @@ const MarksHub = (() => {
     const suggBox = document.getElementById('targetSuggestionBox');
 
     if (ese4El) ese4El.textContent = `${ese4Needed} / 70`;
-    if (grade4El) grade4El.textContent = `Target Grade: ${targetDetails.grade}`;
+    if (grade4El) grade4El.textContent = `Grade Req: ${targetDetails.grade}`;
     if (ese2El) ese2El.textContent = `${ese2Needed} / 50`;
-    if (grade2El) grade2El.textContent = `Target Grade: ${targetDetails.grade}`;
+    if (grade2El) grade2El.textContent = `Grade Req: ${targetDetails.grade}`;
 
     const avgIntPct = Math.round(((avgIntPrPct4 + avgIntPrPct2) / 2) * 100);
     if (intValEl) intValEl.textContent = `${avgIntPct}% Avg`;
-    if (intSubEl) intSubEl.textContent = avgIntPct >= targetPct ? '🟢 Internal Score Strong' : `⚠️ Target >${targetPct}% Internals`;
+    if (intSubEl) intSubEl.textContent = avgIntPct >= targetPct ? '🟢 Safe Internals' : `⚠️ Aim >${targetPct}%`;
 
     if (suggBox) {
       const currStats = calcOverallMarksStats();
-      let statusIcon = '⚡', statusMsg = '';
+      let statusMsg = '';
       if (currStats.spi >= targetSpi && currStats.totalObtained > 0) {
-        statusIcon = '🎉';
-        statusMsg = `<strong>Outstanding!</strong> Sem ${activeMarksSem} SPI of <strong>${currStats.spi.toFixed(2)}</strong> meets your <strong>${targetDetails.grade}</strong> target (<strong>${targetSpi.toFixed(2)} SPI</strong>)! Keep up the momentum.`;
+        statusMsg = `🎉 Sem ${activeMarksSem} SPI of <strong>${currStats.spi.toFixed(2)}</strong> meets your <strong>${targetDetails.grade}</strong> target (<strong>${targetSpi.toFixed(2)} SPI</strong>).`;
       } else {
-        statusMsg = `To secure <strong>${targetDetails.grade} Grade</strong> in Sem ${activeMarksSem} (<strong>${targetSpi.toFixed(2)} SPI</strong> · <strong>${targetPct}% marks</strong>), maintain at least <strong>${ese4Needed}/70</strong> in 4-Credit ESE and <strong>${ese2Needed}/50</strong> in 2-Credit ESE papers. Live dynamic advisor will rebalance shortfalls below.`;
+        statusMsg = `🎯 To reach <strong>${targetDetails.grade} Grade (${targetSpi.toFixed(1)} SPI · ${targetPct}%)</strong>, score approx. <strong>${ese4Needed}/70</strong> in 4-Credit & <strong>${ese2Needed}/50</strong> in 2-Credit ESE papers.`;
       }
-      suggBox.innerHTML = `<span class="target-sugg-icon">${statusIcon}</span> <div>${statusMsg}</div>`;
+      suggBox.innerHTML = `<div>${statusMsg}</div>`;
     }
   }
 
+  // Collapsed by default — tracks expanded subject IDs
   const expandedMarksSubs = new Set();
-  let hasAutoExpanded = false;
 
   function toggleMarksSubject(subId) {
     if (expandedMarksSubs.has(subId)) {
@@ -555,224 +432,184 @@ const MarksHub = (() => {
     }
   }
 
-  function toggleAllMarksSubjects() {
-    const data = d();
-    const semSubs = (data.subjects || []).filter(s => (s.sem || 1) === activeMarksSem);
-    const allOpen = semSubs.length > 0 && semSubs.every(s => expandedMarksSubs.has(s.id));
-    if (allOpen) {
-      semSubs.forEach(s => expandedMarksSubs.delete(s.id));
-    } else {
-      semSubs.forEach(s => expandedMarksSubs.add(s.id));
-    }
-    renderMarksHub();
-  }
-
-  // ── FULL RENDER (Used on tab switch / reset) ──────────────
+  // ── FULL RENDER (Tab switch / Semester change) ─────────────
   function renderMarksHub() {
     try {
       renderTargetBacktracker();
 
       const data = d();
       const targetSpi = (data.settings && typeof data.settings.targetSpi === 'number') ? data.settings.targetSpi : 8.5;
-      
-      // Get visible semesters from settings (which are controlled by PDF Tracker tabs)
       const visibleSems = (data.settings && Array.isArray(data.settings.visibleSems)) ? data.settings.visibleSems : [1, 2, 3, 4, 5, 6];
     
-      // Auto-select the first visible semester if activeMarksSem is not visible
       if (!visibleSems.includes(activeMarksSem)) {
         activeMarksSem = visibleSems.length ? visibleSems[0] : 1;
       }
 
       const semSubs = (data.subjects || []).filter(s => (s.sem || 1) === activeMarksSem);
 
-      // Auto-expand all subject cards on initial view so input boxes are immediately visible
-      if (!hasAutoExpanded && semSubs.length > 0) {
-        semSubs.forEach(s => expandedMarksSubs.add(s.id));
-        hasAutoExpanded = true;
-      }
-
-      const allOpen = semSubs.length > 0 && semSubs.every(s => expandedMarksSubs.has(s.id));
-
       const marksSemFiltersEl = document.getElementById('marksSemFilters');
       if (marksSemFiltersEl) {
         marksSemFiltersEl.innerHTML = `
-          <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; flex-wrap: wrap; gap: 8px;">
-            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-              ${visibleSems.map(sem => `
-                <button class="pill ${sem === activeMarksSem ? 'active' : ''}" onclick="MarksHub.setActiveMarksSem(${sem})">
-                  Semester ${sem}
-                </button>
-              `).join('')}
-            </div>
-            ${semSubs.length > 0 ? `
-              <button class="btn btn-ghost btn-xs" onclick="MarksHub.toggleAllMarksSubjects()" style="font-weight: 700; font-size: 0.75rem; padding: 4px 10px;">
-                ${allOpen ? '📁 Collapse All' : '📂 Expand All Cards'}
+          <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+            ${visibleSems.map(sem => `
+              <button class="pill ${sem === activeMarksSem ? 'active' : ''}" onclick="MarksHub.setActiveMarksSem(${sem})">
+                Sem ${sem}
               </button>
-            ` : ''}
+            `).join('')}
           </div>
         `;
       }
 
       const container = document.getElementById('marksSubjectsContainer');
 
-    if (container) {
-      if (semSubs.length === 0) {
-        container.innerHTML = `
-          <div class="empty-state-card" style="grid-column: 1 / -1; text-align: center; padding: 48px 20px; background: var(--bg-card); border-radius: var(--r-xl); border: 2px dashed var(--border);">
-            <div style="font-size: 2.8rem; margin-bottom: 10px;">📋</div>
-            <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-dark); margin-bottom: 6px;">No Subjects in Semester ${activeMarksSem} Yet</h3>
-            <p style="font-size: 0.84rem; color: var(--text-mid); max-width: 440px; margin: 0 auto 18px; line-height: 1.5;">
-              Add your GTU Semester ${activeMarksSem} subjects to record marks, calculate SPI, and balance shortfall targets across your 3-year degree.
-            </p>
-            <button class="btn btn-accent btn-sm" onclick="App.openAddSubjectModal(${activeMarksSem})">
-              ➕ Add Subject for Sem ${activeMarksSem}
-            </button>
-          </div>
-        `;
-      } else {
-        container.innerHTML = semSubs.map(s => {
-          const m = s.marks || {};
-          const res = calcSubjectMarks(s);
-          const dynTarget = calcDynamicSubjectTargets(s, targetSpi);
-          const isLumpsum = !!m.isLumpsum;
-          const icon = App.getSubjectIcon(s.code, s.colorIndex || 0);
-          const esc = App.esc;
-          const isOpen = expandedMarksSubs.has(s.id);
-
-        return `
-          <div class="marks-subject-card ${isOpen ? 'open' : ''}" data-sub-id="${s.id}">
-            <div class="marks-card-head" onclick="MarksHub.toggleMarksSubject('${s.id}')">
-              <div class="marks-head-info">
-                <div class="marks-sub-icon">${icon}</div>
-                <div class="marks-head-text">
-                  <h3 class="marks-sub-name">${esc(s.name)}</h3>
-                  <div class="marks-sub-meta">
-                    <span class="sub-meta-pill">${esc(s.code)}</span>
-                    <span class="sub-meta-pill">${res.credits} Credits · ${(res.credits === 2 ? '3 Units' : '5 Units')}</span>
-                    <span class="sub-meta-pill">Max ${res.maxMarks}</span>
-                  </div>
-                </div>
-              </div>
-              <div class="marks-head-right">
-                <div class="marks-head-status">
-                  <span class="grade-badge-pill grade-${res.grade}">${res.grade} (${res.gp})</span>
-                  <span class="pass-fail-text ${res.pass ? 'text-pass' : 'text-fail'}">${res.pass ? 'PASS' : 'FAIL'}</span>
-                </div>
-                <span class="marks-chevron">
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                </span>
-              </div>
+      if (container) {
+        if (semSubs.length === 0) {
+          container.innerHTML = `
+            <div style="text-align: center; padding: 32px 16px; background: var(--bg-card); border-radius: var(--r-lg); border: 1px dashed var(--border);">
+              <h3 style="font-size: 1rem; font-weight: 700; color: var(--text-dark); margin-bottom: 4px;">No Subjects in Semester ${activeMarksSem}</h3>
+              <p style="font-size: 0.78rem; color: var(--text-mid); margin-bottom: 12px;">Add your GTU Semester ${activeMarksSem} subjects to record marks and calculate SPI.</p>
+              <button class="btn btn-accent btn-sm" onclick="App.openAddSubjectModal(${activeMarksSem})">
+                + Add Subject
+              </button>
             </div>
+          `;
+        } else {
+          container.innerHTML = semSubs.map(s => {
+            const m = s.marks || {};
+            const res = calcSubjectMarks(s);
+            const dynTarget = calcDynamicSubjectTargets(s, targetSpi);
+            const isLumpsum = !!m.isLumpsum;
+            const icon = App.getSubjectIcon(s.code, s.colorIndex || 0);
+            const esc = App.esc;
+            const isOpen = expandedMarksSubs.has(s.id);
 
-            <div class="marks-card-body">
-              <div class="marks-card-body-inner">
-                <!-- Dynamic Target & Shortfall Balancer Card Header -->
-                <div class="marks-target-advisor advisor-${dynTarget.adviceType}">
-                  ${dynTarget.adviceHtml}
-                </div>
-
-                <div class="internal-block">
-                  <div class="internal-toggle-row">
-                    <span class="internal-title">Internal Score (${res.internalTotal} / ${res.maxInternal})</span>
-                    <label class="switch-toggle-wrap" title="Toggle Lumpsum mode">
-                      <span class="switch-label">${isLumpsum ? 'Lumpsum' : 'Breakdown'}</span>
-                      <input type="checkbox" class="switch-input" ${isLumpsum ? 'checked' : ''} onchange="App.toggleLumpsumMode('${s.id}')" />
-                      <span class="switch-slider"></span>
-                    </label>
+            return `
+              <div class="marks-subject-card ${isOpen ? 'open' : ''}" data-sub-id="${s.id}">
+                <div class="marks-card-head" onclick="MarksHub.toggleMarksSubject('${s.id}')">
+                  <div class="marks-head-info">
+                    <div class="marks-sub-icon">${icon}</div>
+                    <div class="marks-head-text">
+                      <h3 class="marks-sub-name">${esc(s.name)}</h3>
+                      <div class="marks-sub-meta">
+                        <span>${esc(s.code)}</span> · <span>${res.credits} Credits</span> · <span>Score: <strong>${res.totalScore}/${res.maxMarks}</strong> (${res.pct.toFixed(1)}%)</span>
+                      </div>
+                    </div>
                   </div>
-
-                  ${isLumpsum ? `
-                    <div class="marks-field-group">
-                      <div class="field-label-row">
-                        <label class="field-label">Internal Total Marks (Max ${res.maxInternal})</label>
-                        <span class="field-benchmark-badge" data-benchmark-for="internalLumpsum">Target: ${dynTarget.dynLump} / ${res.maxInternal}</span>
-                      </div>
-                      <input type="number" class="marks-num-input" data-field="internalLumpsum" min="0" max="${res.maxInternal}" placeholder="Target: ${dynTarget.dynLump}"
-                             value="${m.internalLumpsum !== null && m.internalLumpsum !== undefined ? m.internalLumpsum : ''}"
-                             oninput="App.onMarksInput('${s.id}', 'internalLumpsum', this.value)" />
+                  <div class="marks-head-right">
+                    <div class="marks-head-status">
+                      <span class="grade-badge-pill">${res.grade} (${res.gp})</span>
+                      <span class="pass-fail-text ${res.pass ? 'text-pass' : 'text-fail'}">${res.pass ? 'PASS' : 'FAIL'}</span>
                     </div>
-                  ` : `
-                    <div class="marks-input-row">
-                      <div class="marks-field-group">
-                        <div class="field-label-row">
-                          <label class="field-label">Mid-Sem (20)</label>
-                          <span class="field-benchmark-badge" data-benchmark-for="internalMid">Target: ${dynTarget.dynMid}</span>
-                        </div>
-                        <input type="number" class="marks-num-input" data-field="internalMid" min="0" max="20" placeholder="Target: ${dynTarget.dynMid}"
-                               value="${m.internalMid !== null && m.internalMid !== undefined ? m.internalMid : ''}"
-                               oninput="App.onMarksInput('${s.id}', 'internalMid', this.value)" />
-                      </div>
-                      <div class="marks-field-group">
-                        <div class="field-label-row">
-                          <label class="field-label">Attend. (5)</label>
-                          <span class="field-benchmark-badge" data-benchmark-for="internalAtt">Target: ${dynTarget.dynAtt}</span>
-                        </div>
-                        <input type="number" class="marks-num-input" data-field="internalAtt" min="0" max="5" placeholder="Target: ${dynTarget.dynAtt}"
-                               value="${m.internalAtt !== null && m.internalAtt !== undefined ? m.internalAtt : ''}"
-                               oninput="App.onMarksInput('${s.id}', 'internalAtt', this.value)" />
-                      </div>
-                      <div class="marks-field-group">
-                        <div class="field-label-row">
-                          <label class="field-label">Beh/Assign (5)</label>
-                          <span class="field-benchmark-badge" data-benchmark-for="internalBeh">Target: ${dynTarget.dynBeh}</span>
-                        </div>
-                        <input type="number" class="marks-num-input" data-field="internalBeh" min="0" max="5" placeholder="Target: ${dynTarget.dynBeh}"
-                               value="${m.internalBeh !== null && m.internalBeh !== undefined ? m.internalBeh : ''}"
-                               oninput="App.onMarksInput('${s.id}', 'internalBeh', this.value)" />
-                      </div>
-                    </div>
-                  `}
-                </div>
-
-                <div class="marks-component-grid">
-                  <div class="marks-field-group">
-                    <div class="field-label-row">
-                      <label class="field-label">Practical / Viva (Max ${res.maxPractical})</label>
-                      <span class="field-benchmark-badge" data-benchmark-for="practical">Target: ${dynTarget.dynPractical} / ${res.maxPractical}</span>
-                    </div>
-                    <input type="number" class="marks-num-input" data-field="practical" min="0" max="${res.maxPractical}" placeholder="Target: ${dynTarget.dynPractical}"
-                           value="${m.practical !== null && m.practical !== undefined ? m.practical : ''}"
-                           oninput="App.onMarksInput('${s.id}', 'practical', this.value)" />
-                  </div>
-                  <div class="marks-field-group">
-                    <div class="field-label-row">
-                      <label class="field-label">GTU ESE Exam (Max ${res.maxEse})</label>
-                      <span class="field-benchmark-badge" data-benchmark-for="ese">Min ${Math.ceil(res.maxEse * 0.35)} | Target: ${dynTarget.dynEse} / ${res.maxEse}</span>
-                    </div>
-                    <input type="number" class="marks-num-input" data-field="ese" min="0" max="${res.maxEse}" placeholder="Target: ${dynTarget.dynEse}"
-                           value="${m.ese !== null && m.ese !== undefined ? m.ese : ''}"
-                           oninput="App.onMarksInput('${s.id}', 'ese', this.value)" />
+                    <span class="marks-chevron">
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </span>
                   </div>
                 </div>
 
-                <div class="marks-card-footer">
-                  <div class="marks-footer-stats">
-                    <span class="total-score-val">Subject Total: <strong>${res.totalScore} / ${res.maxMarks}</strong></span>
-                    <span class="total-pct-val">${res.pct.toFixed(1)}%</span>
+                <div class="marks-card-body">
+                  <div class="marks-card-body-inner">
+                    <!-- Dynamic Advisor -->
+                    <div class="marks-target-advisor advisor-${dynTarget.adviceType}">
+                      ${dynTarget.adviceHtml}
+                    </div>
+
+                    <!-- Internal Marks -->
+                    <div class="internal-block">
+                      <div class="internal-toggle-row">
+                        <span class="internal-title">Internal Score (${res.internalTotal} / ${res.maxInternal})</span>
+                        <label class="switch-toggle-wrap" title="Toggle Lumpsum vs Breakdown mode">
+                          <span class="switch-label">${isLumpsum ? 'Lumpsum' : 'Breakdown'}</span>
+                          <input type="checkbox" class="switch-input" ${isLumpsum ? 'checked' : ''} onchange="App.toggleLumpsumMode('${s.id}')" />
+                          <span class="switch-slider"></span>
+                        </label>
+                      </div>
+
+                      ${isLumpsum ? `
+                        <div class="marks-field-group">
+                          <div class="field-label-row">
+                            <label class="field-label">Internal Total Marks (Max ${res.maxInternal})</label>
+                            <span class="field-benchmark-badge" data-benchmark-for="internalLumpsum">Target: ${dynTarget.dynLump} / ${res.maxInternal}</span>
+                          </div>
+                          <input type="number" class="marks-num-input" data-field="internalLumpsum" min="0" max="${res.maxInternal}" placeholder="Target: ${dynTarget.dynLump}"
+                                 value="${m.internalLumpsum !== null && m.internalLumpsum !== undefined ? m.internalLumpsum : ''}"
+                                 oninput="App.onMarksInput('${s.id}', 'internalLumpsum', this.value)" />
+                        </div>
+                      ` : `
+                        <div class="marks-input-row">
+                          <div class="marks-field-group">
+                            <div class="field-label-row">
+                              <label class="field-label">Mid-Sem (20)</label>
+                              <span class="field-benchmark-badge" data-benchmark-for="internalMid">Target: ${dynTarget.dynMid}</span>
+                            </div>
+                            <input type="number" class="marks-num-input" data-field="internalMid" min="0" max="20" placeholder="Target: ${dynTarget.dynMid}"
+                                   value="${m.internalMid !== null && m.internalMid !== undefined ? m.internalMid : ''}"
+                                   oninput="App.onMarksInput('${s.id}', 'internalMid', this.value)" />
+                          </div>
+                          <div class="marks-field-group">
+                            <div class="field-label-row">
+                              <label class="field-label">Attendance (5)</label>
+                              <span class="field-benchmark-badge" data-benchmark-for="internalAtt">Target: ${dynTarget.dynAtt}</span>
+                            </div>
+                            <input type="number" class="marks-num-input" data-field="internalAtt" min="0" max="5" placeholder="Target: ${dynTarget.dynAtt}"
+                                   value="${m.internalAtt !== null && m.internalAtt !== undefined ? m.internalAtt : ''}"
+                                   oninput="App.onMarksInput('${s.id}', 'internalAtt', this.value)" />
+                          </div>
+                          <div class="marks-field-group">
+                            <div class="field-label-row">
+                              <label class="field-label">Behavior (5)</label>
+                              <span class="field-benchmark-badge" data-benchmark-for="internalBeh">Target: ${dynTarget.dynBeh}</span>
+                            </div>
+                            <input type="number" class="marks-num-input" data-field="internalBeh" min="0" max="5" placeholder="Target: ${dynTarget.dynBeh}"
+                                   value="${m.internalBeh !== null && m.internalBeh !== undefined ? m.internalBeh : ''}"
+                                   oninput="App.onMarksInput('${s.id}', 'internalBeh', this.value)" />
+                          </div>
+                        </div>
+                      `}
+                    </div>
+
+                    <!-- Practical & ESE Exam Components -->
+                    <div class="marks-component-grid">
+                      <div class="marks-field-group">
+                        <div class="field-label-row">
+                          <label class="field-label">Practical / Viva (Max ${res.maxPractical})</label>
+                          <span class="field-benchmark-badge" data-benchmark-for="practical">Target: ${dynTarget.dynPractical}</span>
+                        </div>
+                        <input type="number" class="marks-num-input" data-field="practical" min="0" max="${res.maxPractical}" placeholder="Target: ${dynTarget.dynPractical}"
+                               value="${m.practical !== null && m.practical !== undefined ? m.practical : ''}"
+                               oninput="App.onMarksInput('${s.id}', 'practical', this.value)" />
+                      </div>
+                      <div class="marks-field-group">
+                        <div class="field-label-row">
+                          <label class="field-label">GTU ESE Exam (Max ${res.maxEse})</label>
+                          <span class="field-benchmark-badge" data-benchmark-for="ese">Min ${Math.ceil(res.maxEse * 0.35)} | Target: ${dynTarget.dynEse}</span>
+                        </div>
+                        <input type="number" class="marks-num-input" data-field="ese" min="0" max="${res.maxEse}" placeholder="Target: ${dynTarget.dynEse}"
+                               value="${m.ese !== null && m.ese !== undefined ? m.ese : ''}"
+                               oninput="App.onMarksInput('${s.id}', 'ese', this.value)" />
+                      </div>
+                    </div>
+
+                    <div class="marks-card-footer">
+                      <div class="marks-footer-stats">
+                        <span class="total-score-val">Subject Total: <strong>${res.totalScore} / ${res.maxMarks}</strong></span>
+                        <span class="total-pct-val">${res.pct.toFixed(1)}%</span>
+                      </div>
+                      <button class="btn btn-accent btn-sm" onclick="App.saveSubjectMarks('${s.id}')">
+                        💾 Save
+                      </button>
+                    </div>
                   </div>
-                  <button class="btn btn-accent btn-full btn-save-marks" onclick="App.saveSubjectMarks('${s.id}')">
-                    💾 Save & Sync ${s.code} Marks
-                  </button>
                 </div>
               </div>
-            </div>
-          </div>
-        `;
-      }).join('');
+            `;
+          }).join('');
+        }
+      }
+      updateLiveSummary();
+    } catch (err) {
+      console.error('Marks Hub render error:', err);
     }
   }
-  updateLiveSummary();
-} catch (err) {
-  console.error(err);
-  const container = document.getElementById('marksSubjectsContainer');
-  if (container) {
-    container.innerHTML = `<div style="color: red; padding: 20px; background: #ffebee; border: 1px solid red; border-radius: 8px;">
-      <h3>Error rendering Marks Hub</h3>
-      <pre>${err.stack || err.message}</pre>
-    </div>`;
-  }
-}
-}
 
   function renderCgpaTable(cgpaStats) {
     const body = document.getElementById('cgpaTableBody');
@@ -790,9 +627,9 @@ const MarksHub = (() => {
 
       html += `
         <tr class="${isCurrent ? 'cgpa-row-current' : ''}">
-          <td><strong>Semester ${sNum}</strong>${isCurrent ? ' <span class="active-sem-tag">(Active)</span>' : ''}</td>
-          <td>${sData.credits} Credits</td>
-          <td>${sData.hasData ? `<strong>${spiText}</strong>` : `<span style="color:var(--text-faint)">--</span>`}</td>
+          <td><strong>Sem ${sNum}</strong>${isCurrent ? ' <span class="active-sem-tag">(Active)</span>' : ''}</td>
+          <td>${sData.credits}c</td>
+          <td>${sData.hasData ? `<strong>${spiText}</strong>` : `--`}</td>
           <td>${gpText}</td>
         </tr>
       `;
@@ -800,10 +637,10 @@ const MarksHub = (() => {
     body.innerHTML = html;
   }
 
-  // ── INTERACTIVE GTU GRADING GUIDE MODAL SIMULATOR ──────────
+  // ── INTERACTIVE GTU GRADING GUIDE SIMULATOR ──────────────
   let _simState = {
-    c4Mid: 18, c4Att: 5, c4Beh: 4, c4Pract: 42, c4Ese: 55, // 124 / 150 -> 82.7% -> AB (9 GP)
-    c2Mid: 18, c2Att: 4, c2Beh: 4, c2Pract: 17, c2Ese: 39  // 82 / 100 -> 82.0% -> AB (9 GP)
+    c4Mid: 18, c4Att: 5, c4Beh: 4, c4Pract: 42, c4Ese: 55,
+    c2Mid: 18, c2Att: 4, c2Beh: 4, c2Pract: 17, c2Ese: 39
   };
 
   function updateSimulator(field, val) {
@@ -829,31 +666,27 @@ const MarksHub = (() => {
 
   function renderSimulator() {
     const s = _simState;
-    // 4-Credit Subject Calc
     const c4Int = Math.min(s.c4Mid, 20) + Math.min(s.c4Att, 5) + Math.min(s.c4Beh, 5);
     const c4Pract = Math.min(s.c4Pract, 50);
     const c4Ese = Math.min(s.c4Ese, 70);
     const c4Total = c4Int + c4Pract + c4Ese;
     const c4Pct = (c4Total / 150) * 100;
-    const c4EseFailed = c4Ese < 25; // 35% of 70 = 24.5 -> 25
+    const c4EseFailed = c4Ese < 25;
     const c4GradeInfo = getGtuGradeAndPoints(c4Pct, c4EseFailed);
     const c4CreditPoints = 4 * c4GradeInfo.gp;
 
-    // 2-Credit Subject Calc
     const c2Int = Math.min(s.c2Mid, 20) + Math.min(s.c2Att, 5) + Math.min(s.c2Beh, 5);
     const c2Pract = Math.min(s.c2Pract, 20);
     const c2Ese = Math.min(s.c2Ese, 50);
     const c2Total = c2Int + c2Pract + c2Ese;
     const c2Pct = (c2Total / 100) * 100;
-    const c2EseFailed = c2Ese < 18; // 35% of 50 = 17.5 -> 18
+    const c2EseFailed = c2Ese < 18;
     const c2GradeInfo = getGtuGradeAndPoints(c2Pct, c2EseFailed);
     const c2CreditPoints = 2 * c2GradeInfo.gp;
 
-    // Weighted SPI Simulation for Sem 1 (4 four-credit + 2 two-credit = 20 credits)
     const totalCreditPoints = (4 * c4CreditPoints) + (2 * c2CreditPoints);
     const simSpi = totalCreditPoints / 20;
 
-    // Update DOM elements in guide modal
     const el4Total = document.getElementById('sim4Total');
     const el4Pct = document.getElementById('sim4Pct');
     const el4Grade = document.getElementById('sim4Grade');
@@ -870,7 +703,6 @@ const MarksHub = (() => {
     if (el4Total) el4Total.textContent = `${c4Total} / 150`;
     if (el4Pct) el4Pct.textContent = `${c4Pct.toFixed(1)}%`;
     if (el4Grade) {
-      el4Grade.className = `sim-badge grade-${c4GradeInfo.grade}`;
       el4Grade.textContent = `${c4GradeInfo.grade} (${c4GradeInfo.gp} GP)`;
     }
     if (el4Cp) el4Cp.textContent = `4c × ${c4GradeInfo.gp} = ${c4CreditPoints} pts`;
@@ -878,17 +710,15 @@ const MarksHub = (() => {
     if (el2Total) el2Total.textContent = `${c2Total} / 100`;
     if (el2Pct) el2Pct.textContent = `${c2Pct.toFixed(1)}%`;
     if (el2Grade) {
-      el2Grade.className = `sim-badge grade-${c2GradeInfo.grade}`;
       el2Grade.textContent = `${c2GradeInfo.grade} (${c2GradeInfo.gp} GP)`;
     }
     if (el2Cp) el2Cp.textContent = `2c × ${c2GradeInfo.gp} = ${c2CreditPoints} pts`;
 
     if (elSimSpi) {
       elSimSpi.textContent = simSpi.toFixed(2);
-      elSimSpi.className = `sim-spi-val grade-${getGtuGradeAndPoints(simSpi * 10).grade}`;
     }
     if (elSimFormula) {
-      elSimFormula.innerHTML = `(${4} × ${c4CreditPoints} + ${2} × ${c2CreditPoints}) ÷ 20 Credits = <strong>${simSpi.toFixed(2)} SPI</strong>`;
+      elSimFormula.innerHTML = `(4 × ${c4CreditPoints} + 2 × ${c2CreditPoints}) ÷ 20 Credits = <strong>${simSpi.toFixed(2)} SPI</strong>`;
     }
   }
 
@@ -912,7 +742,6 @@ const MarksHub = (() => {
     renderTargetBacktracker,
     renderMarksHub,
     toggleMarksSubject,
-    toggleAllMarksSubjects,
     setActiveMarksSem,
     openGtuGuideModal,
     updateSimulator,

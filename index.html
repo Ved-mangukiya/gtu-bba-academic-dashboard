@@ -5,9 +5,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <meta name="description"
-    content="GTU BBA 3-Year (6 Semesters) PDF Tracker — Track downloads and prints for all your study material." />
-  <meta name="theme-color" content="#faf8f5" />
-  <title>GTU BBA · 3-Year PDF Tracker</title>
+    content="GTU BBA Academic Dashboard — Minimal, high-performance study material and marks manager for GTU BBA students." />
+  <meta name="theme-color" content="#f8f9fa" />
+  <title>GTU BBA · Academic Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
@@ -21,143 +21,114 @@
 <body>
   <div class="app" id="app">
 
-    <!-- HEADER -->
+    <!-- TOP APP BAR & HEADER -->
     <header class="header">
-      <img src="faviconBBA_PDF.png" alt="BBA PDF Tracker" class="header-logo" width="38" height="38" />
-      <div class="header-content">
-        <div class="header-badges">
-          <span class="header-badge">GTU BBA · Sem 1 Hub</span>
-          <span class="creator-badge">By Ved Mangukiya</span>
-          <span class="cloud-badge syncing" id="cloudBadge">
+      <div class="top-app-bar">
+        <div class="brand-group">
+          <img src="faviconBBA_PDF.png" alt="GTU BBA" class="header-logo" width="30" height="30" />
+          <div class="brand-info">
+            <span class="brand-title">GTU BBA</span>
+            <span class="brand-sub">Academic Hub</span>
+          </div>
+        </div>
+
+        <div class="top-actions">
+          <span class="cloud-badge syncing" id="cloudBadge" title="Cloud Database Sync Status">
             <span class="cloud-dot"></span>
             <span class="cloud-text">Connecting...</span>
           </span>
-          <button class="icon-btn" id="themeToggleBtn" onclick="App.toggleTheme()" title="Toggle Dark/Light Theme">
+          <button class="icon-btn" id="themeToggleBtn" onclick="App.toggleTheme()" title="Toggle Dark/Light Theme" aria-label="Toggle Dark/Light Theme">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
           </button>
-          <button class="icon-btn" onclick="App.openSettingsModal()" title="Settings & Backup">
+          <button class="icon-btn" onclick="App.openSettingsModal()" title="Settings & Degree Suite" aria-label="Settings">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
           </button>
         </div>
-        <h1 class="header-title" id="headerAppTitle">GTU BBA Dashboard</h1>
-        <p class="header-sub">Academic Marks & Material Manager · Created by Ved Mangukiya</p>
       </div>
 
-      <!-- MAIN TAB NAVIGATION -->
+      <div class="header-titles">
+        <h1 class="header-title" id="headerAppTitle">Academic Dashboard</h1>
+        <p class="header-sub" id="headerAppSub">Semester 1 • 2026–27</p>
+      </div>
+
+      <!-- MAIN TAB NAVIGATION (Segmented Control) -->
       <nav class="main-tab-nav" id="mainTabNav">
         <button class="tab-btn active" id="tabPdfBtn" onclick="App.switchTab('pdf')">
           <span class="tab-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg></span>
-          <span class="tab-text">PDF Tracker</span>
+          <span class="tab-text">Materials</span>
         </button>
         <button class="tab-btn" id="tabMarksBtn" onclick="App.switchTab('marks')">
           <span class="tab-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></span>
-          <span class="tab-text">Marks & GTU Hub</span>
+          <span class="tab-text">Marks</span>
         </button>
       </nav>
     </header>
 
-    <!-- VIEW 1: PDF TRACKER -->
+    <!-- VIEW 1: MATERIALS (PDF TRACKER) -->
     <div id="pdfTrackerView" class="tab-view active">
       <!-- SEMESTER BAR -->
       <section class="sem-bar" id="semBar"></section>
 
-      <!-- STATS DASHBOARD -->
-      <section class="stats" id="stats">
-        <div class="stat-card stat-total">
-          <div class="stat-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg></div>
-          <div class="stat-info">
-            <span class="stat-value" id="statTotal">0</span>
-            <span class="stat-label">Total</span>
+      <!-- COMPACT OVERVIEW SUMMARY CARD -->
+      <section class="overview-card" id="overviewCard">
+        <div class="overview-head">
+          <div class="overview-title-group">
+            <span class="overview-title">Materials Overview</span>
+            <div class="overview-stats-line">
+              <span class="stat-item"><strong id="statTotal">0</strong> total</span>
+              <span class="stat-sep">·</span>
+              <span class="stat-item stat-dl-color"><strong id="statDownloaded">0</strong> downloaded</span>
+              <span class="stat-sep">·</span>
+              <span class="stat-item stat-pr-color"><strong id="statPrinted">0</strong> printed</span>
+              <span class="stat-sep">·</span>
+              <span class="stat-item stat-pend-color"><strong id="statPending">0</strong> pending</span>
+            </div>
           </div>
+          <span class="overview-pct" id="progressPct">0%</span>
         </div>
-        <div class="stat-card stat-downloaded">
-          <div class="stat-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></div>
-          <div class="stat-info">
-            <span class="stat-value" id="statDownloaded">0</span>
-            <span class="stat-label">Downloaded</span>
-          </div>
-        </div>
-        <div class="stat-card stat-printed">
-          <div class="stat-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></div>
-          <div class="stat-info">
-            <span class="stat-value" id="statPrinted">0</span>
-            <span class="stat-label">Printed</span>
-          </div>
-        </div>
-        <div class="stat-card stat-pending">
-          <div class="stat-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div>
-          <div class="stat-info">
-            <span class="stat-value" id="statPending">0</span>
-            <span class="stat-label">Pending</span>
-          </div>
-        </div>
-      </section>
 
-      <!-- PROGRESS -->
-      <section class="progress-wrap">
-        <div class="progress-top">
-          <div class="progress-left">
-            <span class="progress-label">Overall Download Progress</span>
-            <span class="progress-pct" id="progressPct">0%</span>
-          </div>
-          <!-- SVG Ring -->
-          <div class="ring-wrap">
-            <svg class="ring-svg" viewBox="0 0 80 80" width="64" height="64">
-              <defs>
-                <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stop-color="#34d399" />
-                  <stop offset="100%" stop-color="#60a5fa" />
-                </linearGradient>
-              </defs>
-              <circle class="ring-track" cx="40" cy="40" r="34" />
-              <circle class="ring-fill" id="ringFill" cx="40" cy="40" r="34" />
-            </svg>
-            <span class="ring-center-pct" id="ringCenterPct" aria-hidden="true"></span>
-          </div>
-        </div>
-        <!-- Dual-segment bar: downloaded (green) + printed (purple overlay) -->
-        <div class="progress-track">
+        <!-- Sleek Dual-Segment Linear Progress Bar -->
+        <div class="progress-track" title="Overall Materials Progress">
           <div class="progress-fill" id="progressFill"></div>
           <div class="progress-fill-pr" id="progressFillPr"></div>
         </div>
+
         <div class="progress-legend">
-          <span class="legend-dot legend-dl"></span><span class="legend-text">Downloaded</span>
-          <span class="legend-dot legend-pr"></span><span class="legend-text">Printed</span>
+          <span class="legend-item"><span class="legend-dot legend-dl"></span> Downloaded</span>
+          <span class="legend-item"><span class="legend-dot legend-pr"></span> Printed</span>
         </div>
       </section>
 
-      <!-- TOOLBAR -->
+      <!-- TOOLBAR: SEARCH & STATUS FILTERS -->
       <section class="toolbar">
         <div class="search-box">
-          <svg class="search-icon" viewBox="0 0 20 20" fill="currentColor" width="16" height="16"
-            style="width:16px;height:16px;min-width:16px;min-height:16px">
-            <path fill-rule="evenodd"
-              d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-              clip-rule="evenodd" />
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
-          <input type="text" id="searchInput" class="search-input" placeholder="Search subjects or parts…" />
+          <input type="text" id="searchInput" class="search-input" placeholder="Search subjects or materials…" />
         </div>
         <div class="filters" id="filters">
-          <button class="pill active" data-filter="all">All Status</button>
+          <button class="pill active" data-filter="all">All</button>
           <button class="pill" data-filter="pending">Pending</button>
           <button class="pill" data-filter="downloaded">Downloaded</button>
           <button class="pill" data-filter="printed">Printed</button>
         </div>
       </section>
 
-      <!-- SUBJECTS -->
+      <!-- SUBJECTS LIST CONTAINER -->
       <main class="subjects" id="subjectsContainer"></main>
 
       <!-- EMPTY STATE -->
       <div class="empty" id="emptyState" style="display:none">
         <div class="empty-anim">
           <svg class="empty-svg" viewBox="0 0 120 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="15" y="20" width="90" height="70" rx="10" fill="#f0ebe4" stroke="#e0d8ce" stroke-width="2" />
-            <rect x="28" y="36" width="64" height="8" rx="4" fill="#d8d0c4" />
-            <rect x="28" y="52" width="44" height="8" rx="4" fill="#e4ddd4" />
-            <rect x="28" y="68" width="52" height="8" rx="4" fill="#e4ddd4" />
-            <circle cx="90" cy="28" r="18" fill="#faf8f5" stroke="#e0d8ce" stroke-width="2" />
-            <path d="M83 28l4 4 8-8" stroke="#c8b898" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+            <rect x="15" y="20" width="90" height="70" rx="10" fill="var(--bg-subtle)" stroke="var(--border)" stroke-width="2" />
+            <rect x="28" y="36" width="64" height="8" rx="4" fill="var(--border)" />
+            <rect x="28" y="52" width="44" height="8" rx="4" fill="var(--border-subtle)" />
+            <rect x="28" y="68" width="52" height="8" rx="4" fill="var(--border-subtle)" />
+            <circle cx="90" cy="28" r="18" fill="var(--bg-card)" stroke="var(--border)" stroke-width="2" />
+            <path d="M83 28l4 4 8-8" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
         </div>
         <p class="empty-title">Nothing found</p>
@@ -167,25 +138,29 @@
 
     <!-- VIEW 2: MARKS & GTU PERFORMANCE HUB -->
     <div id="marksHubView" class="tab-view" style="display:none">
-      <!-- SUMMARY OVERVIEW GRID -->
+      <!-- SUMMARY OVERVIEW GRID (3 Distinct Cards) -->
       <section class="marks-summary-grid">
         <!-- SPI CARD -->
         <div class="marks-stat-card card-spi">
           <div class="marks-stat-head">
-            <span class="marks-stat-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg></span>
-            <span class="marks-stat-title">Semester 1 SPI</span>
+            <span class="marks-stat-icon">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
+            </span>
+            <span class="marks-stat-title" id="summarySpiTitle">Semester 1 SPI</span>
           </div>
           <div class="marks-stat-main">
             <span class="marks-big-val" id="summarySpiVal">0.00</span>
             <span class="marks-sub-label" id="summarySpiGrade">-- Grade</span>
           </div>
-          <div class="marks-stat-foot">GTU Formula · 20 Credits Total</div>
+          <div class="marks-stat-foot">GTU Formula · 20 Credits</div>
         </div>
 
         <!-- TOTAL MARKS CARD -->
         <div class="marks-stat-card card-marks">
           <div class="marks-stat-head">
-            <span class="marks-stat-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg></span>
+            <span class="marks-stat-icon">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+            </span>
             <span class="marks-stat-title">Total Marks</span>
           </div>
           <div class="marks-stat-main">
@@ -198,42 +173,46 @@
         <!-- CUMULATIVE CGPA CARD -->
         <div class="marks-stat-card card-cgpa">
           <div class="marks-stat-head">
-            <span class="marks-stat-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-4"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path></svg></span>
+            <span class="marks-stat-icon">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-4"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path></svg>
+            </span>
             <span class="marks-stat-title">Overall CGPA</span>
           </div>
           <div class="marks-stat-main">
             <span class="marks-big-val" id="summaryCgpaVal">0.00</span>
-            <span class="marks-sub-label" id="summaryCgpaStatus">Sem 1 Weight: 20c</span>
+            <span class="marks-sub-label" id="summaryCgpaStatus">3-Year Cumulative</span>
           </div>
           <div class="marks-stat-foot">Cumulative Performance</div>
         </div>
       </section>
 
-      <!-- TARGET GOAL SEEK BACKTRACKER CARD -->
+      <!-- TARGET GOAL SEEK & DYNAMIC BACKTRACKER CARD -->
       <section class="target-backtracker-card">
         <div class="target-head">
           <div class="target-title-wrap">
-            <span class="target-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></span>
+            <span class="target-icon">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+            </span>
             <div>
-              <h2 class="target-h2">Target Score & Dynamic Backtracker Engine</h2>
-              <p class="target-sub">Select your target CGPA/SPI goal. Shortfalls in any component automatically rebalance remaining targets.</p>
+              <h2 class="target-h2">Target Score & Dynamic Backtracker</h2>
+              <p class="target-sub">Live shortfall rebalancer for Semester <span id="targetActiveSemNum">1</span></p>
             </div>
           </div>
           <div class="target-input-badge">
-            <label for="targetSpiSelect" class="target-label">Target SPI / CGPA:</label>
+            <label for="targetSpiSelect" class="target-label">Target Goal:</label>
             <select id="targetSpiSelect" class="target-spi-select" onchange="App.onTargetSpiChange(this.value)">
-              <option value="10.0">10.0 SPI — Grade AA (Outstanding · 85%+)</option>
+              <option value="10.0">10.0 SPI — Grade AA (85%+)</option>
               <option value="9.5">9.5 SPI — Distinction (85%+)</option>
-              <option value="9.0">9.0 SPI — Grade AB (Excellent · 80%+)</option>
-              <option value="8.5" selected>8.5 SPI — Grade AB (Very Good · 75%+)</option>
-              <option value="8.0">8.0 SPI — Grade BB (Good · 70%+)</option>
-              <option value="7.5">7.5 SPI — Grade BB (Above Avg · 65%+)</option>
-              <option value="7.0">7.0 SPI — Grade BC (Average · 60%+)</option>
-              <option value="6.5">6.5 SPI — Grade BC (Fair · 55%+)</option>
-              <option value="6.0">6.0 SPI — Grade CC (Satisfactory · 50%+)</option>
-              <option value="5.5">5.5 SPI — Grade CC (Passing · 45%+)</option>
-              <option value="5.0">5.0 SPI — Grade CD (Pass · 40%+)</option>
-              <option value="4.0">4.0 SPI — Grade DD (Minimum Pass · 35%+)</option>
+              <option value="9.0">9.0 SPI — Grade AB (80%+)</option>
+              <option value="8.5" selected>8.5 SPI — Grade AB (75%+)</option>
+              <option value="8.0">8.0 SPI — Grade BB (70%+)</option>
+              <option value="7.5">7.5 SPI — Grade BB (65%+)</option>
+              <option value="7.0">7.0 SPI — Grade BC (60%+)</option>
+              <option value="6.5">6.5 SPI — Grade BC (55%+)</option>
+              <option value="6.0">6.0 SPI — Grade CC (50%+)</option>
+              <option value="5.5">5.5 SPI — Grade CC (45%+)</option>
+              <option value="5.0">5.0 SPI — Grade CD (40%+)</option>
+              <option value="4.0">4.0 SPI — Grade DD (35%+)</option>
             </select>
           </div>
         </div>
@@ -244,52 +223,55 @@
 
         <div class="target-cards-row">
           <div class="target-mini-card">
-            <span class="target-mini-label">Target ESE Marks (4-Credit)</span>
+            <span class="target-mini-label">Target ESE (4-Credit)</span>
             <span class="target-mini-val" id="targetEse4Val">-- / 70</span>
-            <span class="target-mini-sub" id="targetGrade4Val">Grade Required: --</span>
+            <span class="target-mini-sub" id="targetGrade4Val">Grade Req: --</span>
           </div>
           <div class="target-mini-card">
-            <span class="target-mini-label">Target ESE Marks (2-Credit)</span>
+            <span class="target-mini-label">Target ESE (2-Credit)</span>
             <span class="target-mini-val" id="targetEse2Val">-- / 50</span>
-            <span class="target-mini-sub" id="targetGrade2Val">Grade Required: --</span>
+            <span class="target-mini-sub" id="targetGrade2Val">Grade Req: --</span>
           </div>
           <div class="target-mini-card">
-            <span class="target-mini-label">Internal / Practical Target</span>
+            <span class="target-mini-label">Internal / Practical</span>
             <span class="target-mini-val" id="targetInternalVal">--% Avg</span>
-            <span class="target-mini-sub" id="targetInternalSub">Keep > 75% for Safety</span>
+            <span class="target-mini-sub" id="targetInternalSub">Keep > 75%</span>
           </div>
         </div>
       </section>
 
-      <!-- SUBJECT MARKS EDITOR SECTION -->
+      <!-- SUBJECT MARKS EDITOR SECTION (Progressive Disclosure) -->
       <section class="marks-editor-section">
         <div class="section-title-bar">
           <div class="section-title-left">
-            <h2 class="section-h2">Subject Marks & Internal Breakdown</h2>
+            <h2 class="section-h2">Subject Marks & Breakdown</h2>
+            <span class="section-sub">Tap any subject to view and edit component marks</span>
           </div>
           <div class="section-title-actions">
-            <button class="btn btn-guide btn-sm" onclick="App.openGtuGuideModal()" title="View GTU marking scheme & animated formula explanation">
-              <span class="guide-sparkle">✨</span> How GTU Grading & SPI Works
+            <button class="btn btn-ghost btn-sm" onclick="App.openGtuGuideModal()" title="View GTU marking scheme & animated formula explanation">
+              ✨ GTU Guide
             </button>
-            <button class="btn btn-ghost btn-sm" onclick="App.resetAllMarks()">🔄 Reset Marks</button>
+            <button class="btn btn-ghost btn-sm" onclick="App.resetAllMarks()" title="Reset marks to 0">
+              🔄 Reset
+            </button>
           </div>
         </div>
 
-        <div class="filters-scroll" id="marksSemFilters" style="margin-bottom: 20px;">
+        <div class="filters-scroll" id="marksSemFilters" style="margin-bottom: 16px;">
           <!-- Dynamically populated semester tabs for Marks Hub -->
         </div>
 
-        <!-- SUBJECT MARKS GRID -->
+        <!-- SUBJECT MARKS LIST -->
         <div class="marks-subjects-grid" id="marksSubjectsContainer">
-          <!-- Dynamically rendered per subject -->
+          <!-- Dynamically rendered per subject (collapsed by default) -->
         </div>
       </section>
 
       <!-- CGPA MULTI-SEMESTER CALCULATOR CARD -->
       <section class="cgpa-multi-section">
         <div class="cgpa-head">
-          <h3 class="cgpa-h3">🎓 Multi-Semester CGPA Calculator</h3>
-          <p class="cgpa-sub">Track cumulative SPI & Credits across 3 Years (Sem 1 to Sem 6)</p>
+          <h3 class="cgpa-h3">Multi-Semester CGPA Breakdown</h3>
+          <p class="cgpa-sub">Cumulative SPI & Credits across 3 Years (Sem 1 to Sem 6)</p>
         </div>
         <div class="cgpa-table-wrap">
           <table class="cgpa-table">
@@ -310,190 +292,364 @@
     </div>
 
     <!-- FOOTER -->
-    <footer class="footer">GTU BBA 3-Year PDF Tracker · Created with ❤️ by Ved Mangukiya · Cloud Synced</footer>
+    <footer class="footer">
+      <p class="footer-text">GTU BBA Academic Dashboard · Created with ❤️ by Ved Mangukiya · Cloud Synced</p>
+    </footer>
+
+    <!-- BOTTOM MOBILE NAVIGATION BAR -->
+    <nav class="bottom-nav" id="bottomNav">
+      <button class="bottom-nav-item active" id="bNavMaterials" onclick="App.switchTab('pdf')">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+        <span>Materials</span>
+      </button>
+      <button class="bottom-nav-item" id="bNavMarks" onclick="App.switchTab('marks')">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+        <span>Marks</span>
+      </button>
+      <button class="bottom-nav-item" id="bNavSettings" onclick="App.openSettingsModal()">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        <span>Settings</span>
+      </button>
+    </nav>
   </div>
 
   <!-- ADD SUBJECT MODAL -->
   <div class="overlay" id="addSubjectModal">
-    <div class="modal">
+    <div class="modal modal-add-sub">
       <div class="modal-head">
         <h3>Add New Subject</h3>
         <button class="modal-close" onclick="App.closeModal('addSubjectModal')">✕</button>
       </div>
-      <div class="field">
-        <label for="newSubSem">Semester</label>
-        <select id="newSubSem" class="input">
-          <option value="1">Semester 1</option>
-          <option value="2">Semester 2</option>
-          <option value="3">Semester 3</option>
-          <option value="4">Semester 4</option>
-          <option value="5">Semester 5</option>
-          <option value="6">Semester 6</option>
-        </select>
-      </div>
-      <div class="field">
-        <label for="newSubName">Subject Name</label>
+      <div class="field-stacked">
+        <label for="newSubName" class="field-stacked-label">Subject Name</label>
         <input type="text" id="newSubName" class="input" placeholder="e.g. Marketing Management" />
       </div>
-      <div class="field">
-        <label for="newSubCode">Subject Code</label>
+      <div class="field-stacked">
+        <label for="newSubSem" class="field-stacked-label">Semester</label>
+        <select id="newSubSem" class="input">
+          <option value="1">Semester 1 (Year 1)</option>
+          <option value="2">Semester 2 (Year 1)</option>
+          <option value="3">Semester 3 (Year 2)</option>
+          <option value="4">Semester 4 (Year 2)</option>
+          <option value="5">Semester 5 (Year 3)</option>
+          <option value="6">Semester 6 (Year 3)</option>
+        </select>
+      </div>
+      <div class="field-stacked">
+        <label for="newSubCode" class="field-stacked-label">Subject Code</label>
         <input type="text" id="newSubCode" class="input" placeholder="e.g. S1-MM" />
       </div>
-      <div class="field">
-        <label for="newSubUnits">Number of Units</label>
+      <div class="field-stacked">
+        <label for="newSubUnits" class="field-stacked-label">Number of Units</label>
         <input type="number" id="newSubUnits" class="input" min="1" max="20" value="5" />
       </div>
       <div class="modal-btns">
         <button class="btn btn-ghost" onclick="App.closeModal('addSubjectModal')">Cancel</button>
-        <button class="btn btn-accent" onclick="App.addSubject()">Add</button>
+        <button class="btn btn-accent" onclick="App.addSubject()">Add Subject</button>
       </div>
     </div>
   </div>
 
-  <!-- SETTINGS & 3-YEAR DEGREE MANAGEMENT SUITE MODAL -->
-  <div class="overlay" id="settingsModal">
+  <!-- REDESIGNED SETTINGS MODAL & SUITE -->
+  <div class="overlay overlay-settings" id="settingsModal">
     <div class="modal modal-settings">
-      <div class="modal-head">
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span style="font-size: 1.3rem;">⚙️</span>
-          <div>
-            <h3 style="margin: 0; font-size: 1.05rem;">GTU BBA 3-Year Degree Suite</h3>
-            <span style="font-size: 0.72rem; color: var(--text-mid);">Manage profile, semesters 1-6, cloud sync & syllabus</span>
-          </div>
-        </div>
+      <!-- Modal Top Bar -->
+      <div class="settings-modal-header">
+        <button class="settings-back-btn" onclick="App.closeModal('settingsModal')" aria-label="Back">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          <span class="settings-back-text">Settings</span>
+        </button>
+        <span class="settings-modal-title">Settings</span>
         <button class="modal-close" onclick="App.closeModal('settingsModal')">✕</button>
       </div>
 
-      <!-- 1. Student Academic Profile -->
-      <div class="settings-group">
-        <div class="settings-group-header">
-          <span class="settings-icon">🎓</span>
-          <div>
-            <span class="settings-title">Student Profile & Academic Goal</span>
-            <span class="settings-sub">Saved across your 3-year GTU BBA degree</span>
+      <div class="settings-body">
+        <!-- 1. PROFILE SECTION -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <span class="settings-section-title">Profile</span>
+          </div>
+
+          <div class="settings-group-clean">
+            <div class="field-stacked">
+              <label for="settingStudentName" class="field-stacked-label">Full Name</label>
+              <input type="text" id="settingStudentName" class="input" placeholder="e.g. Ved Mangukiya" onchange="App.updateStudentProfile('studentName', this.value)" />
+            </div>
+
+            <div class="field-stacked">
+              <label for="settingEnrollment" class="field-stacked-label">Enrollment Number</label>
+              <input type="text" id="settingEnrollment" class="input" placeholder="e.g. 240010111001" onchange="App.updateStudentProfile('enrollmentNo', this.value)" />
+            </div>
+
+            <div class="field-stacked">
+              <label for="settingCurrentSem" class="field-stacked-label">Active Semester</label>
+              <select id="settingCurrentSem" class="input" onchange="App.setCurrentSem(this.value)">
+                <option value="1">Semester 1 (Year 1)</option>
+                <option value="2">Semester 2 (Year 1)</option>
+                <option value="3">Semester 3 (Year 2)</option>
+                <option value="4">Semester 4 (Year 2)</option>
+                <option value="5">Semester 5 (Year 3)</option>
+                <option value="6">Semester 6 (Year 3)</option>
+              </select>
+            </div>
+
+            <div class="field-stacked">
+              <div class="field-label-with-helper">
+                <label for="settingTargetCgpa" class="field-stacked-label">Target CGPA</label>
+                <span class="field-helper-tag">10.0 Max</span>
+              </div>
+              <input type="number" id="settingTargetCgpa" class="input" min="4.0" max="10.0" step="0.1" placeholder="10.0" onchange="App.updateStudentProfile('targetCgpa', this.value)" />
+              <span class="field-hint">Your desired final degree CGPA (e.g. 8.5 to 10.0)</span>
+            </div>
           </div>
         </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
-          <div class="field" style="margin: 0;">
-            <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-mid);">Student Full Name</label>
-            <input type="text" id="settingStudentName" class="input" placeholder="e.g. Ved Mangukiya" onchange="App.updateStudentProfile('studentName', this.value)" />
+
+        <!-- 2. ACADEMICS SECTION -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <span class="settings-section-title">Academics</span>
           </div>
-          <div class="field" style="margin: 0;">
-            <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-mid);">Enrollment / Roll No</label>
-            <input type="text" id="settingEnrollment" class="input" placeholder="e.g. 240010111001" onchange="App.updateStudentProfile('enrollmentNo', this.value)" />
+
+          <div class="settings-list-clean">
+            <!-- Semester Visibility Row -->
+            <div class="settings-item-row" onclick="App.toggleSettingsSubView('subViewSemVisibility')">
+              <div class="settings-item-left">
+                <span class="settings-item-icon">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                </span>
+                <div class="settings-item-text">
+                  <span class="settings-item-title">Semester Visibility</span>
+                  <span class="settings-item-sub" id="semVisibilityCountText">1 of 6 semesters visible</span>
+                </div>
+              </div>
+              <div class="settings-item-right">
+                <span class="settings-chevron-right" id="chevSemVisibility">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </span>
+              </div>
+            </div>
+
+            <!-- Semester Visibility Expandable Drawer -->
+            <div class="settings-sub-drawer" id="subViewSemVisibility" style="display:none;">
+              <div class="sem-switch-list">
+                <div class="sem-switch-row">
+                  <div class="sem-switch-label">
+                    <span class="sem-switch-name">Semester 1</span>
+                    <span class="sem-switch-year">Year 1</span>
+                  </div>
+                  <label class="switch-toggle-wrap">
+                    <input type="checkbox" class="switch-input" id="semSwitch_1" onchange="App.toggleSemVisibility(1)" />
+                    <span class="switch-slider"></span>
+                  </label>
+                </div>
+                <div class="sem-switch-row">
+                  <div class="sem-switch-label">
+                    <span class="sem-switch-name">Semester 2</span>
+                    <span class="sem-switch-year">Year 1</span>
+                  </div>
+                  <label class="switch-toggle-wrap">
+                    <input type="checkbox" class="switch-input" id="semSwitch_2" onchange="App.toggleSemVisibility(2)" />
+                    <span class="switch-slider"></span>
+                  </label>
+                </div>
+                <div class="sem-switch-row">
+                  <div class="sem-switch-label">
+                    <span class="sem-switch-name">Semester 3</span>
+                    <span class="sem-switch-year">Year 2</span>
+                  </div>
+                  <label class="switch-toggle-wrap">
+                    <input type="checkbox" class="switch-input" id="semSwitch_3" onchange="App.toggleSemVisibility(3)" />
+                    <span class="switch-slider"></span>
+                  </label>
+                </div>
+                <div class="sem-switch-row">
+                  <div class="sem-switch-label">
+                    <span class="sem-switch-name">Semester 4</span>
+                    <span class="sem-switch-year">Year 2</span>
+                  </div>
+                  <label class="switch-toggle-wrap">
+                    <input type="checkbox" class="switch-input" id="semSwitch_4" onchange="App.toggleSemVisibility(4)" />
+                    <span class="switch-slider"></span>
+                  </label>
+                </div>
+                <div class="sem-switch-row">
+                  <div class="sem-switch-label">
+                    <span class="sem-switch-name">Semester 5</span>
+                    <span class="sem-switch-year">Year 3</span>
+                  </div>
+                  <label class="switch-toggle-wrap">
+                    <input type="checkbox" class="switch-input" id="semSwitch_5" onchange="App.toggleSemVisibility(5)" />
+                    <span class="switch-slider"></span>
+                  </label>
+                </div>
+                <div class="sem-switch-row">
+                  <div class="sem-switch-label">
+                    <span class="sem-switch-name">Semester 6</span>
+                    <span class="sem-switch-year">Year 3</span>
+                  </div>
+                  <label class="switch-toggle-wrap">
+                    <input type="checkbox" class="switch-input" id="semSwitch_6" onchange="App.toggleSemVisibility(6)" />
+                    <span class="switch-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Custom Subjects Row -->
+            <div class="settings-item-row" onclick="App.openAddSubjectModal()">
+              <div class="settings-item-left">
+                <span class="settings-item-icon">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </span>
+                <div class="settings-item-text">
+                  <span class="settings-item-title">Custom Subjects</span>
+                  <span class="settings-item-sub">Add new subject to any semester</span>
+                </div>
+              </div>
+              <div class="settings-item-right">
+                <span class="settings-chevron-right">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </span>
+              </div>
+            </div>
+
+            <!-- Recycle Bin Row -->
+            <div class="settings-item-row" onclick="App.toggleSettingsSubView('subViewRecycleBin')">
+              <div class="settings-item-left">
+                <span class="settings-item-icon">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </span>
+                <div class="settings-item-text">
+                  <span class="settings-item-title">Recycle Bin</span>
+                  <span class="settings-item-sub" id="trashCountSubtitle">No deleted items</span>
+                </div>
+              </div>
+              <div class="settings-item-right">
+                <span class="settings-badge-pill" id="trashCountBadge">Empty</span>
+                <span class="settings-chevron-right" id="chevRecycleBin">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </span>
+              </div>
+            </div>
+
+            <!-- Recycle Bin Sub Drawer -->
+            <div class="settings-sub-drawer" id="subViewRecycleBin" style="display:none;">
+              <div class="trash-list" id="trashList">
+                <!-- Dynamically populated -->
+              </div>
+              <button class="btn btn-ghost btn-danger-text btn-sm" id="btnClearTrash" onclick="App.clearTrash()" style="margin-top: 8px; display: none;">
+                Clear Recycle Bin
+              </button>
+            </div>
           </div>
-          <div class="field" style="margin: 0;">
-            <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-mid);">Current Active Semester</label>
-            <select id="settingCurrentSem" class="input" onchange="App.setCurrentSem(this.value)">
-              <option value="1">Semester 1 (Year 1)</option>
-              <option value="2">Semester 2 (Year 1)</option>
-              <option value="3">Semester 3 (Year 2)</option>
-              <option value="4">Semester 4 (Year 2)</option>
-              <option value="5">Semester 5 (Year 3)</option>
-              <option value="6">Semester 6 (Year 3)</option>
-            </select>
+        </div>
+
+        <!-- 3. DATA & BACKUP SECTION -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <span class="settings-section-title">Data & Backup</span>
           </div>
-          <div class="field" style="margin: 0;">
-            <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-mid);">Target 3-Year CGPA Goal</label>
-            <input type="number" id="settingTargetCgpa" class="input" min="4.0" max="10.0" step="0.1" placeholder="8.50" onchange="App.updateStudentProfile('targetCgpa', this.value)" />
+
+          <div class="settings-list-clean">
+            <div class="settings-item-row" onclick="App.exportData()">
+              <div class="settings-item-left">
+                <span class="settings-item-icon">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                </span>
+                <div class="settings-item-text">
+                  <span class="settings-item-title">Export Backup</span>
+                  <span class="settings-item-sub">Save a JSON file of your entire dashboard</span>
+                </div>
+              </div>
+              <div class="settings-item-right">
+                <span class="settings-chevron-right">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </span>
+              </div>
+            </div>
+
+            <div class="settings-item-row" onclick="document.getElementById('importInput').click()">
+              <div class="settings-item-left">
+                <span class="settings-item-icon">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                </span>
+                <div class="settings-item-text">
+                  <span class="settings-item-title">Import Backup</span>
+                  <span class="settings-item-sub">Restore your data from a backup JSON file</span>
+                </div>
+              </div>
+              <div class="settings-item-right">
+                <span class="settings-chevron-right">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </span>
+              </div>
+            </div>
+
+            <div class="settings-item-row" onclick="App.recoverMissingSyllabus()">
+              <div class="settings-item-left">
+                <span class="settings-item-icon">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 2v6h6M21.5 22v-6h-6"></path><path d="M22 11.5A10 10 0 0 0 3.2 7.2M2 12.5a10 10 0 0 0 18.8 4.2"></path></svg>
+                </span>
+                <div class="settings-item-text">
+                  <span class="settings-item-title">Restore Default Syllabus</span>
+                  <span class="settings-item-sub">Restore original GTU BBA subjects & units without losing marks</span>
+                </div>
+              </div>
+              <div class="settings-item-right">
+                <span class="settings-chevron-right">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </span>
+              </div>
+            </div>
+            <input type="file" id="importInput" accept=".json" onchange="App.importData(event)" hidden />
+          </div>
+        </div>
+
+        <!-- 4. DANGER ZONE -->
+        <div class="settings-section danger-section">
+          <div class="settings-section-header">
+            <span class="settings-section-title text-danger">Danger Zone</span>
+          </div>
+
+          <div class="settings-list-clean">
+            <div class="settings-item-row danger-row" onclick="App.confirmResetSemester()">
+              <div class="settings-item-left">
+                <span class="settings-item-icon text-danger">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                </span>
+                <div class="settings-item-text">
+                  <span class="settings-item-title text-danger">Reset Semester 1 Data</span>
+                  <span class="settings-item-sub">Clear all custom progress and reset Sem 1 to default</span>
+                </div>
+              </div>
+              <div class="settings-item-right">
+                <span class="settings-chevron-right text-danger">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. ABOUT SECTION -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <span class="settings-section-title">About</span>
+          </div>
+
+          <div class="settings-list-clean">
+            <div class="settings-about-row">
+              <div class="settings-about-info">
+                <span class="settings-about-title">GTU BBA Academic Dashboard</span>
+                <span class="settings-about-ver">Version 2.0 · Minimal SaaS Edition</span>
+                <span class="settings-about-author">Designed & developed with ❤️ by <strong>Ved Mangukiya</strong></span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- 2. Semester Visibility (3 Years) -->
-      <div class="settings-group">
-        <div class="settings-group-header">
-          <span class="settings-icon">📅</span>
-          <div>
-            <span class="settings-title">Semester Visibility (Sem 1 to 6)</span>
-            <span class="settings-sub">Toggle visible semesters on your dashboard tabs</span>
-          </div>
-        </div>
-        <div class="sem-check-grid" id="semCheckGrid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px;">
-          <label class="sem-check-item"><input type="checkbox" id="semCheck_1" value="1" onchange="App.toggleSemVisibility(1)" /> <strong>Sem 1</strong> (Yr 1)</label>
-          <label class="sem-check-item"><input type="checkbox" id="semCheck_2" value="2" onchange="App.toggleSemVisibility(2)" /> <strong>Sem 2</strong> (Yr 1)</label>
-          <label class="sem-check-item"><input type="checkbox" id="semCheck_3" value="3" onchange="App.toggleSemVisibility(3)" /> <strong>Sem 3</strong> (Yr 2)</label>
-          <label class="sem-check-item"><input type="checkbox" id="semCheck_4" value="4" onchange="App.toggleSemVisibility(4)" /> <strong>Sem 4</strong> (Yr 2)</label>
-          <label class="sem-check-item"><input type="checkbox" id="semCheck_5" value="5" onchange="App.toggleSemVisibility(5)" /> <strong>Sem 5</strong> (Yr 3)</label>
-          <label class="sem-check-item"><input type="checkbox" id="semCheck_6" value="6" onchange="App.toggleSemVisibility(6)" /> <strong>Sem 6</strong> (Yr 3)</label>
-        </div>
-      </div>
-
-      <!-- 3. Quick Action: Add Subject to Any Semester -->
-      <div class="settings-group primary-group">
-        <div class="settings-group-header">
-          <span class="settings-icon">➕</span>
-          <div>
-            <span class="settings-title">Add Subjects to Any Semester</span>
-            <span class="settings-sub">Easily expand your dashboard for Sem 2, 3, 4, 5, 6</span>
-          </div>
-        </div>
-        <button class="btn btn-accent btn-full" onclick="App.closeModal('settingsModal'); App.openAddSubjectModal();">
-          <svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15">
-            <path fill-rule="evenodd"
-              d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-              clip-rule="evenodd" />
-          </svg>
-          + Add New Subject (Sem 1 - 6)
-        </button>
-      </div>
-
-      <!-- 4. Recycle Bin / Trash -->
-      <div class="settings-group">
-        <div class="settings-group-header">
-          <span class="settings-icon">🗑️</span>
-          <div>
-            <span class="settings-title">Recycle Bin / Trash</span>
-            <span class="settings-sub">Restore deleted subjects and parts anytime</span>
-          </div>
-        </div>
-        <div class="trash-container">
-          <div class="trash-list" id="trashList">
-            <!-- Dynamically populated -->
-          </div>
-          <button class="btn btn-ghost btn-danger-text btn-full btn-clear-trash" id="btnClearTrash" onclick="App.clearTrash()" style="margin-top: 10px; display: none;">
-            🗑️ Clear Recycle Bin
-          </button>
-        </div>
-      </div>
-
-      <!-- 5. Backup & Deep Recovery -->
-      <div class="settings-group">
-        <div class="settings-group-header">
-          <span class="settings-icon">☁️</span>
-          <div>
-            <span class="settings-title">Data Backup & Deep Recovery</span>
-            <span class="settings-sub">Cloud synced · Export backup or recover missing syllabus units</span>
-          </div>
-        </div>
-        <div class="settings-btn-row">
-          <button class="btn btn-ghost" onclick="App.exportData()">
-            <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
-              <path fill-rule="evenodd"
-                d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                clip-rule="evenodd" />
-            </svg>
-            Export Backup
-          </button>
-          <button class="btn btn-ghost" onclick="document.getElementById('importInput').click()">
-            <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
-              <path fill-rule="evenodd"
-                d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z"
-                clip-rule="evenodd" />
-            </svg>
-            Import Backup
-          </button>
-          <button class="btn btn-ghost" onclick="App.recoverMissingSyllabus()">
-            ✨ Recover Missing Units
-          </button>
-          <button class="btn btn-ghost btn-danger-text" onclick="App.resetToSyllabusDefaults()">
-            🔄 Reset Sem 1 Syllabus
-          </button>
-          <input type="file" id="importInput" accept=".json" onchange="App.importData(event)" hidden />
-        </div>
-      </div>
-
-      <div class="modal-btns">
+      <div class="settings-modal-footer">
         <button class="btn btn-accent btn-full" onclick="App.closeModal('settingsModal')">Done</button>
       </div>
     </div>
@@ -516,7 +672,7 @@
     </div>
   </div>
 
-  <!-- GTU GRADING & RESULT INTERACTIVE GUIDE MODAL -->
+  <!-- GTU GRADING GUIDE MODAL -->
   <div class="overlay" id="gtuGuideModal">
     <div class="modal modal-gtu-guide">
       <div class="modal-head">
@@ -564,7 +720,7 @@
           </div>
 
           <div class="guide-alert-box">
-            <strong>⚠️ Mandatory GTU Passing Rule:</strong> A student must secure at least <strong>35% in the ESE paper</strong> (25/70 in 4-credit, 18/50 in 2-credit) AND at least <strong>35% aggregate overall</strong> to pass. Failing ESE marks directly awards an <strong>FF Grade (0 Grade Points)</strong>.
+            <strong>⚠️ Mandatory GTU Passing Rule:</strong> A student must secure at least <strong>35% in the ESE paper</strong> (25/70 in 4-credit, 18/50 in 2-credit) AND at least <strong>35% aggregate overall</strong> to pass.
           </div>
         </div>
 
@@ -602,114 +758,69 @@
           <h4 class="guide-step-h4">How Semester SPI & CGPA Are Calculated</h4>
           
           <div class="formula-grid">
-            <!-- SPI Formula Card -->
             <div class="formula-card">
               <div class="formula-card-top">
                 <div class="formula-title">
-                  <span>📐 Semester Performance Index (SPI) Formula</span>
+                  <span>📐 Semester Performance Index (SPI)</span>
                 </div>
-                <span class="formula-badge">Single Semester (20 Credits)</span>
+                <span class="formula-badge">20 Credits</span>
               </div>
-
               <div class="formula-math-box">
                 <div class="math-eq-row">
                   <span class="math-target">SPI</span>
                   <span class="math-eq-sign">=</span>
                   <div class="math-fraction">
-                    <div class="math-numerator">
-                      <span class="math-sigma">∑</span> ( <span class="math-sym">C<sub>i</sub></span> × <span class="math-sym">GP<sub>i</sub></span> )
-                    </div>
+                    <div class="math-numerator">∑ ( C<sub>i</sub> × GP<sub>i</sub> )</div>
                     <div class="math-divider"></div>
-                    <div class="math-denominator">
-                      <span class="math-sigma">∑</span> <span class="math-sym">C<sub>i</sub></span>
-                    </div>
-                  </div>
-                  <span class="math-eq-sign">=</span>
-                  <div class="math-fraction math-fraction-desc">
-                    <div class="math-numerator">Total Credit Points Earned (∑ CP)</div>
-                    <div class="math-divider"></div>
-                    <div class="math-denominator">Total Semester Credits (20)</div>
+                    <div class="math-denominator">∑ C<sub>i</sub> (20)</div>
                   </div>
                 </div>
               </div>
-
-              <div class="formula-legend-grid">
-                <div class="formula-legend-item">
-                  <span class="legend-badge">C<sub>i</sub></span>
-                  <span>Subject Credits (4c or 2c)</span>
-                </div>
-                <div class="formula-legend-item">
-                  <span class="legend-badge">GP<sub>i</sub></span>
-                  <span>Grade Point Scored (0 to 10)</span>
-                </div>
-                <div class="formula-legend-item">
-                  <span class="legend-badge">∑ C<sub>i</sub></span>
-                  <span>Total Sem Credits = 20</span>
-                </div>
-                <div class="formula-legend-item">
-                  <span class="legend-badge">C<sub>i</sub> × GP<sub>i</sub></span>
-                  <span>Credit Points (e.g. 4 × 9 = 36)</span>
-                </div>
-              </div>
-
-              <p class="formula-explain">4-Credit subjects carry <strong>double the weight (4×)</strong> of 2-Credit subjects (2×). Scoring an AA (10 GP) in a 4-credit subject contributes <strong>40 credit points</strong>, while in a 2-credit subject it contributes <strong>20 points</strong>.</p>
+              <p class="formula-explain">4-Credit subjects carry double weight (4×) compared to 2-Credit subjects (2×). Scoring AA in a 4-credit subject gives 40 points.</p>
             </div>
 
-            <!-- CPI / CGPA Formula Card -->
             <div class="formula-card formula-card-cpi">
               <div class="formula-card-top">
                 <div class="formula-title">
-                  <span>📊 Cumulative Performance Index (CPI / CGPA)</span>
+                  <span>📊 Cumulative CGPA Formula</span>
                 </div>
-                <span class="formula-badge badge-cpi">All Completed Semesters</span>
+                <span class="formula-badge badge-cpi">All Semesters</span>
               </div>
-
               <div class="formula-math-box">
                 <div class="math-eq-row">
-                  <span class="math-target math-target-cpi">CPI</span>
+                  <span class="math-target math-target-cpi">CGPA</span>
                   <span class="math-eq-sign">=</span>
                   <div class="math-fraction">
-                    <div class="math-numerator">
-                      <span class="math-sigma">∑</span> ( <span class="math-sym">C<sub>i</sub></span> × <span class="math-sym">GP<sub>i</sub></span> )<sub>all semesters</sub>
-                    </div>
-                    <div class="math-divider"></div>
-                    <div class="math-denominator">
-                      <span class="math-sigma">∑</span> <span class="math-sym">C<sub>i</sub></span> <sub>all semesters</sub>
-                    </div>
-                  </div>
-                  <span class="math-eq-sign">=</span>
-                  <div class="math-fraction math-fraction-desc">
-                    <div class="math-numerator">Total Credit Points (All Semesters)</div>
+                    <div class="math-numerator">Total Credit Points (All Sems)</div>
                     <div class="math-divider"></div>
                     <div class="math-denominator">Total Credits Attempted</div>
                   </div>
                 </div>
               </div>
-
-              <p class="formula-explain">CPI measures cumulative academic excellence across your entire degree by dividing the sum of all earned credit points by total credits across all semesters.</p>
+              <p class="formula-explain">CGPA measures cumulative academic performance by dividing total earned credit points by total credits across all semesters.</p>
             </div>
           </div>
         </div>
 
-        <!-- STEP 4: Interactive Live Simulator with Animations -->
+        <!-- STEP 4: Interactive Live Simulator -->
         <div class="guide-step-card sim-card-wrap">
           <div class="guide-step-badge">Step 4 · Interactive Simulator</div>
           <h4 class="guide-step-h4">Interactive GTU Calculation Simulator</h4>
-          <p class="guide-step-desc">Test different marks and watch the live calculation animate letter grades, credit points, and final SPI in real time:</p>
+          <p class="guide-step-desc">Test different marks and watch the live calculation animate letter grades and SPI in real time:</p>
 
           <div class="sim-presets-row">
-            <span class="sim-preset-label">Test Presets:</span>
-            <button class="sim-preset-btn" onclick="App.setSimulatorPreset('aa')">🌟 Target 10.0 SPI (AA)</button>
-            <button class="sim-preset-btn active" onclick="App.setSimulatorPreset('ab')">🎯 Target 8.5 SPI (AB)</button>
-            <button class="sim-preset-btn" onclick="App.setSimulatorPreset('bb')">📈 Target 7.5 SPI (BB)</button>
-            <button class="sim-preset-btn" onclick="App.setSimulatorPreset('pass_edge')">⚠️ Minimum Pass (DD)</button>
+            <span class="sim-preset-label">Presets:</span>
+            <button class="sim-preset-btn" onclick="App.setSimulatorPreset('aa')">🌟 10.0 SPI (AA)</button>
+            <button class="sim-preset-btn active" onclick="App.setSimulatorPreset('ab')">🎯 8.5 SPI (AB)</button>
+            <button class="sim-preset-btn" onclick="App.setSimulatorPreset('bb')">📈 7.5 SPI (BB)</button>
+            <button class="sim-preset-btn" onclick="App.setSimulatorPreset('pass_edge')">⚠️ Pass (DD)</button>
           </div>
 
           <div class="sim-grid">
             <!-- Sample 4-Credit Subject -->
             <div class="sim-sub-card">
               <div class="sim-sub-head">
-                <span class="sim-sub-title">Sample 4-Credit Subject (Max 150)</span>
+                <span class="sim-sub-title">4-Credit Subject (Max 150)</span>
                 <span class="sim-badge" id="sim4Grade">AB (9 GP)</span>
               </div>
               <div class="sim-inputs-grid">
@@ -743,7 +854,7 @@
             <!-- Sample 2-Credit Subject -->
             <div class="sim-sub-card">
               <div class="sim-sub-head">
-                <span class="sim-sub-title">Sample 2-Credit Subject (Max 100)</span>
+                <span class="sim-sub-title">2-Credit Subject (Max 100)</span>
                 <span class="sim-badge" id="sim2Grade">AB (9 GP)</span>
               </div>
               <div class="sim-inputs-grid">
@@ -778,25 +889,25 @@
           <!-- Animated Result Outcome Card -->
           <div class="sim-result-box">
             <div class="sim-result-left">
-              <span class="sim-result-label">Calculated Sem 1 SPI</span>
+              <span class="sim-result-label">Calculated SPI</span>
               <span class="sim-spi-val" id="simResultSpi">8.50</span>
             </div>
             <div class="sim-result-right">
-              <span class="sim-result-title">Weighted Credit Calculation:</span>
+              <span class="sim-result-title">Weighted Calculation:</span>
               <div class="sim-formula-text" id="simResultFormula">(4 × 36 + 2 × 18) ÷ 20 Credits = <strong>8.50 SPI</strong></div>
-              <span class="sim-degree-tag">🎓 Result Equivalent: First Class with Distinction (AB Grade)</span>
+              <span class="sim-degree-tag">Result: Distinction (AB Grade)</span>
             </div>
           </div>
         </div>
       </div>
 
       <div class="modal-btns">
-        <button class="btn btn-accent btn-full" onclick="App.closeModal('gtuGuideModal')">Got it, Let's Track Marks!</button>
+        <button class="btn btn-accent btn-full" onclick="App.closeModal('gtuGuideModal')">Got it!</button>
       </div>
     </div>
   </div>
 
-  <!-- TOAST -->
+  <!-- TOAST NOTIFICATION CONTAINER -->
   <div class="toasts" id="toasts"></div>
 
   <!-- FIREBASE SDKs -->

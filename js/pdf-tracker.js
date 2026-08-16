@@ -1,15 +1,14 @@
 // ============================================================
-//  GTU BBA PDF Tracker — PDF Material Manager View Controller
+//  GTU BBA PDF Tracker — Materials & PDF Attachment Controller
 //  Uses App.* helpers to access shared state & utilities
-//  Clean UI & Vector SVG Icons for high-contrast crisp look
+//  Clean Minimal UI with SVG Icons
 // ============================================================
 
 const PdfTracker = (() => {
 
   const SVG = {
-    check: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`,
-    download: `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>`,
-    printer: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>`,
+    check: `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`,
+    printer: `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>`,
     clip: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>`,
     trash: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`,
     fileDoc: `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>`,
@@ -36,7 +35,7 @@ const PdfTracker = (() => {
     App.render();
 
     const pageMsg = meta.pageCount ? ` (${meta.pageCount} Pages)` : '';
-    App.toast(`Attached PDF: ${meta.fileName}${pageMsg}`);
+    App.toast(`Attached: ${meta.fileName}${pageMsg}`);
   }
 
   function togglePdfMetaVisibility(subId, unitId, partId) {
@@ -55,13 +54,13 @@ const PdfTracker = (() => {
     p.showPdfMeta = false;
     App.persist();
     App.render();
-    App.toast('PDF attachment details removed');
+    App.toast('Attachment removed');
   }
 
   function renderPart(subId, uId, p, ci) {
     const esc = App.esc;
-    const isDone = p.downloaded;
-    const isPrinted = p.printed;
+    const isDone = !!p.downloaded;
+    const isPrinted = !!p.printed;
     const hasPdf = !!p.pdfFileName;
     const isMetaShown = !!p.showPdfMeta;
 
@@ -69,10 +68,10 @@ const PdfTracker = (() => {
       <div class="part-card ${isDone ? 'done' : ''} ${isPrinted ? 'printed' : ''}" data-part-id="${p.id}">
         <div class="part-main-row">
           <div class="part-check-group">
-            <button class="ck-btn ck-dl ${isDone ? 'checked' : ''}" onclick="App.toggleDl('${subId}','${uId}','${p.id}')" title="${isDone ? 'Mark as Pending' : 'Mark as Downloaded'}">
+            <button class="ck-btn ck-dl ${isDone ? 'checked' : ''}" onclick="App.toggleDl('${subId}','${uId}','${p.id}')" title="${isDone ? 'Downloaded · Tap to unmark' : 'Mark as Downloaded'}" aria-label="Toggle Download Status">
               ${isDone ? SVG.check : ''}
             </button>
-            <button class="ck-btn ck-pr ${isPrinted ? 'checked' : ''}" onclick="App.togglePr('${subId}','${uId}','${p.id}')" title="${isPrinted ? 'Mark as Unprinted' : 'Mark as Printed'}">
+            <button class="ck-btn ck-pr ${isPrinted ? 'checked' : ''}" onclick="App.togglePr('${subId}','${uId}','${p.id}')" title="${isPrinted ? 'Printed · Tap to unmark' : 'Mark as Printed'}" aria-label="Toggle Print Status">
               ${SVG.printer}
             </button>
           </div>
@@ -87,10 +86,10 @@ const PdfTracker = (() => {
           <div class="part-actions">
             <input type="file" id="pdfFileInput_${p.id}" accept=".pdf" style="display:none"
                    onchange="PdfTracker.handlePdfFileSelect('${subId}','${uId}','${p.id}', this)" />
-            <button class="icon-btn-sm" onclick="document.getElementById('pdfFileInput_${p.id}').click()" title="Attach PDF for filename & page count">
+            <button class="icon-btn-sm" onclick="document.getElementById('pdfFileInput_${p.id}').click()" title="Attach PDF file" aria-label="Attach PDF">
               ${SVG.clip}
             </button>
-            <button class="icon-btn-sm btn-danger-icon" onclick="App.deletePart('${subId}','${uId}','${p.id}')" title="Delete Part">
+            <button class="icon-btn-sm btn-danger-icon" onclick="App.deletePart('${subId}','${uId}','${p.id}')" title="Delete Part" aria-label="Delete Part">
               ${SVG.trash}
             </button>
           </div>
@@ -98,7 +97,7 @@ const PdfTracker = (() => {
 
         ${hasPdf ? `
           <div class="part-meta-row">
-            <div class="pdf-info-chip" onclick="PdfTracker.togglePdfMetaVisibility('${subId}','${uId}','${p.id}')" title="Click to toggle PDF file details">
+            <div class="pdf-info-chip" onclick="PdfTracker.togglePdfMetaVisibility('${subId}','${uId}','${p.id}')" title="Click to view file details">
               <span class="pdf-chip-icon">${SVG.fileDoc}</span>
               <span class="pdf-name-text">${esc(p.pdfFileName)}</span>
               ${p.pdfPageCount ? `<span class="pdf-pages-badge">${p.pdfPageCount} Pgs</span>` : ''}
@@ -107,16 +106,16 @@ const PdfTracker = (() => {
           </div>
           <div class="pdf-detail-card ${isMetaShown ? 'show' : ''}">
             <div class="pdf-meta-item">
-              <span class="pdf-meta-label">PDF File Name:</span>
+              <span class="pdf-meta-label">File:</span>
               <span class="pdf-meta-val">${esc(p.pdfFileName)}</span>
             </div>
             <div class="pdf-meta-item">
-              <span class="pdf-meta-label">Total Pages:</span>
-              <span class="pdf-meta-val">${p.pdfPageCount ? `${p.pdfPageCount} Pages` : 'Unknown / Unscanned'}</span>
+              <span class="pdf-meta-label">Pages:</span>
+              <span class="pdf-meta-val">${p.pdfPageCount ? `${p.pdfPageCount} Pages` : 'Scanned'}</span>
             </div>
             <div class="pdf-meta-item" style="margin-top: 4px;">
-              <button class="btn btn-ghost btn-sm btn-danger-text" onclick="PdfTracker.removePdfMeta('${subId}','${uId}','${p.id}')">
-                Remove PDF Meta
+              <button class="btn btn-ghost btn-xs btn-danger-text" onclick="PdfTracker.removePdfMeta('${subId}','${uId}','${p.id}')">
+                Remove Attachment
               </button>
             </div>
           </div>
@@ -138,7 +137,7 @@ const PdfTracker = (() => {
           </div>
           <div class="unit-actions" onclick="event.stopPropagation()">
             <span class="unit-badge" title="${dlCount} of ${partsCount} parts downloaded">${dlCount}/${partsCount} DL</span>
-            <button class="btn-xs btn-ghost" onclick="App.addPart('${subId}','${u.id}')" title="Add Part">
+            <button class="btn btn-ghost btn-xs" onclick="App.addPart('${subId}','${u.id}')" title="Add Part to Unit">
               ${SVG.plus} Part
             </button>
           </div>

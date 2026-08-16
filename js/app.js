@@ -1,22 +1,22 @@
 // ============================================================
 //  GTU BBA Academic Dashboard — Master Application Facade
-//  Coordinates PDF Tracker, Marks Hub, Modals, Theme & Cloud
+//  Coordinates Materials Tracker, Marks Hub, Settings & Cloud Sync
 // ============================================================
 
 const App = (() => {
 
-  // ── State (accessible via App.getData() by other modules) ──
+  // ── State ──────────────────────────────────────────────────
   let loaded = loadData();
   let data = (loaded && Array.isArray(loaded.subjects) && loaded.subjects.length) ? loaded : getDefaultData();
   let filter = 'all';
   let search = '';
   let semFilter = 'all';
+  let _confirmCallback = null;
 
-  // ── Public data accessor so other modules (MarksHub, PdfTracker) can read data ──
   function getData() { return data; }
   function setData(d) { data = d; }
 
-  // ── Helpers (also exposed globally for sub-modules) ──────
+  // ── Helpers ────────────────────────────────────────────────
   function esc(t) {
     const d = document.createElement('div');
     d.textContent = t;
@@ -51,10 +51,10 @@ const App = (() => {
     return list;
   }
 
-  // ── Stats (Fluid, Anti-Jitter Counter Engine) ──────────
+  // ── Smooth Counter Animation Engine ────────────────────────
   const _statPrev = { total: 0, dl: 0, pr: 0, pending: 0 };
 
-  function animateCount(el, from, to, duration = 380) {
+  function animateCount(el, from, to, duration = 300) {
     if (!el) return;
     if (el._rafId) {
       cancelAnimationFrame(el._rafId);
@@ -71,8 +71,7 @@ const App = (() => {
 
     function step(now) {
       const elapsed = Math.min((now - startTime) / duration, 1);
-      // Smooth quintic easeOut for ultra fluid glide
-      const eased = 1 - Math.pow(1 - elapsed, 4);
+      const eased = 1 - Math.pow(1 - elapsed, 3);
       el.textContent = Math.round(startVal + diff * eased);
       if (elapsed < 1) {
         el._rafId = requestAnimationFrame(step);
@@ -110,16 +109,8 @@ const App = (() => {
     animateCount(document.getElementById('statPending'), _statPrev.pending, pending);
     _statPrev.total = total; _statPrev.dl = dl; _statPrev.pr = pr; _statPrev.pending = pending;
 
-    const ringFill = document.getElementById('ringFill');
     const ringPct = document.getElementById('progressPct');
-    const ringCenter = document.getElementById('ringCenterPct');
-    if (ringFill) {
-      const circ = 213.6;
-      const offset = circ - (pct / 100) * circ;
-      ringFill.style.strokeDashoffset = offset;
-    }
     if (ringPct) ringPct.textContent = pct + '%';
-    if (ringCenter) ringCenter.textContent = pct + '%';
 
     const fillDl = document.getElementById('progressFill');
     const fillPr = document.getElementById('progressFillPr');
@@ -127,27 +118,22 @@ const App = (() => {
     if (fillPr) fillPr.style.width = prPct + '%';
   }
 
-  const chevSvg = `<svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>`;
+  const chevSvg = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
 
   const SVG_SUBJECT_ICONS = {
-    'S1-PPM': `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>`,
-    'S1-FA': `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>`,
-    'S1-BSL': `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>`,
-    'S1-ENG': `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`,
-    'S1-IKS': `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M3 7h18M6 7v14M10 7v14M14 7v14M18 7v14M12 3L2 7h20L12 3z"></path></svg>`,
-    'S1-ESG': `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>`
+    'S1-PPM': `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>`,
+    'S1-FA': `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>`,
+    'S1-BSL': `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>`,
+    'S1-ENG': `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`,
+    'S1-IKS': `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M3 7h18M6 7v14M10 7v14M14 7v14M18 7v14M12 3L2 7h20L12 3z"></path></svg>`,
+    'S1-ESG': `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>`
   };
 
   function getSubjectIcon(code, ci) {
     if (code && SVG_SUBJECT_ICONS[code.toUpperCase()]) {
       return SVG_SUBJECT_ICONS[code.toUpperCase()];
     }
-    const iconMap = {
-      'S1-PPM': '💼', 'S1-FA': '💰', 'S1-BSL': '📊', 'S1-ENG': '💬', 'S1-IKS': '🏛️', 'S1-ESG': '🌱'
-    };
-    if (code && iconMap[code.toUpperCase()]) return iconMap[code.toUpperCase()];
-    const fallbackIcons = ['💼', '💰', '📊', '💬', '🏛️', '🌱', '📈', '🎯'];
-    return fallbackIcons[ci % fallbackIcons.length];
+    return `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>`;
   }
 
   function renderSemBar() {
@@ -175,7 +161,11 @@ const App = (() => {
     const isDark = data.settings && data.settings.theme === 'dark';
     document.body.classList.toggle('dark-mode', isDark);
     const btn = document.getElementById('themeToggleBtn');
-    if (btn) btn.textContent = isDark ? '☀️' : '🌙';
+    if (btn) {
+      btn.innerHTML = isDark
+        ? `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`
+        : `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
+    }
   }
 
   function toggleTheme() {
@@ -183,105 +173,10 @@ const App = (() => {
     data.settings.theme = data.settings.theme === 'dark' ? 'light' : 'dark';
     applyTheme();
     persist();
-    toast(data.settings.theme === 'dark' ? 'OLED Dark Mode enabled' : 'Light Mode enabled');
+    toast(data.settings.theme === 'dark' ? 'Dark theme enabled' : 'Light theme enabled');
   }
 
-  function updateCountdown() {
-    const timerEl = document.getElementById('countdownTimer');
-    if (!timerEl) return;
-    const examDateStr = data.settings ? data.settings.examDate : '';
-    if (!examDateStr) { timerEl.textContent = 'No target date set · Click "Set Target Date"'; return; }
-    const targetDate = new Date(examDateStr).getTime();
-    const now = Date.now();
-    const diff = targetDate - now;
-    if (diff <= 0) { timerEl.textContent = '🎉 Exam Day is Here! Best of luck!'; return; }
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    timerEl.textContent = `${days} Days ${hours}h ${mins}m Remaining`;
-  }
-
-  function toggleReadinessView() {
-    if (!data.settings) data.settings = {};
-    data.settings.hideReadiness = !data.settings.hideReadiness;
-    persist();
-    renderReadinessGrid();
-  }
-
-  function renderReadinessGrid() {
-    const section = document.getElementById('semReadinessSection');
-    const grid = document.getElementById('readinessGrid');
-    const toggleBtn = document.getElementById('btnToggleReadiness');
-    if (!grid || !section) return;
-    const isHidden = data.settings && data.settings.hideReadiness;
-    if (toggleBtn) toggleBtn.textContent = isHidden ? 'Show' : 'Hide';
-    grid.style.display = isHidden ? 'none' : 'grid';
-
-    const semMap = {};
-    for (let sNum = 1; sNum <= 6; sNum++) semMap[sNum] = { total: 0, dl: 0, pr: 0 };
-    if (Array.isArray(data.subjects)) {
-      data.subjects.forEach(s => {
-        const sem = s.sem || 1;
-        if (semMap[sem] && Array.isArray(s.units)) {
-          s.units.forEach(u => {
-            if (Array.isArray(u.parts)) {
-              u.parts.forEach(p => {
-                semMap[sem].total++;
-                if (p.downloaded) semMap[sem].dl++;
-                if (p.printed) semMap[sem].pr++;
-              });
-            }
-          });
-        }
-      });
-    }
-
-    const visibleSems = (data.settings && Array.isArray(data.settings.visibleSems)) ? data.settings.visibleSems : [1, 2, 3, 4, 5, 6];
-    
-    // In-place update to preserve CSS bar width transitions smoothly
-    const existingCards = grid.querySelectorAll('.readiness-card');
-    if (existingCards.length === visibleSems.length) {
-      visibleSems.forEach((semNum, idx) => {
-        const card = existingCards[idx];
-        if (!card) return;
-        const stats = semMap[semNum] || { total: 0, dl: 0, pr: 0 };
-        const pct = stats.total ? Math.round((stats.dl / stats.total) * 100) : 0;
-        const statusBadge = pct >= 80 ? '🟢 Exam Ready' : pct >= 40 ? '🟡 Progressing' : '🔴 Needs Study';
-
-        const badgeEl = card.querySelector('.readiness-status-badge');
-        const fillEl = card.querySelector('.readiness-bar-fill');
-        const footers = card.querySelectorAll('.readiness-card-footer span');
-
-        if (badgeEl) badgeEl.textContent = statusBadge;
-        if (fillEl) fillEl.style.width = `${pct}%`;
-        if (footers[0]) footers[0].textContent = `${pct}% Downloaded`;
-        if (footers[1]) footers[1].textContent = `${stats.dl}/${stats.total} Parts`;
-      });
-      return;
-    }
-
-    grid.innerHTML = visibleSems.map(semNum => {
-      const stats = semMap[semNum] || { total: 0, dl: 0, pr: 0 };
-      const pct = stats.total ? Math.round((stats.dl / stats.total) * 100) : 0;
-      const statusBadge = pct >= 80 ? '🟢 Exam Ready' : pct >= 40 ? '🟡 Progressing' : '🔴 Needs Study';
-      return `
-        <div class="readiness-card" data-sem="${semNum}">
-          <div class="readiness-card-head">
-            <span class="readiness-sem-title">Sem ${semNum}</span>
-            <span class="readiness-status-badge">${statusBadge}</span>
-          </div>
-          <div class="readiness-bar-track">
-            <div class="readiness-bar-fill" style="width:${pct}%"></div>
-          </div>
-          <div class="readiness-card-footer">
-            <span>${pct}% Downloaded</span>
-            <span>${stats.dl}/${stats.total} Parts</span>
-          </div>
-        </div>`;
-    }).join('');
-  }
-
-  // ── Actions (Optimistic In-Place Updates) ─────────────
+  // ── Actions ────────────────────────────────────────────────
   function updateSubjectCardMiniProgress(subId) {
     const subCard = document.querySelector(`.subject-card[data-id="${subId}"]`);
     if (!subCard) return;
@@ -311,19 +206,17 @@ const App = (() => {
     p.downloaded = !p.downloaded;
     persist();
 
-    // Optimistic DOM updates (Instant Feedback)
     const partCard = document.querySelector(`.part-card[data-part-id="${partId}"]`);
     if (partCard) {
       partCard.classList.toggle('done', p.downloaded);
       const dlBtn = partCard.querySelector('.ck-dl');
       if (dlBtn) {
         dlBtn.classList.toggle('checked', p.downloaded);
-        dlBtn.innerHTML = p.downloaded ? `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>` : '';
-        dlBtn.title = p.downloaded ? 'Mark as Pending' : 'Mark as Downloaded';
+        dlBtn.innerHTML = p.downloaded ? `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>` : '';
+        dlBtn.title = p.downloaded ? 'Downloaded · Tap to unmark' : 'Mark as Downloaded';
       }
     }
     updateStats();
-    renderReadinessGrid();
     updateSubjectCardMiniProgress(subId);
   }
 
@@ -333,28 +226,17 @@ const App = (() => {
     p.printed = !p.printed;
     persist();
 
-    // Optimistic DOM updates (Instant Feedback)
     const partCard = document.querySelector(`.part-card[data-part-id="${partId}"]`);
     if (partCard) {
       partCard.classList.toggle('printed', p.printed);
       const prBtn = partCard.querySelector('.ck-pr');
       if (prBtn) {
         prBtn.classList.toggle('checked', p.printed);
-        prBtn.title = p.printed ? 'Mark as Unprinted' : 'Mark as Printed';
+        prBtn.title = p.printed ? 'Printed · Tap to unmark' : 'Mark as Printed';
       }
     }
     updateStats();
-    renderReadinessGrid();
     updateSubjectCardMiniProgress(subId);
-  }
-
-  function markUnitDl(subId, unitId) {
-    const { u } = find(subId, unitId);
-    if (!u || !Array.isArray(u.parts)) return;
-    const allDl = u.parts.every(p => p.downloaded);
-    u.parts.forEach(p => { p.downloaded = !allDl; });
-    persist();
-    render();
   }
 
   function toggleSubject(subId) {
@@ -426,18 +308,25 @@ const App = (() => {
     const marksView = document.getElementById('marksHubView');
     const btnPdf = document.getElementById('tabPdfBtn');
     const btnMarks = document.getElementById('tabMarksBtn');
+    const bNavMaterials = document.getElementById('bNavMaterials');
+    const bNavMarks = document.getElementById('bNavMarks');
 
     if (tabName === 'marks') {
       if (pdfView) { pdfView.style.display = 'none'; pdfView.classList.remove('active'); }
       if (marksView) { marksView.style.display = 'block'; setTimeout(() => marksView.classList.add('active'), 10); }
       if (btnPdf) btnPdf.classList.remove('active');
       if (btnMarks) btnMarks.classList.add('active');
+      if (bNavMaterials) bNavMaterials.classList.remove('active');
+      if (bNavMarks) bNavMarks.classList.add('active');
       MarksHub.renderMarksHub();
     } else {
       if (marksView) { marksView.style.display = 'none'; marksView.classList.remove('active'); }
       if (pdfView) { pdfView.style.display = 'block'; setTimeout(() => pdfView.classList.add('active'), 10); }
       if (btnMarks) btnMarks.classList.remove('active');
       if (btnPdf) btnPdf.classList.add('active');
+      if (bNavMarks) bNavMarks.classList.remove('active');
+      if (bNavMaterials) bNavMaterials.classList.add('active');
+      renderSubjectList();
     }
   }
 
@@ -448,7 +337,7 @@ const App = (() => {
     s.marks.isLumpsum = !s.marks.isLumpsum;
     persist();
     MarksHub.renderMarksHub();
-    toast(s.marks.isLumpsum ? 'Switched to Lumpsum Internal Mode' : 'Switched to Breakdown Internal Mode');
+    toast(s.marks.isLumpsum ? 'Switched to Lumpsum internal mode' : 'Switched to Breakdown internal mode');
   }
 
   function onMarksInput(subId, fieldKey, value) {
@@ -484,9 +373,9 @@ const App = (() => {
   function saveSubjectMarks(subId) {
     const s = data.subjects.find(x => x.id === subId);
     if (!s) return;
-    persist(); // Commits to LocalStorage and triggers instant Cloud Sync
+    persist();
     MarksHub.updateSubjectCardLive(subId);
-    toast(`💾 Saved & Synced ${s.code} marks to database!`);
+    toast(`Saved ${s.code} marks`);
   }
 
   function onTargetSpiChange(val) {
@@ -494,12 +383,11 @@ const App = (() => {
     if (isNaN(targetVal)) return;
     if (!data.settings) data.settings = {};
     data.settings.targetSpi = Math.min(Math.max(targetVal, 4.0), 10.0);
-    data.settings.targetCgpa = data.settings.targetSpi; // Sync CGPA
+    data.settings.targetCgpa = data.settings.targetSpi;
     saveData(data);
     Cloud.saveDebounced(data, 1000);
     MarksHub.renderTargetBacktracker();
     
-    // Update settings modal input if it exists
     const sTargetCgpaEl = document.getElementById('settingTargetCgpa');
     if (sTargetCgpaEl) sTargetCgpaEl.value = data.settings.targetSpi;
     if (Array.isArray(data.subjects)) {
@@ -513,7 +401,6 @@ const App = (() => {
     if (!data.settings) data.settings = {};
     data.settings[field] = val;
     
-    // Sync CGPA to SPI
     if (field === 'targetCgpa') {
       const spiVal = parseFloat(val);
       if (!isNaN(spiVal)) {
@@ -529,7 +416,7 @@ const App = (() => {
     
     saveData(data);
     Cloud.saveDebounced(data, 1000);
-    toast(`Updated ${field}`);
+    toast(`Saved changes`);
   }
 
   function setCurrentSem(sem) {
@@ -545,42 +432,45 @@ const App = (() => {
     if (typeof MarksHub.setActiveMarksSem === 'function') {
       MarksHub.setActiveMarksSem(semNum);
     }
-    toast(`Switched active academic semester to Sem ${semNum}`);
+    toast(`Active Semester set to Sem ${semNum}`);
   }
 
   function resetAllMarks() {
     data.subjects.forEach(s => { s.marks = createDefaultMarks(); });
     persist();
     MarksHub.renderMarksHub();
-    toast('All subject marks reset to default');
+    toast('Reset all marks to 0');
   }
 
-  // ── Main Render ────────────────────────────────────────
+  // ── Main Render ────────────────────────────────────────────
   function render() {
     applyTheme();
-    updateCountdown();
-    renderReadinessGrid();
     updateStats();
     renderSemBar();
 
     const activeTab = (data.settings && data.settings.activeTab) ? data.settings.activeTab : 'pdf';
-    // Update tab buttons without triggering full switchTab (avoid double renders)
     const pdfView = document.getElementById('pdfTrackerView');
     const marksView = document.getElementById('marksHubView');
     const btnPdf = document.getElementById('tabPdfBtn');
     const btnMarks = document.getElementById('tabMarksBtn');
+    const bNavMaterials = document.getElementById('bNavMaterials');
+    const bNavMarks = document.getElementById('bNavMarks');
 
     if (activeTab === 'marks') {
       if (pdfView) { pdfView.style.display = 'none'; pdfView.classList.remove('active'); }
       if (marksView) { marksView.style.display = 'block'; marksView.classList.add('active'); }
       if (btnPdf) btnPdf.classList.remove('active');
       if (btnMarks) btnMarks.classList.add('active');
+      if (bNavMaterials) bNavMaterials.classList.remove('active');
+      if (bNavMarks) bNavMarks.classList.add('active');
       MarksHub.renderMarksHub();
     } else {
       if (marksView) { marksView.style.display = 'none'; marksView.classList.remove('active'); }
       if (pdfView) { pdfView.style.display = 'block'; pdfView.classList.add('active'); }
       if (btnMarks) btnMarks.classList.remove('active');
       if (btnPdf) btnPdf.classList.add('active');
+      if (bNavMarks) bNavMarks.classList.remove('active');
+      if (bNavMaterials) bNavMaterials.classList.add('active');
       renderSubjectList();
     }
   }
@@ -626,55 +516,51 @@ const App = (() => {
     if (container) {
       container.innerHTML = filtered.map((s, si) => {
         try {
-        const orig = data.subjects.find(o => o.id === s.id);
-        if (!orig) return '';
-        const ci = (orig.colorIndex || 0) % 8;
+          const orig = data.subjects.find(o => o.id === s.id);
+          if (!orig) return '';
+          const ci = (orig.colorIndex || 0) % 8;
 
-        let stotal = 0, sdl = 0, spr = 0;
-        if (orig.units && Array.isArray(orig.units)) {
-          orig.units.forEach(u => {
-            if (u && Array.isArray(u.parts)) {
-              u.parts.forEach(p => { stotal++; if (p.downloaded) sdl++; if (p.printed) spr++; });
-            }
-          });
-        }
-        const spct = stotal ? Math.round((sdl / stotal) * 100) : 0;
-        const sprPct = stotal ? Math.round((spr / stotal) * 100) : 0;
-        const tooltip = `${sdl}/${stotal} downloaded · ${spr} printed`;
+          let stotal = 0, sdl = 0, spr = 0;
+          if (orig.units && Array.isArray(orig.units)) {
+            orig.units.forEach(u => {
+              if (u && Array.isArray(u.parts)) {
+                u.parts.forEach(p => { stotal++; if (p.downloaded) sdl++; if (p.printed) spr++; });
+              }
+            });
+          }
+          const spct = stotal ? Math.round((sdl / stotal) * 100) : 0;
+          const sprPct = stotal ? Math.round((spr / stotal) * 100) : 0;
+          const tooltip = `${sdl}/${stotal} downloaded · ${spr} printed`;
 
-        return `
-          <div class="subject-card sub-theme-${ci} ${orig.expanded ? 'open' : ''}" data-id="${s.id}" style="animation-delay:${si * 40}ms">
-            <div class="subject-head" onclick="App.toggleSubject('${s.id}')">
-              <div class="subject-icon-badge">${getSubjectIcon(orig.code, ci)}</div>
-              <div class="subject-info">
-                <div class="subject-meta">
-                  <span class="subject-sem-badge">Sem ${orig.sem || 1}</span>
-                  <span class="subject-code-badge">${esc(orig.code)}</span>
-                  <span class="subject-credits-badge">${(orig.credits || 4)} Credits · ${(orig.credits === 2 ? '3 Units' : '5 Units')}</span>
+          return `
+            <div class="subject-card ${orig.expanded ? 'open' : ''}" data-id="${s.id}">
+              <div class="subject-head" onclick="App.toggleSubject('${s.id}')">
+                <div class="subject-icon-badge">${getSubjectIcon(orig.code, ci)}</div>
+                <div class="subject-info">
+                  <div class="subject-meta">${esc(orig.code)} · ${orig.credits || 4} Credits · ${(orig.credits === 2 ? '3 Units' : '5 Units')}</div>
+                  <div class="subject-name editable" contenteditable="true"
+                       onfocus="this.dataset.prev=this.textContent"
+                       onblur="App.editSubjectName('${s.id}',this)"
+                       onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}">${esc(orig.name)}</div>
                 </div>
-                <div class="subject-name editable" contenteditable="true"
-                     onfocus="this.dataset.prev=this.textContent"
-                     onblur="App.editSubjectName('${s.id}',this)"
-                     onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}">${esc(orig.name)}</div>
-              </div>
-              <div class="subject-mini-progress" title="${tooltip}">
-                <div class="mini-track">
-                  <div class="mini-bar-dl" style="width:${spct}%"></div>
-                  <div class="mini-bar-pr" style="width:${sprPct}%"></div>
+                <div class="subject-mini-progress" title="${tooltip}">
+                  <div class="mini-track">
+                    <div class="mini-bar-dl" style="width:${spct}%"></div>
+                    <div class="mini-bar-pr" style="width:${sprPct}%"></div>
+                  </div>
+                  <span class="mini-pct">${spct}%</span>
                 </div>
-                <span class="mini-pct">${spct}%</span>
+                <span class="chevron">${chevSvg}</span>
               </div>
-              <span class="chevron">${chevSvg}</span>
-            </div>
-            <div class="subject-body">
-              <div class="subject-inner">
-                ${s.units && Array.isArray(s.units) ? s.units.map(u => {
-                  try { return PdfTracker.renderUnit(s.id, u, ci, orig); }
-                  catch(e) { console.error('renderUnit error:', e); return ''; }
-                }).join('') : ''}
+              <div class="subject-body">
+                <div class="subject-inner">
+                  ${s.units && Array.isArray(s.units) ? s.units.map(u => {
+                    try { return PdfTracker.renderUnit(s.id, u, ci, orig); }
+                    catch(e) { console.error('renderUnit error:', e); return ''; }
+                  }).join('') : ''}
+                </div>
               </div>
-            </div>
-          </div>`;
+            </div>`;
         } catch(e) {
           console.error('Subject card render error for', s.id, e);
           return `<div class="subject-card" style="padding:12px;color:red">Error rendering: ${(s.name||s.id)}</div>`;
@@ -688,11 +574,11 @@ const App = (() => {
     if (!c) return;
     const t = document.createElement('div');
     t.className = isError ? 'toast toast-error' : 'toast toast-success';
-    t.innerHTML = `<span class="toast-icon">${isError ? '✕' : '✓'}</span><span class="toast-msg">${msg}</span>`;
+    t.innerHTML = `<span>${isError ? '✕' : '✓'}</span><span>${msg}</span>`;
     c.appendChild(t);
-    const delay = 2600;
+    const delay = 2400;
     setTimeout(() => t.classList.add('toast-out'), delay);
-    setTimeout(() => { if (t.parentNode) t.remove(); }, delay + 400);
+    setTimeout(() => { if (t.parentNode) t.remove(); }, delay + 300);
   }
 
   function closeModal(id) {
@@ -700,64 +586,121 @@ const App = (() => {
     if (el) el.classList.remove('show');
   }
 
+  // ── Settings Suite Controllers ─────────────────────────────
+  function toggleSettingsSubView(viewId) {
+    const el = document.getElementById(viewId);
+    if (!el) return;
+    const isShown = el.style.display !== 'none';
+    el.style.display = isShown ? 'none' : 'block';
+
+    const chevId = viewId === 'subViewSemVisibility' ? 'chevSemVisibility' : 'chevRecycleBin';
+    const chevEl = document.getElementById(chevId);
+    if (chevEl) {
+      chevEl.style.transform = isShown ? 'rotate(0deg)' : 'rotate(90deg)';
+    }
+  }
+
+  function updateSemVisibilitySummary() {
+    const vis = (data.settings && Array.isArray(data.settings.visibleSems)) ? data.settings.visibleSems : [1];
+    const textEl = document.getElementById('semVisibilityCountText');
+    if (textEl) {
+      textEl.textContent = `${vis.length} of 6 semesters visible`;
+    }
+  }
+
+  function toggleSemVisibility(semNum) {
+    if (!data.settings) data.settings = {};
+    if (!Array.isArray(data.settings.visibleSems)) data.settings.visibleSems = [1];
+    const idx = data.settings.visibleSems.indexOf(semNum);
+    if (idx > -1) {
+      if (data.settings.visibleSems.length > 1) {
+        data.settings.visibleSems.splice(idx, 1);
+      } else {
+        const sw = document.getElementById(`semSwitch_${semNum}`);
+        if (sw) sw.checked = true;
+        toast('At least 1 semester must remain visible', true);
+        return;
+      }
+    } else {
+      data.settings.visibleSems.push(semNum);
+    }
+    updateSemVisibilitySummary();
+    persist();
+    render();
+  }
+
   function openSettingsModal() {
     const m = document.getElementById('settingsModal');
     if (!m) return;
 
-    // Populate Academic Profile fields
     const sNameEl = document.getElementById('settingStudentName');
     const sEnrollEl = document.getElementById('settingEnrollment');
-    const sCollegeEl = document.getElementById('settingCollege');
     const sCurSemEl = document.getElementById('settingCurrentSem');
     const sTargetCgpaEl = document.getElementById('settingTargetCgpa');
-    const sExamDateEl = document.getElementById('settingExamDate');
 
     if (sNameEl) sNameEl.value = (data.settings && data.settings.studentName) || '';
     if (sEnrollEl) sEnrollEl.value = (data.settings && data.settings.enrollmentNo) || '';
-    if (sCollegeEl) sCollegeEl.value = (data.settings && data.settings.collegeName) || '';
     if (sCurSemEl) sCurSemEl.value = String((data.settings && data.settings.currentSem) || 1);
-    if (sTargetCgpaEl) sTargetCgpaEl.value = (data.settings && (data.settings.targetCgpa || data.settings.targetSpi)) || '8.5';
-    if (sExamDateEl) sExamDateEl.value = (data.settings && data.settings.examDate) || '';
+    if (sTargetCgpaEl) sTargetCgpaEl.value = (data.settings && (data.settings.targetCgpa || data.settings.targetSpi)) || '10.0';
 
-    // Populate Sem checkboxes
     const vis = (data.settings && Array.isArray(data.settings.visibleSems)) ? data.settings.visibleSems : [1, 2, 3, 4, 5, 6];
     for (let i = 1; i <= 6; i++) {
-      const cb = document.getElementById(`semCheck_${i}`);
-      if (cb) cb.checked = vis.includes(i);
+      const sw = document.getElementById(`semSwitch_${i}`);
+      if (sw) sw.checked = vis.includes(i);
     }
 
+    updateSemVisibilitySummary();
     renderTrashList();
     m.classList.add('show');
   }
 
   function openAddSubjectModal(semNum) {
+    closeModal('settingsModal');
     const m = document.getElementById('addSubjectModal');
     if (!m) return;
     const semEl = document.getElementById('newSubSem');
     if (semEl && semNum) {
       semEl.value = String(semNum);
     }
+    const nameEl = document.getElementById('newSubName');
+    if (nameEl) {
+      nameEl.value = '';
+      setTimeout(() => nameEl.focus(), 80);
+    }
+    const codeEl = document.getElementById('newSubCode');
+    if (codeEl) codeEl.value = '';
     m.classList.add('show');
   }
 
   function renderTrashList() {
     const list = document.getElementById('trashList');
     const clearBtn = document.getElementById('btnClearTrash');
-    if (!list) return;
+    const badgeEl = document.getElementById('trashCountBadge');
+    const subtitleEl = document.getElementById('trashCountSubtitle');
+
     const trash = (data.trash && Array.isArray(data.trash)) ? data.trash : [];
+
+    if (badgeEl) {
+      badgeEl.textContent = trash.length === 0 ? 'Empty' : `${trash.length} items`;
+    }
+    if (subtitleEl) {
+      subtitleEl.textContent = trash.length === 0 ? 'No deleted items' : `${trash.length} item(s) available for restore`;
+    }
+
+    if (!list) return;
     if (trash.length === 0) {
-      list.innerHTML = '<div style="font-size:0.8rem;color:var(--text-mid);text-align:center;padding:12px;">Recycle bin is empty.</div>';
+      list.innerHTML = '<div style="font-size:0.75rem;color:var(--text-mid);text-align:center;padding:8px;">Recycle bin is empty.</div>';
       if (clearBtn) clearBtn.style.display = 'none';
       return;
     }
     if (clearBtn) clearBtn.style.display = 'block';
     list.innerHTML = trash.map(item => `
-      <div class="trash-item" style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
-        <div style="font-size:0.8rem;color:var(--text-dark);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:240px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border-subtle);">
+        <div style="font-size:0.78rem;color:var(--text-dark);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:240px;">
           <strong>${esc(item.name || 'Untitled')}</strong>
           <span style="font-size:0.7rem;color:var(--text-mid);">(${item.type || 'part'})</span>
         </div>
-        <button class="btn-xs btn-ghost" onclick="App.restoreTrashItem('${item.id}')">Restore</button>
+        <button class="btn btn-ghost btn-xs" onclick="App.restoreTrashItem('${item.id}')">Restore</button>
       </div>
     `).join('');
   }
@@ -819,16 +762,39 @@ const App = (() => {
     toast(`Added: ${name}`);
   }
 
-  function toggleSemVisibility(semNum) {
-    if (!data.settings) data.settings = {};
-    if (!Array.isArray(data.settings.visibleSems)) data.settings.visibleSems = [1];
-    const idx = data.settings.visibleSems.indexOf(semNum);
-    if (idx > -1) {
-      if (data.settings.visibleSems.length > 1) data.settings.visibleSems.splice(idx, 1);
+  // ── Confirmation Modal Engine ──────────────────────────────
+  function openConfirm(title, message, onConfirm) {
+    const modal = document.getElementById('confirmModal');
+    const titleEl = document.getElementById('confirmTitle');
+    const msgEl = document.getElementById('confirmMessage');
+    if (!modal) return;
+    if (titleEl) titleEl.textContent = title || 'Confirm Action';
+    if (msgEl) msgEl.textContent = message || 'Are you sure you want to proceed?';
+    _confirmCallback = onConfirm;
+    modal.classList.add('show');
+  }
+
+  function closeConfirm(proceed) {
+    const modal = document.getElementById('confirmModal');
+    if (modal) modal.classList.remove('show');
+    if (proceed && typeof _confirmCallback === 'function') {
+      const cb = _confirmCallback;
+      _confirmCallback = null;
+      cb();
     } else {
-      data.settings.visibleSems.push(semNum);
+      _confirmCallback = null;
     }
-    persist(); render();
+  }
+
+  function confirmResetSemester() {
+    closeModal('settingsModal');
+    openConfirm(
+      'Reset Semester 1 Data?',
+      'This will reset your Semester 1 subjects, units, and marks to the default GTU syllabus. This action cannot be undone.',
+      () => {
+        resetToSyllabusDefaults();
+      }
+    );
   }
 
   function exportData() {
@@ -837,7 +803,7 @@ const App = (() => {
     const a = document.createElement('a');
     a.href = url; a.download = 'gtu-bba-backup-' + Date.now() + '.json';
     a.click(); URL.revokeObjectURL(url);
-    toast('Backup exported!');
+    toast('Backup exported');
   }
 
   function importData(event) {
@@ -853,8 +819,8 @@ const App = (() => {
         }
         data = sanitized;
         persist(); render();
-        toast('Data imported successfully!');
-      } catch (_) { toast('Failed to import — invalid file', true); }
+        toast('Data imported successfully');
+      } catch (_) { toast('Failed to import backup', true); }
     };
     reader.readAsText(file);
   }
@@ -862,22 +828,19 @@ const App = (() => {
   function resetToSyllabusDefaults() {
     data = getDefaultData();
     persist(); render();
-    toast('Reset to GTU BBA Sem 1 syllabus defaults');
+    toast('Reset to GTU BBA Sem 1 defaults');
   }
 
   function recoverMissingSyllabus() {
     let recoveredCount = 0;
 
     SUBJECT_SEED.forEach(seed => {
-      // Find subject in user data
       let userSub = (data.subjects || []).find(s => s.code === seed.code);
       if (!userSub) {
-        // Match by name if code was altered
         userSub = (data.subjects || []).find(s => (s.sem || 1) === (seed.sem || 1) && s.name && s.name.toLowerCase().includes(seed.name.substring(0, 10).toLowerCase()));
       }
 
       if (!userSub) {
-        // Entire subject missing, restore full subject!
         const newSub = {
           id: uid(),
           name: seed.name,
@@ -897,19 +860,16 @@ const App = (() => {
         data.subjects.push(newSub);
         recoveredCount += seed.unitNames.length;
       } else {
-        // Subject exists, ensure all syllabus units and parts exist
         if (!Array.isArray(userSub.units)) userSub.units = [];
 
         seed.unitNames.forEach((unitName, i) => {
           const unitNum = i + 1;
-          // Look for unit by number OR name
           let userUnit = userSub.units.find(u => u.number === unitNum);
           if (!userUnit) {
             userUnit = userSub.units.find(u => u.name && (u.name === unitName || u.name.includes(unitName.substring(0, 15))));
           }
 
           if (!userUnit) {
-            // Unit was deleted! Restore unit with its default part!
             const newUnit = {
               id: uid(),
               number: unitNum,
@@ -933,12 +893,10 @@ const App = (() => {
             userSub.units.push(newUnit);
             recoveredCount++;
           } else {
-            // Unit is present, ensure correct number and syllabus name
             userUnit.number = unitNum;
             if (!userUnit.name || userUnit.name.startsWith('Unit ')) {
               userUnit.name = unitName;
             }
-            // Check if parts inside unit were deleted
             if (!Array.isArray(userUnit.parts) || userUnit.parts.length === 0) {
               userUnit.parts = [
                 {
@@ -959,7 +917,6 @@ const App = (() => {
           }
         });
 
-        // Ensure units are neatly ordered 1..5 or 1..3
         userSub.units.sort((a, b) => (a.number || 0) - (b.number || 0));
       }
     });
@@ -967,19 +924,18 @@ const App = (() => {
     if (recoveredCount > 0) {
       persist(); 
       render();
-      toast(`✅ Successfully recovered ${recoveredCount} missing syllabus unit(s)/part(s)!`);
+      toast(`Restored ${recoveredCount} missing syllabus unit(s)`);
     } else {
-      toast(`ℹ️ All GTU syllabus units and parts are already intact!`);
+      toast(`All GTU syllabus units are intact`);
     }
   }
 
-  // ── Init: Cloud sync & event listeners ────────────────
-  // Search
+  // ── Init & Event Listeners ─────────────────────────────────
   const searchInput = document.getElementById('searchInput');
   if (searchInput) {
     searchInput.addEventListener('input', (e) => { search = e.target.value; renderSubjectList(); });
   }
-  // Filter pills
+
   const filtersEl = document.getElementById('filters');
   if (filtersEl) {
     filtersEl.addEventListener('click', (e) => {
@@ -991,9 +947,6 @@ const App = (() => {
       renderSubjectList();
     });
   }
-
-  // Countdown tick
-  setInterval(updateCountdown, 60000);
 
   function isUserInteracting() {
     const el = document.activeElement;
@@ -1012,85 +965,26 @@ const App = (() => {
     if (!data.settings.activeTab) data.settings.activeTab = prevTab;
     saveData(data);
 
-    // If user is currently typing/editing, update stats & in-place states without disturbing focus
     if (isUserInteracting()) {
       updateStats();
-      renderReadinessGrid();
       if (data.settings.activeTab === 'marks' && typeof MarksHub.updateLiveSummary === 'function') {
         MarksHub.updateLiveSummary();
       }
       return;
     }
 
-    const activeTab = data.settings.activeTab || 'pdf';
-    if (activeTab === 'pdf') {
-      const container = document.getElementById('subjectsContainer');
-      const existingCards = container ? container.querySelectorAll('.subject-card') : [];
-      const visibleSubjects = getVisibleSubjects();
-
-      // If existing card count matches visible subjects, update cards surgically in-place
-      if (existingCards.length > 0 && existingCards.length === visibleSubjects.length) {
-        updateStats();
-        renderReadinessGrid();
-        renderSemBar();
-
-        visibleSubjects.forEach(s => {
-          updateSubjectCardMiniProgress(s.id);
-          if (s.units && Array.isArray(s.units)) {
-            s.units.forEach(u => {
-              if (u.parts && Array.isArray(u.parts)) {
-                u.parts.forEach(p => {
-                  const partCard = document.querySelector(`.part-card[data-part-id="${p.id}"]`);
-                  if (partCard) {
-                    partCard.classList.toggle('done', !!p.downloaded);
-                    partCard.classList.toggle('printed', !!p.printed);
-                    const dlBtn = partCard.querySelector('.ck-dl');
-                    if (dlBtn) {
-                      dlBtn.classList.toggle('checked', !!p.downloaded);
-                      dlBtn.innerHTML = p.downloaded ? `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>` : '';
-                    }
-                    const prBtn = partCard.querySelector('.ck-pr');
-                    if (prBtn) {
-                      prBtn.classList.toggle('checked', !!p.printed);
-                    }
-                  }
-                });
-              }
-            });
-          }
-        });
-        return;
-      }
-    } else if (activeTab === 'marks') {
-      const marksContainer = document.getElementById('marksSubjectsContainer');
-      const existingMarksCards = marksContainer ? marksContainer.querySelectorAll('.marks-subject-card') : [];
-      const activeSem = (typeof MarksHub.getActiveMarksSem === 'function') ? MarksHub.getActiveMarksSem() : 1;
-      const semSubs = (data.subjects || []).filter(s => (s.sem || 1) === activeSem);
-
-      if (existingMarksCards.length > 0 && existingMarksCards.length === semSubs.length) {
-        semSubs.forEach(s => {
-          MarksHub.updateSubjectCardLive(s.id);
-        });
-        MarksHub.updateLiveSummary();
-        return;
-      }
-    }
-
     render();
   }
 
   function init() {
-    // Force default view to PDF Tracker on start
     if (!data.settings) data.settings = {};
     data.settings.activeTab = 'pdf';
     semFilter = 'all';
     filter = 'all';
     search = '';
 
-    // Initial render
     render();
 
-    // Cloud sync — load from Firebase on init, then listen for changes smoothly
     Cloud.init((newCloudData) => {
       handleRemoteCloudUpdate(newCloudData);
     });
@@ -1100,19 +994,16 @@ const App = (() => {
     init,
     getData,
     setData,
-    // expose helpers for sub-modules
     esc,
     find,
     persist,
     render,
     toast,
     getSubjectIcon,
-    // public actions
     toggleSubject,
     toggleUnit,
     toggleDl,
     togglePr,
-    markUnitDl,
     addPart,
     deletePart,
     editPartName,
@@ -1123,12 +1014,15 @@ const App = (() => {
     setSemFilter,
     openSettingsModal,
     closeModal,
+    toggleSettingsSubView,
     toggleTheme,
-    toggleReadinessView,
     exportData,
     importData,
     resetToSyllabusDefaults,
     recoverMissingSyllabus,
+    confirmResetSemester,
+    openConfirm,
+    closeConfirm,
     switchTab,
     toggleLumpsumMode,
     onMarksInput,
@@ -1146,7 +1040,6 @@ const App = (() => {
 
 })();
 
-// Boot up the application once the module is fully defined
 if (typeof window !== 'undefined') {
   window.App = App;
 }
