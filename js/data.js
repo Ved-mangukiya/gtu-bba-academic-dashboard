@@ -138,6 +138,7 @@ function buildUnits(code, unitNames) {
           priority: 'none',
           note: '',
           pdfFileName: '',
+          pdfDriveUrl: '',
           pdfPageCount: null,
           showPdfMeta: false
         }
@@ -288,12 +289,17 @@ function sanitizeData(d) {
     }
 
     s.units = ensureArray(s.units);
-    s.units.forEach(u => {
+    s.units.sort((a, b) => (a.number || 0) - (b.number || 0));
+    s.units.forEach((u, uIdx) => {
+      if (!u.number) u.number = uIdx + 1;
       u.parts = ensureArray(u.parts);
-      u.parts.forEach(p => {
+      u.parts.sort((a, b) => (a.number || 0) - (b.number || 0));
+      u.parts.forEach((p, pIdx) => {
+        if (!p.number) p.number = pIdx + 1;
         if (!p.priority) p.priority = 'none';
         if (typeof p.note !== 'string') p.note = '';
         if (typeof p.pdfFileName !== 'string') p.pdfFileName = '';
+        if (typeof p.pdfDriveUrl !== 'string') p.pdfDriveUrl = '';
         if (typeof p.pdfPageCount !== 'number') p.pdfPageCount = null;
         if (typeof p.showPdfMeta !== 'boolean') p.showPdfMeta = false;
       });

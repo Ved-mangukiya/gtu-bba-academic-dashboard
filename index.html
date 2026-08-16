@@ -666,6 +666,68 @@
     </div>
   </div>
 
+  <!-- ATTACH PDF MODAL (Custom Styled Website Popup) -->
+  <div class="overlay" id="attachPdfModal">
+    <div class="modal attach-pdf-modal">
+      <div class="modal-head">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.25rem;">📄</span>
+          <div>
+            <h3 style="margin: 0; font-size: 1.05rem;">Attach Study Material</h3>
+            <p id="attachPdfSubtitle" style="margin: 2px 0 0; font-size: 0.72rem; color: var(--text-mid);"></p>
+          </div>
+        </div>
+        <button class="modal-close" onclick="App.closeModal('attachPdfModal')">✕</button>
+      </div>
+
+      <div class="modal-body" style="display: flex; flex-direction: column; gap: 12px; padding: 10px 0 16px;">
+        <input type="hidden" id="attachSubId" />
+        <input type="hidden" id="attachUnitId" />
+        <input type="hidden" id="attachPartId" />
+
+        <div class="form-group">
+          <label class="form-label" for="attachDriveUrl">Google Drive PDF Link (or Web URL) *</label>
+          <input type="url" id="attachDriveUrl" class="form-input" placeholder="https://drive.google.com/file/d/..." />
+          <span style="font-size: 0.68rem; color: var(--text-light); margin-top: 2px;">Paste your public Google Drive share link here</span>
+        </div>
+
+        <!-- Optional 1-Click Scanner to auto-fill Real Name & Exact Page Count -->
+        <div style="background: var(--bg-subtle); border: 1px dashed var(--border); border-radius: var(--r-md); padding: 9px 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+          <div style="display: flex; flex-direction: column;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-dark);">Auto-Detect from Local PDF</span>
+            <span style="font-size: 0.68rem; color: var(--text-mid);">Select file to auto-fill real name & page count</span>
+          </div>
+          <input type="file" id="modalPdfFilePicker" accept=".pdf" style="display: none;" onchange="PdfTracker.handleModalFileScan(this)" />
+          <button type="button" class="btn btn-ghost btn-xs" onclick="document.getElementById('modalPdfFilePicker').value=''; document.getElementById('modalPdfFilePicker').click();" style="border: 1px solid var(--border); flex-shrink: 0;">
+            📁 Scan PDF
+          </button>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="attachPdfName">Display File Name</label>
+          <input type="text" id="attachPdfName" class="form-input" placeholder="e.g. Unit 1 Management Notes.pdf" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="attachPdfPages">Page Count (Optional)</label>
+          <input type="number" id="attachPdfPages" class="form-input" min="1" max="9999" placeholder="e.g. 24" />
+        </div>
+      </div>
+
+      <div class="modal-btns" style="justify-content: space-between;">
+        <div>
+          <button class="btn btn-ghost btn-danger-text" id="btnRemoveAttachment" onclick="PdfTracker.submitRemoveAttachment()" style="display: none;">
+            🗑️ Remove
+          </button>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-ghost" onclick="App.closeModal('attachPdfModal')">Cancel</button>
+          <button class="btn btn-accent" onclick="PdfTracker.submitSaveAttachment()">💾 Save Material</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ADD SUBJECT MODAL -->
   <div class="overlay" id="addSubjectModal">
     <div class="modal add-subject-modal">

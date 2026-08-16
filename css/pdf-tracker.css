@@ -1,6 +1,6 @@
 /* ============================================================
    GTU BBA PDF Tracker — Materials & PDF Attachment Styles
-   Full Filename Display · Unbroken Word Wrap · Responsive
+   Full Filename Display · Google Drive Direct Link Button · Responsive
    ============================================================ */
 
 .part-meta-row {
@@ -10,6 +10,45 @@
   margin-top: 6px;
   flex-wrap: wrap;
   width: 100%;
+}
+
+.btn-view-pdf {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: var(--primary-light);
+  border: 1px solid var(--primary-border);
+  border-radius: var(--r-md);
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all var(--t-fast);
+  white-space: nowrap;
+}
+
+.btn-view-pdf:hover {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+}
+
+.btn-view-pdf-icon {
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn-view-pdf-ext {
+  display: inline-flex;
+  align-items: center;
+  opacity: 0.8;
+}
+
+.btn-has-link {
+  color: var(--primary) !important;
+  background: var(--primary-light) !important;
 }
 
 .pdf-info-chip {
@@ -111,4 +150,27 @@
   white-space: normal;
   text-align: right;
   flex: 1;
+}
+
+.pdf-meta-link {
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 0.78rem;
+  word-break: break-all;
+}
+
+.pdf-meta-link:hover {
+  text-decoration: underline;
+}
+
+.part-seq-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--primary-light);
+  padding: 1px 6px;
+  border-radius: var(--r-xs);
+  flex-shrink: 0;
+  line-height: 1.3;
 }

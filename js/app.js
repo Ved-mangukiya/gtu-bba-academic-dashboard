@@ -254,19 +254,31 @@ const App = (() => {
   }
 
   function addPart(subId, unitId) {
-    const { u } = find(subId, unitId);
+    const { s, u } = find(subId, unitId);
     if (!u) return;
-    const pNum = (u.parts ? u.parts.length : 0) + 1;
-    const newPart = {
-      id: uid(), number: pNum, name: `Part ${pNum}`,
-      downloaded: false, printed: false, priority: 'none', note: '',
-      pdfFileName: '', pdfPageCount: null, showPdfMeta: false
-    };
     if (!u.parts) u.parts = [];
+    const pNum = u.parts.length + 1;
+    const subCode = (s && s.code) ? s.code : 'SUBJ';
+    const uNum = u.number || 1;
+    const newPart = {
+      id: uid(),
+      number: pNum,
+      name: `${subCode}-U${uNum}-P${pNum}`,
+      downloaded: false,
+      printed: false,
+      priority: 'none',
+      note: '',
+      pdfFileName: '',
+      pdfDriveUrl: '',
+      pdfPageCount: null,
+      showPdfMeta: false
+    };
     u.parts.push(newPart);
+    u.parts.sort((a, b) => (a.number || 0) - (b.number || 0));
     u.expanded = true;
-    persist(); render();
-    toast('Added new part');
+    persist();
+    render();
+    toast(`Added ${newPart.name}`);
   }
 
   function deletePart(subId, unitId, partId) {
