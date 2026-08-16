@@ -169,33 +169,36 @@ const PdfTracker = (() => {
     const hasPdf = !!p.pdfFileName;
     const hasDrive = !!p.pdfDriveUrl;
     const isAttached = hasPdf || hasDrive;
-    const isMetaShown = !!p.showPdfMeta;
 
     return `
       <div class="part-card ${isDone ? 'done' : ''} ${isPrinted ? 'printed' : ''}" data-part-id="${p.id}">
         <div class="part-main-row">
-          <div class="part-check-group">
-            <button class="ck-btn ck-dl ${isDone ? 'checked' : ''}" onclick="App.toggleDl('${subId}','${uId}','${p.id}')" title="${isDone ? 'Downloaded · Tap to unmark' : 'Mark as Downloaded'}" aria-label="Toggle Download Status">
-              ${isDone ? SVG.check : ''}
-            </button>
-            <button class="ck-btn ck-pr ${isPrinted ? 'checked' : ''}" onclick="App.togglePr('${subId}','${uId}','${p.id}')" title="${isPrinted ? 'Printed · Tap to unmark' : 'Mark as Printed'}" aria-label="Toggle Print Status">
-              ${SVG.printer}
-            </button>
-          </div>
+          <div class="part-left-group">
+            <div class="part-check-group">
+              <button class="ck-btn ck-dl ${isDone ? 'checked' : ''}" onclick="App.toggleDl('${subId}','${uId}','${p.id}')" title="${isDone ? 'Downloaded · Tap to unmark' : 'Mark as Downloaded'}" aria-label="Toggle Download Status">
+                ${isDone ? SVG.check : ''}
+              </button>
+              <button class="ck-btn ck-pr ${isPrinted ? 'checked' : ''}" onclick="App.togglePr('${subId}','${uId}','${p.id}')" title="${isPrinted ? 'Printed · Tap to unmark' : 'Mark as Printed'}" aria-label="Toggle Print Status">
+                ${SVG.printer}
+              </button>
+            </div>
 
-          <div class="part-title-group">
-            <span class="part-seq-badge">P${p.number || 1}</span>
-            <span class="part-name editable" contenteditable="true"
-                  onfocus="this.dataset.prev=this.textContent"
-                  onblur="App.editPartName('${subId}','${uId}','${p.id}',this)"
-                  onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}">${esc(p.name)}</span>
+            <div class="part-title-group">
+              <span class="part-seq-badge">P${p.number || 1}</span>
+              <span class="part-name editable" contenteditable="true"
+                    onfocus="this.dataset.prev=this.textContent"
+                    onblur="App.editPartName('${subId}','${uId}','${p.id}',this)"
+                    onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}">${esc(p.name)}</span>
+            </div>
           </div>
 
           <div class="part-actions">
-            <!-- Unified Attach/Edit Material Button -->
-            <button class="icon-btn-sm ${isAttached ? 'btn-has-link' : ''}" onclick="PdfTracker.openAttachModal('${subId}','${uId}','${p.id}')" title="${isAttached ? 'Edit Study Material / PDF Link' : 'Attach Study Material / Google Drive PDF'}" aria-label="Attach Material">
-              ${SVG.clip}
-            </button>
+            ${!isAttached ? `
+              <button class="btn-attach-pill" onclick="PdfTracker.openAttachModal('${subId}','${uId}','${p.id}')" title="Attach Google Drive PDF or notes">
+                <span class="attach-pill-icon">${SVG.clip}</span>
+                <span>Attach PDF</span>
+              </button>
+            ` : ''}
             <button class="icon-btn-sm btn-danger-icon" onclick="App.deletePart('${subId}','${uId}','${p.id}')" title="Delete Part" aria-label="Delete Part">
               ${SVG.trash}
             </button>
@@ -203,46 +206,25 @@ const PdfTracker = (() => {
         </div>
 
         ${isAttached ? `
-          <div class="part-meta-row">
-            ${hasDrive ? `
-              <a href="${esc(p.pdfDriveUrl)}" target="_blank" rel="noopener noreferrer" class="btn-view-pdf" title="Open PDF in new tab" onclick="event.stopPropagation()">
-                <span class="btn-view-pdf-icon">${SVG.fileDoc}</span>
-                <span>View PDF</span>
-                <span class="btn-view-pdf-ext">${SVG.externalLink}</span>
-              </a>
-            ` : ''}
-
-            ${hasPdf ? `
-              <div class="pdf-info-chip" onclick="PdfTracker.togglePdfMetaVisibility('${subId}','${uId}','${p.id}')" title="Click to view details">
-                <span class="pdf-chip-icon">${SVG.fileDoc}</span>
-                <span class="pdf-name-text">${esc(p.pdfFileName)}</span>
-                ${p.pdfPageCount ? `<span class="pdf-pages-badge">${p.pdfPageCount} Pgs</span>` : ''}
-                <span class="pdf-toggle-eye">${isMetaShown ? `${SVG.eyeHide} Hide` : `${SVG.eyeShow} Show`}</span>
+          <div class="part-attachment-bar">
+            <div class="part-attachment-info" onclick="PdfTracker.openAttachModal('${subId}','${uId}','${p.id}')" title="Click to edit attachment details">
+              <span class="attachment-file-icon">${SVG.fileDoc}</span>
+              <div class="attachment-text-col">
+                <span class="attachment-filename">${esc(p.pdfFileName || 'Study Notes PDF')}</span>
+                ${p.pdfPageCount ? `<span class="attachment-pages-tag">${p.pdfPageCount} Pages</span>` : ''}
               </div>
-            ` : ''}
-          </div>
+            </div>
 
-          <div class="pdf-detail-card ${isMetaShown ? 'show' : ''}">
-            <div class="pdf-meta-item">
-              <span class="pdf-meta-label">File:</span>
-              <span class="pdf-meta-val">${esc(p.pdfFileName)}</span>
-            </div>
-            ${p.pdfDriveUrl ? `
-              <div class="pdf-meta-item">
-                <span class="pdf-meta-label">Drive Link:</span>
-                <a href="${esc(p.pdfDriveUrl)}" target="_blank" rel="noopener noreferrer" class="pdf-meta-link">Open in Google Drive ↗</a>
-              </div>
-            ` : ''}
-            <div class="pdf-meta-item">
-              <span class="pdf-meta-label">Pages:</span>
-              <span class="pdf-meta-val">${p.pdfPageCount ? `${p.pdfPageCount} Pages` : 'Scanned / Web'}</span>
-            </div>
-            <div class="pdf-meta-item" style="margin-top: 6px; padding-top: 4px; border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-between;">
-              <button class="btn btn-ghost btn-xs" onclick="PdfTracker.openAttachModal('${subId}','${uId}','${p.id}')">
-                ✏️ Edit Link / Name
-              </button>
-              <button class="btn btn-ghost btn-xs btn-danger-text" onclick="PdfTracker.removePdfMeta('${subId}','${uId}','${p.id}')">
-                Remove
+            <div class="part-attachment-actions">
+              ${hasDrive ? `
+                <a href="${esc(p.pdfDriveUrl)}" target="_blank" rel="noopener noreferrer" class="btn-view-pdf" title="Open PDF in new tab" onclick="event.stopPropagation()">
+                  <span class="btn-view-pdf-icon">${SVG.fileDoc}</span>
+                  <span>View PDF</span>
+                  <span class="btn-view-pdf-ext">${SVG.externalLink}</span>
+                </a>
+              ` : ''}
+              <button class="btn-edit-pdf-inline" onclick="PdfTracker.openAttachModal('${subId}','${uId}','${p.id}')" title="Edit attachment link or details">
+                ✏️ Edit
               </button>
             </div>
           </div>

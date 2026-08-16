@@ -1,38 +1,263 @@
 /* ============================================================
    GTU BBA PDF Tracker — Materials & PDF Attachment Styles
-   Full Filename Display · Google Drive Direct Link Button · Responsive
+   Modern SaaS Aesthetics · Mobile-First Responsive · High Polish
    ============================================================ */
 
-.part-meta-row {
+/* Part Card Layout */
+.part-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  box-shadow: var(--shadow-xs);
+  transition: border-color var(--t-fast), box-shadow var(--t-fast);
+}
+
+.part-card:hover {
+  border-color: var(--border-accent);
+}
+
+.part-card.done {
+  background: var(--bg-part-done, var(--bg-card));
+  border-color: var(--color-success-border);
+}
+
+.part-card.printed {
+  border-left: 3px solid var(--accent-purple);
+}
+
+/* Part Main Row */
+.part-main-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.part-left-group {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 6px;
-  flex-wrap: wrap;
-  width: 100%;
+  flex: 1;
+  min-width: 0;
 }
 
+.part-check-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.ck-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-mid);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--t-fast);
+}
+
+.ck-btn:hover {
+  border-color: var(--border-accent);
+}
+
+.ck-dl.checked {
+  background: var(--color-success);
+  border-color: var(--color-success);
+  color: #ffffff;
+}
+
+.ck-pr.checked {
+  background: var(--accent-purple);
+  border-color: var(--accent-purple);
+  color: #ffffff;
+}
+
+.part-title-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.part-seq-badge {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--primary-light);
+  padding: 1px 6px;
+  border-radius: var(--r-xs);
+  flex-shrink: 0;
+  line-height: 1.3;
+}
+
+.part-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  word-break: break-word;
+  outline: none;
+}
+
+.part-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.btn-attach-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: var(--r-full);
+  border: 1px dashed var(--border);
+  background: var(--bg-subtle);
+  color: var(--text-mid);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--t-fast);
+  white-space: nowrap;
+}
+
+.btn-attach-pill:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-light);
+}
+
+.attach-pill-icon {
+  display: inline-flex;
+  align-items: center;
+}
+
+.icon-btn-sm {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--r-sm);
+  border: none;
+  background: transparent;
+  color: var(--text-light);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--t-fast);
+}
+
+.icon-btn-sm:hover {
+  background: var(--bg-hover);
+  color: var(--text-dark);
+}
+
+.btn-danger-icon:hover {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+/* ============================================================
+   Attachment Action Bar (Desktop + Mobile Optimized)
+   ============================================================ */
+.part-attachment-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-md);
+  gap: 10px;
+  transition: all var(--t-fast);
+}
+
+.part-attachment-bar:hover {
+  border-color: var(--border);
+}
+
+.part-attachment-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.attachment-file-icon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.attachment-text-col {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.attachment-filename {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  word-break: break-word;
+  line-height: 1.35;
+}
+
+.attachment-pages-tag {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: var(--r-full);
+  background: var(--primary-light);
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.part-attachment-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* Primary Direct View PDF Button (Opens in New Tab) */
 .btn-view-pdf {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 4px 10px;
-  background: var(--primary-light);
-  border: 1px solid var(--primary-border);
-  border-radius: var(--r-md);
-  color: var(--primary);
+  padding: 5px 12px;
+  background: var(--primary);
+  color: #ffffff !important;
+  border: 1px solid var(--primary);
+  border-radius: var(--r-full);
   font-size: 0.75rem;
   font-weight: 700;
   text-decoration: none;
   cursor: pointer;
   transition: all var(--t-fast);
   white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
 .btn-view-pdf:hover {
-  background: var(--primary);
-  color: #ffffff;
-  border-color: var(--primary);
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
 }
 
 .btn-view-pdf-icon {
@@ -43,134 +268,60 @@
 .btn-view-pdf-ext {
   display: inline-flex;
   align-items: center;
-  opacity: 0.8;
+  opacity: 0.85;
 }
 
-.btn-has-link {
-  color: var(--primary) !important;
-  background: var(--primary-light) !important;
-}
-
-.pdf-info-chip {
+/* Inline Edit Button */
+.btn-edit-pdf-inline {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 5px 12px;
-  background: var(--bg-subtle);
+  gap: 3px;
+  padding: 4px 9px;
+  background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  font-size: 0.78rem;
+  border-radius: var(--r-full);
+  color: var(--text-mid);
+  font-size: 0.72rem;
   font-weight: 600;
-  color: var(--text-dark);
   cursor: pointer;
-  user-select: none;
   transition: all var(--t-fast);
-  width: 100%;
-  max-width: 100%;
-  flex-wrap: wrap;
+  white-space: nowrap;
 }
 
-.pdf-info-chip:hover {
+.btn-edit-pdf-inline:hover {
   background: var(--bg-hover);
+  color: var(--text-dark);
   border-color: var(--border-accent);
 }
 
-.pdf-chip-icon {
-  display: inline-flex;
-  align-items: center;
-  color: var(--primary);
-  flex-shrink: 0;
-}
+/* Mobile Screen Refinement */
+@media (max-width: 520px) {
+  .part-attachment-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 9px 10px;
+  }
 
-.pdf-name-text {
-  flex: 1;
-  min-width: 0;
-  word-break: break-word;
-  white-space: normal;
-  color: var(--text-dark);
-  font-weight: 600;
-  line-height: 1.35;
-}
+  .part-attachment-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    width: 100%;
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 7px;
+  }
 
-.pdf-pages-badge {
-  font-size: 0.68rem;
-  font-weight: 700;
-  padding: 2px 7px;
-  border-radius: var(--r-full);
-  background: var(--primary-light);
-  color: var(--primary);
-  flex-shrink: 0;
-}
+  .btn-view-pdf {
+    flex: 1;
+    justify-content: center;
+    padding: 7px 14px;
+    font-size: 0.8125rem;
+  }
 
-.pdf-toggle-eye {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--text-mid);
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  flex-shrink: 0;
-}
-
-.pdf-detail-card {
-  display: none;
-  margin-top: 6px;
-  padding: 10px 12px;
-  background: var(--bg-subtle);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  font-size: 0.78rem;
-  color: var(--text-base);
-  width: 100%;
-}
-
-.pdf-detail-card.show {
-  display: block;
-  animation: fadeIn 0.18s ease;
-}
-
-.pdf-meta-item {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  padding: 4px 0;
-  gap: 12px;
-}
-
-.pdf-meta-label {
-  color: var(--text-mid);
-  font-weight: 600;
-  flex-shrink: 0;
-}
-
-.pdf-meta-val {
-  color: var(--text-dark);
-  font-weight: 600;
-  word-break: break-word;
-  white-space: normal;
-  text-align: right;
-  flex: 1;
-}
-
-.pdf-meta-link {
-  color: var(--primary);
-  font-weight: 600;
-  text-decoration: none;
-  font-size: 0.78rem;
-  word-break: break-all;
-}
-
-.pdf-meta-link:hover {
-  text-decoration: underline;
-}
-
-.part-seq-badge {
-  font-size: 0.68rem;
-  font-weight: 700;
-  color: var(--primary);
-  background: var(--primary-light);
-  padding: 1px 6px;
-  border-radius: var(--r-xs);
-  flex-shrink: 0;
-  line-height: 1.3;
+  .btn-edit-pdf-inline {
+    padding: 7px 12px;
+    font-size: 0.75rem;
+  }
 }
