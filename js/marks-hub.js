@@ -417,6 +417,34 @@ const MarksHub = (() => {
     }
   }
 
+  // Progressive Disclosure: Target Strategy, Advice, and CGPA Table drawers
+  function toggleTargetDetails() {
+    const drawer = document.getElementById('targetDetailsDrawer');
+    const chev = document.getElementById('targetDetailsChev');
+    if (!drawer) return;
+    const isShown = drawer.style.display !== 'none';
+    drawer.style.display = isShown ? 'none' : 'block';
+    if (chev) chev.style.transform = isShown ? 'rotate(0deg)' : 'rotate(180deg)';
+  }
+
+  function toggleCgpaTable() {
+    const drawer = document.getElementById('cgpaTableDrawer');
+    const chev = document.getElementById('cgpaTableChev');
+    if (!drawer) return;
+    const isShown = drawer.style.display !== 'none';
+    drawer.style.display = isShown ? 'none' : 'block';
+    if (chev) chev.style.transform = isShown ? 'rotate(0deg)' : 'rotate(180deg)';
+  }
+
+  function toggleSubjectAdvice(subId) {
+    const box = document.getElementById(`adviceBox_${subId}`);
+    const chev = document.getElementById(`chevAdvice_${subId}`);
+    if (!box) return;
+    const isShown = box.style.display !== 'none';
+    box.style.display = isShown ? 'none' : 'block';
+    if (chev) chev.style.transform = isShown ? 'rotate(0deg)' : 'rotate(180deg)';
+  }
+
   // Collapsed by default — tracks expanded subject IDs
   const expandedMarksSubs = new Set();
 
@@ -508,15 +536,21 @@ const MarksHub = (() => {
 
                 <div class="marks-card-body">
                   <div class="marks-card-body-inner">
-                    <!-- Dynamic Advisor -->
-                    <div class="marks-target-advisor advisor-${dynTarget.adviceType}">
+                    <!-- Clean Progressive Advice Disclosure Button -->
+                    <div class="advice-toggle-row" onclick="MarksHub.toggleSubjectAdvice('${s.id}')">
+                      <span class="advice-toggle-label">💡 View Target Strategy & Guidance</span>
+                      <span class="advice-toggle-chev" id="chevAdvice_${s.id}">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                      </span>
+                    </div>
+                    <div class="marks-target-advisor advisor-${dynTarget.adviceType}" id="adviceBox_${s.id}" style="display: none;">
                       ${dynTarget.adviceHtml}
                     </div>
 
                     <!-- Internal Marks -->
                     <div class="internal-block">
                       <div class="internal-toggle-row">
-                        <span class="internal-title">Internal Score (${res.internalTotal} / ${res.maxInternal})</span>
+                        <span class="internal-title">Internal Marks (${res.internalTotal} / ${res.maxInternal})</span>
                         <label class="switch-toggle-wrap" title="Toggle Lumpsum vs Breakdown mode">
                           <span class="switch-label">${isLumpsum ? 'Lumpsum' : 'Breakdown'}</span>
                           <input type="checkbox" class="switch-input" ${isLumpsum ? 'checked' : ''} onchange="App.toggleLumpsumMode('${s.id}')" />
@@ -527,8 +561,8 @@ const MarksHub = (() => {
                       ${isLumpsum ? `
                         <div class="marks-field-group">
                           <div class="field-label-row">
-                            <label class="field-label">Internal Total Marks (Max ${res.maxInternal})</label>
-                            <span class="field-benchmark-badge" data-benchmark-for="internalLumpsum">Target: ${dynTarget.dynLump} / ${res.maxInternal}</span>
+                            <label class="field-label">Internal Total (Max ${res.maxInternal})</label>
+                            <span class="field-benchmark-badge" data-benchmark-for="internalLumpsum">Target: ${dynTarget.dynLump}</span>
                           </div>
                           <input type="number" class="marks-num-input" data-field="internalLumpsum" min="0" max="${res.maxInternal}" placeholder="Target: ${dynTarget.dynLump}"
                                  value="${m.internalLumpsum !== null && m.internalLumpsum !== undefined ? m.internalLumpsum : ''}"
@@ -742,6 +776,9 @@ const MarksHub = (() => {
     renderTargetBacktracker,
     renderMarksHub,
     toggleMarksSubject,
+    toggleTargetDetails,
+    toggleCgpaTable,
+    toggleSubjectAdvice,
     setActiveMarksSem,
     openGtuGuideModal,
     updateSimulator,

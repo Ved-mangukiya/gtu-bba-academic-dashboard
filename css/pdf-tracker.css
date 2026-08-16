@@ -1,5 +1,6 @@
 /* ============================================================
    GTU BBA PDF Tracker — Materials & PDF Attachment Styles
+   Full Filename Display · Unbroken Word Wrap · Responsive
    ============================================================ */
 
 .part-meta-row {
@@ -8,23 +9,26 @@
   gap: 8px;
   margin-top: 6px;
   flex-wrap: wrap;
+  width: 100%;
 }
 
 .pdf-info-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 3px 10px;
+  gap: 8px;
+  padding: 5px 12px;
   background: var(--bg-subtle);
   border: 1px solid var(--border);
-  border-radius: var(--r-full);
-  font-size: 0.72rem;
+  border-radius: var(--r-md);
+  font-size: 0.78rem;
   font-weight: 600;
   color: var(--text-dark);
   cursor: pointer;
   user-select: none;
   transition: all var(--t-fast);
+  width: 100%;
   max-width: 100%;
+  flex-wrap: wrap;
 }
 
 .pdf-info-chip:hover {
@@ -36,71 +40,75 @@
   display: inline-flex;
   align-items: center;
   color: var(--primary);
+  flex-shrink: 0;
 }
 
 .pdf-name-text {
-  max-width: 180px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: var(--text-base);
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+  white-space: normal;
+  color: var(--text-dark);
+  font-weight: 600;
+  line-height: 1.35;
 }
 
 .pdf-pages-badge {
-  font-size: 0.65rem;
+  font-size: 0.68rem;
   font-weight: 700;
-  padding: 1px 6px;
+  padding: 2px 7px;
   border-radius: var(--r-full);
   background: var(--primary-light);
   color: var(--primary);
+  flex-shrink: 0;
 }
 
 .pdf-toggle-eye {
-  font-size: 0.7rem;
+  font-size: 0.72rem;
+  font-weight: 600;
   color: var(--text-mid);
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
+  flex-shrink: 0;
 }
 
 .pdf-detail-card {
   display: none;
   margin-top: 6px;
-  padding: 8px 12px;
+  padding: 10px 12px;
   background: var(--bg-subtle);
   border: 1px solid var(--border);
-  border-radius: var(--r-sm);
-  font-size: 0.75rem;
+  border-radius: var(--r-md);
+  font-size: 0.78rem;
   color: var(--text-base);
-  opacity: 0;
-  transform: translateY(-4px);
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  width: 100%;
 }
 
 .pdf-detail-card.show {
   display: block;
-  opacity: 1;
-  transform: translateY(0);
+  animation: fadeIn 0.18s ease;
 }
 
 .pdf-meta-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  padding: 2px 0;
-  gap: 8px;
+  padding: 4px 0;
+  gap: 12px;
 }
 
 .pdf-meta-label {
   color: var(--text-mid);
-  font-weight: 500;
+  font-weight: 600;
+  flex-shrink: 0;
 }
 
 .pdf-meta-val {
   color: var(--text-dark);
   font-weight: 600;
-  max-width: 200px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  word-break: break-word;
+  white-space: normal;
+  text-align: right;
+  flex: 1;
 }
