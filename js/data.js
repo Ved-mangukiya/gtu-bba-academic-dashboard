@@ -114,6 +114,470 @@ const SUBJECT_SEED = [
   }
 ];
 
+const ALL_SEMESTER_CURRICULUM = {
+  1: SUBJECT_SEED,
+  2: [
+    {
+      name: 'Human Resource Management',
+      code: 'S2-HRM',
+      sem: 2,
+      colorIndex: 0,
+      credits: 4,
+      maxMarks: 150,
+      maxEse: 70,
+      maxInternal: 30,
+      maxPractical: 50,
+      unitNames: [
+        'Introduction to HRM & Manpower Planning',
+        'Procurement & Recruitment / Selection Process',
+        'Human Resource Development & Training Methods',
+        'Compensation, Integration & Performance Appraisal',
+        'Practical (HR audit report & case study assignments)'
+      ]
+    },
+    {
+      name: 'Cost Accounting',
+      code: 'S2-COST',
+      sem: 2,
+      colorIndex: 1,
+      credits: 4,
+      maxMarks: 150,
+      maxEse: 70,
+      maxInternal: 30,
+      maxPractical: 50,
+      unitNames: [
+        'Introduction to Cost Accounting & Cost Sheet',
+        'Material Cost & Inventory Control Techniques',
+        'Labour Cost, Wage Systems & Direct Expenses',
+        'Overheads Classification, Allocation & Absorption',
+        'Practical (Preparation of cost sheets & factory expense allocations)'
+      ]
+    },
+    {
+      name: 'Business Mathematics',
+      code: 'S2-BM',
+      sem: 2,
+      colorIndex: 2,
+      credits: 4,
+      maxMarks: 150,
+      maxEse: 70,
+      maxInternal: 30,
+      maxPractical: 50,
+      unitNames: [
+        'Sets, Functions & Progressions (AP, GP)',
+        'Differential Calculus & Marginal Analysis',
+        'Matrices & Determinants in Business',
+        'Mathematics of Finance (Compounding & Annuities)',
+        'Practical (Financial calculations & business math models)'
+      ]
+    },
+    {
+      name: 'Business Communication',
+      code: 'S2-BC',
+      sem: 2,
+      colorIndex: 3,
+      credits: 4,
+      maxMarks: 150,
+      maxEse: 70,
+      maxInternal: 30,
+      maxPractical: 50,
+      unitNames: [
+        'Foundations & Channels of Business Communication',
+        'Corporate Correspondence, Memos & Formal Letters',
+        'Business Report Writing & Proposal Drafting',
+        'Non-verbal Communication, Meetings & Negotiations',
+        'Practical (Mock meetings, business presentation & CV drafting)'
+      ]
+    },
+    {
+      name: 'Managerial Economics',
+      code: 'S2-ME',
+      sem: 2,
+      colorIndex: 4,
+      credits: 4,
+      maxMarks: 150,
+      maxEse: 70,
+      maxInternal: 30,
+      maxPractical: 50,
+      unitNames: [
+        'Scope of Managerial Economics & Demand Forecasting',
+        'Production Functions & Short/Long-Run Cost Analysis',
+        'Market Structures, Monopoly & Oligopoly Pricing',
+        'Macroeconomic Indicators, Inflation & Fiscal Policy',
+        'Practical (Economic evaluation of local business models)'
+      ]
+    }
+  ],
+  3: [
+    {
+      name: 'Marketing Management',
+      code: 'S3-MM',
+      sem: 3,
+      colorIndex: 0,
+      credits: 4,
+      maxMarks: 150,
+      maxEse: 70,
+      maxInternal: 30,
+      maxPractical: 50,
+      unitNames: [
+        'Marketing Concept & Consumer Buying Behavior',
+        'Market Segmentation, Targeting & Positioning (STP)',
+        'Product Strategy, Life Cycle & Pricing Decisions',
+        'Integrated Marketing Communication & Distribution',
+        'Practical (Marketing plan formulation for new product)'
+      ]
+    },
+    {
+      name: 'Financial Management',
+      code: 'S3-FM',
+      sem: 3,
+      colorIndex: 1,
+      credits: 4,
+      maxMarks: 150,
+      maxEse: 70,
+      maxInternal: 30,
+      maxPractical: 50,
+      unitNames: [
+        'Objectives & Scope of Modern Corporate Finance',
+        'Time Value of Money & Capital Budgeting Techniques',
+        'Cost of Capital & Capital Structure Theories',
+        'Working Capital Management & Dividend Decisions',
+        'Practical (Capital appraisal problem sets & ratio study)'
+      ]
+    },
+    {
+      name: 'Organizational Behavior',
+      code: 'S3-OB',
+      sem: 3,
+      colorIndex: 2,
+      credits: 4,
+      maxMarks: 150,
+      maxEse: 70,
+      maxInternal: 30,
+      maxPractical: 50,
+      unitNames: [
+        'Individual Behavior, Personality & Perceptions',
+        'Motivation Theories & Workplace Applications',
+        'Group Dynamics, Team Leadership & Power',
+        'Organizational Culture, Change & Conflict Resolution',
+        'Practical (Team behavioral simulation & leadership survey)'
+      ]
+    },
+    {
+      name: 'Business Law',
+      code: 'S3-BL',
+      sem: 3,
+      colorIndex: 3,
+      credits: 4,
+      maxMarks: 150,
+      maxEse: 70,
+      maxInternal: 30,
+      maxPractical: 50,
+      unitNames: [
+        'Indian Contract Act, 1872: Essentials & Breaches',
+        'Sale of Goods Act, 1930 & Conditions/Warranties',
+        'Partnership Act & Limited Liability Partnerships (LLP)',
+        'Negotiable Instruments Act & Consumer Protection Act',
+        'Practical (Contract drafting & landmark legal case reviews)'
+      ]
+    },
+    {
+      name: 'IT in Management',
+      code: 'S3-IT',
+      sem: 3,
+      colorIndex: 4,
+      credits: 4,
+      maxMarks: 150,
+      maxEse: 70,
+      maxInternal: 30,
+      maxPractical: 50,
+      unitNames: [
+        'Management Information Systems (MIS) & Enterprise Systems',
+        'Database Management & Business Data Analytics',
+        'E-Commerce Frameworks & Digital Payment Gateways',
+        'Cyber Security, Data Privacy & Emerging Tech in Business',
+        'Practical (Database queries & analytical spreadsheet modeling)'
+      ]
+    }
+  ],
+  4: [
+    {
+      name: 'Research Methodology',
+      code: 'S4-RM',
+      sem: 4,
+      colorIndex: 0,
+      credits: 4,
+      maxMarks: 150,
+      maxEse: 70,
+      maxInternal: 30,
+      maxPractical: 50,
+      unitNames: [
+        'Business Research Process & Problem Formulation',
+        'Sampling Designs, Sample Size & Scaling Techniques',
+        'Data Collection Tools & Questionnaire Construction',
+        'Hypothesis Testing, Statistical Analysis & Report Writing',
+        'Practical (Execution of field survey & statistical data analysis)'
+      ]
+    },
+    {
+      name: 'Operations Management',
+      code: 'S4-OM',
+      sem: 4,
+      colorIndex: 1,
+      credits: 4,
+      maxMarks: 150,
+      maxEse: 70,
+      maxInternal: 30,
+      maxPractical: 50,
+      unitNames: [
+        'Operations Strategy, Product Design & Plant Location',
+        'Production Planning, Scheduling & Inventory Models',
+        'Total Quality Management (TQM) & Six Sigma Concepts',
+        'Supply Chain Logistics, Purchasing & Maintenance',
+        'Practical (Plant layout evaluation & industrial visit report)'
+      ]
+    },
+    {
+      name: 'Direct & Indirect Taxes',
+      code: 'S4-TAX',
+      sem: 4,
+      colorIndex: 2,
+      credits: 4,
+      maxMarks: 150,
+      maxEse: 70,
+      maxInternal: 30,
+      maxPractical: 50,
+      unitNames: [
+        'Basic Concepts of Income Tax & Residential Status',
+        'Heads of Income: Salary, House Property & Business',
+        'Capital Gains, Other Sources & Chapter VI-A Deductions',
+        'Goods & Services Tax (GST): Structure & Input Tax Credit',
+        'Practical (Individual income tax computation & GST return demo)'
+      ]
+    },
+    {
+      name: 'Banking & Insurance',
+      code: 'S4-BI',
+      sem: 4,
+      colorIndex: 3,
+      credits: 4,
+      maxMarks: 150,
+      maxEse: 70,
+      maxInternal: 30,
+      maxPractical: 50,
+      unitNames: [
+        'Indian Financial System, RBI Regulations & Monitory Policy',
+        'Commercial Banking Operations, Lending & Digital Banking',
+        'Principles of Insurance & Life Insurance Products',
+        'General Insurance, Marine/Fire & Claims Processing',
+        'Practical (Commercial bank operations study & policy analysis)'
+      ]
+    },
+    {
+      name: 'Entrepreneurship Development',
+      code: 'S4-ED',
+      sem: 4,
+      colorIndex: 4,
+      credits: 4,
+      maxMarks: 150,
+      maxEse: 70,
+      maxInternal: 30,
+      maxPractical: 50,
+      unitNames: [
+        'Entrepreneurial Competencies & Opportunity Identification',
+        'Business Plan Formulation & Feasibility Appraisal',
+        'Startup Financing, Angel Investors & Government Schemes',
+        'Managing Growth, Scaling & Exit Strategies',
+        'Practical (Preparation of comprehensive startup pitch deck)'
+      ]
+    }
+  ],
+  5: [
+    {
+      name: 'Strategic Management',
+      code: 'S5-SM',
+      sem: 5,
+      colorIndex: 0,
+      credits: 4,
+      maxMarks: 150,
+      maxEse: 70,
+      maxInternal: 30,
+      maxPractical: 50,
+      unitNames: [
+        'Strategic Intent, Vision, Mission & Goals',
+        'External Environmental Analysis & Porter’s 5 Forces',
+        'Strategy Formulation: Corporate, Business & Functional',
+        'Strategic Implementation, Structure & Evaluation Controls',
+        'Practical (Strategic analysis of an Indian bluechip company)'
+      ]
+    },
+    {
+      name: 'Corporate Governance & Ethics',
+      code: 'S5-CG',
+      sem: 5,
+      colorIndex: 1,
+      credits: 4,
+      maxMarks: 150,
+      maxEse: 70,
+      maxInternal: 30,
+      maxPractical: 50,
+      unitNames: [
+        'Principles & Historical Evolution of Corporate Governance',
+        'Board Structure, Independent Directors & Committees',
+        'Business Ethics, Morals & Corporate Scandals',
+        'CSR Policies, Sustainable Development & Stakeholder Rights',
+        'Practical (Governance report review of a listed corporation)'
+      ]
+    },
+    {
+      name: 'Specialization Elective I',
+      code: 'S5-EL1',
+      sem: 5,
+      colorIndex: 2,
+      credits: 4,
+      maxMarks: 150,
+      maxEse: 70,
+      maxInternal: 30,
+      maxPractical: 50,
+      unitNames: [
+        'Fundamentals & Principles of Elective Domain',
+        'Strategic Applications in Industry',
+        'Contemporary Tools & Analytical Methods',
+        'Regulatory Frameworks & Best Practices',
+        'Practical (Specialization research assignment)'
+      ]
+    },
+    {
+      name: 'Specialization Elective II',
+      code: 'S5-EL2',
+      sem: 5,
+      colorIndex: 3,
+      credits: 4,
+      maxMarks: 150,
+      maxEse: 70,
+      maxInternal: 30,
+      maxPractical: 50,
+      unitNames: [
+        'Advanced Specialized Concepts & Theories',
+        'Industry Case Studies & Real-World Practices',
+        'Technology & Analytics in Specialization',
+        'Emerging Challenges & Future Horizons',
+        'Practical (Field project & empirical analysis)'
+      ]
+    },
+    {
+      name: 'Summer Internship Project',
+      code: 'S5-SIP',
+      sem: 5,
+      colorIndex: 4,
+      credits: 4,
+      maxMarks: 150,
+      maxEse: 70,
+      maxInternal: 30,
+      maxPractical: 50,
+      unitNames: [
+        'Internship Objectives & Organizational Overview',
+        'Departmental Operations & Problem Identification',
+        'Primary Data Analysis & Practical Findings',
+        'Managerial Recommendations & Conclusion',
+        'Practical (Summer project thesis preparation & mock viva)'
+      ]
+    }
+  ],
+  6: [
+    {
+      name: 'International Business',
+      code: 'S6-IB',
+      sem: 6,
+      colorIndex: 0,
+      credits: 4,
+      maxMarks: 150,
+      maxEse: 70,
+      maxInternal: 30,
+      maxPractical: 50,
+      unitNames: [
+        'Globalization, International Trade Theories & WTO',
+        'Global Business Environments (Cultural, Political, Legal)',
+        'Multinational Corporation (MNC) Entry Strategies',
+        'Exim Procedures, Documentation & Forex Management',
+        'Practical (Global market entry strategy assignment)'
+      ]
+    },
+    {
+      name: 'Project Management',
+      code: 'S6-PM',
+      sem: 6,
+      colorIndex: 1,
+      credits: 4,
+      maxMarks: 150,
+      maxEse: 70,
+      maxInternal: 30,
+      maxPractical: 50,
+      unitNames: [
+        'Project Identification, Feasibility & Appraisal Stages',
+        'Project Planning, Scheduling, PERT & CPM Networks',
+        'Resource Allocation, Cost Estimation & Risk Management',
+        'Project Monitoring, Quality Audits & Project Termination',
+        'Practical (Gantt chart & network planning assignments)'
+      ]
+    },
+    {
+      name: 'Specialization Elective III',
+      code: 'S6-EL3',
+      sem: 6,
+      colorIndex: 2,
+      credits: 4,
+      maxMarks: 150,
+      maxEse: 70,
+      maxInternal: 30,
+      maxPractical: 50,
+      unitNames: [
+        'Domain-Specific Strategic Topics',
+        'Global Best Practices in Specialization',
+        'Complex Decision-Making Case Studies',
+        'Strategic Innovations & Trends',
+        'Practical (Specialized case study documentation)'
+      ]
+    },
+    {
+      name: 'Specialization Elective IV',
+      code: 'S6-EL4',
+      sem: 6,
+      colorIndex: 3,
+      credits: 4,
+      maxMarks: 150,
+      maxEse: 70,
+      maxInternal: 30,
+      maxPractical: 50,
+      unitNames: [
+        'Advanced Sectoral Topics & Frameworks',
+        'Practical Tools, Metrics & KPIs',
+        'Applied Research Methodologies',
+        'Contemporary Corporate Practices',
+        'Practical (Project seminar & analytical presentation)'
+      ]
+    },
+    {
+      name: 'Comprehensive Project & Grand Viva',
+      code: 'S6-CP',
+      sem: 6,
+      colorIndex: 4,
+      credits: 4,
+      maxMarks: 150,
+      maxEse: 70,
+      maxInternal: 30,
+      maxPractical: 50,
+      unitNames: [
+        'Project Synopsis, Literature Review & Hypotheses',
+        'Empirical Investigation & Rigorous Data Collection',
+        'Quantitative/Qualitative Evaluation & Findings',
+        'Strategic Implications & Final Thesis Defense',
+        'Practical (Comprehensive project defense & grand viva presentation)'
+      ]
+    }
+  ]
+};
+
 // Utility — unique ID
 function uid() {
   return 'id_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
@@ -146,17 +610,51 @@ function createDefaultMarks() {
   };
 }
 
+// Seed official GTU curriculum subjects for any semester (Sem 1 to 6)
+// All newly created units strictly start with 0 parts
+function seedSubjectsForSemester(dataObj, semNum) {
+  const sem = parseInt(semNum) || 1;
+  if (!dataObj || !Array.isArray(dataObj.subjects)) return [];
+  const seedList = ALL_SEMESTER_CURRICULUM[sem] || [];
+  const created = [];
+  seedList.forEach(s => {
+    const exists = dataObj.subjects.some(sub => sub.code === s.code || (sub.sem === sem && sub.name.toLowerCase() === s.name.toLowerCase()));
+    if (!exists) {
+      const newSub = {
+        id: uid(),
+        name: s.name,
+        code: s.code,
+        sem: s.sem || sem,
+        credits: s.credits,
+        maxMarks: s.maxMarks,
+        maxEse: s.maxEse,
+        maxInternal: s.maxInternal,
+        maxPractical: s.maxPractical,
+        marks: createDefaultMarks(),
+        colorIndex: s.colorIndex || 0,
+        expanded: false,
+        units: buildUnits(s.code, s.unitNames)
+      };
+      dataObj.subjects.push(newSub);
+      created.push(newSub);
+    }
+  });
+  return created;
+}
+
 // Generate default dataset
 function getDefaultData() {
   return {
     schemaVersion: 5,
     settings: {
-      visibleSems: [1, 2, 3, 4, 5, 6],
+      currentSem: 1,
+      visibleSems: [1],
       theme: 'light',
       examDate: '',
       hideReadiness: false,
       activeTab: 'pdf',
-      targetSpi: 8.5
+      targetSpi: 10.0,
+      targetCgpa: 10.0
     },
     trash: [],
     subjects: SUBJECT_SEED.map(s => ({
@@ -209,15 +707,18 @@ function sanitizeData(d) {
   if (!d.subjects.length) return getDefaultData();
 
   if (!d.settings || typeof d.settings !== 'object') d.settings = {};
-  d.settings.visibleSems = ensureArray(d.settings.visibleSems);
+  if (typeof d.settings.currentSem !== 'number' || d.settings.currentSem < 1 || d.settings.currentSem > 6) {
+    d.settings.currentSem = 1;
+  }
+  d.settings.visibleSems = ensureArray(d.settings.visibleSems).map(Number).filter(n => n >= 1 && n <= 6);
   if (!d.settings.visibleSems.length) {
-    d.settings.visibleSems = [1, 2, 3, 4, 5, 6];
+    d.settings.visibleSems = [d.settings.currentSem || 1];
   }
   if (!d.settings.theme) d.settings.theme = 'light';
   if (typeof d.settings.examDate !== 'string') d.settings.examDate = '';
   if (typeof d.settings.hideReadiness !== 'boolean') d.settings.hideReadiness = false;
   if (!d.settings.activeTab) d.settings.activeTab = 'pdf';
-  if (typeof d.settings.targetSpi !== 'number') d.settings.targetSpi = 8.5;
+  if (typeof d.settings.targetSpi !== 'number') d.settings.targetSpi = 10.0;
   if (typeof d.settings.targetCgpa !== 'number') d.settings.targetCgpa = d.settings.targetSpi;
   
   d.trash = ensureArray(d.trash);
@@ -240,21 +741,19 @@ function sanitizeData(d) {
     d.schemaVersion = 5;
   }
 
-  // Purge legacy pre-seeded placeholder subjects for Sem 2-6
+  // Ensure sem property is set for every subject
   d.subjects = d.subjects.filter(s => {
     if (!s) return false;
     if (!s.sem) {
       const m = s.code ? s.code.match(/S(\d)/i) : null;
       s.sem = m ? parseInt(m[1]) : 1;
     }
-    if (s.sem > 1 && ['S2-AFA', 'S2-OB', 'S3-CA', 'S3-HRM', 'S4-COST', 'S5-SM', 'S6-GBE'].includes(s.code)) {
-      return false;
-    }
     return true;
   });
 
   d.subjects.forEach(s => {
-    const seedMatch = SUBJECT_SEED.find(seed => seed.code === s.code);
+    const semSeedList = ALL_SEMESTER_CURRICULUM[s.sem || 1] || [];
+    const seedMatch = semSeedList.find(seed => seed.code === s.code);
     if (seedMatch) {
       s.credits = s.credits || seedMatch.credits;
       s.maxMarks = s.maxMarks || seedMatch.maxMarks;

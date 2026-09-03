@@ -37,7 +37,11 @@ const App = (() => {
   }
 
   function getVisibleSubjects() {
-    const visibleSems = data.settings && Array.isArray(data.settings.visibleSems) && data.settings.visibleSems.length ? data.settings.visibleSems : [1, 2, 3, 4, 5, 6];
+    const curSem = (data.settings && data.settings.currentSem) ? data.settings.currentSem : 1;
+    const visibleSems = (data.settings && Array.isArray(data.settings.visibleSems) && data.settings.visibleSems.length)
+      ? data.settings.visibleSems
+      : [curSem];
+
     let list = (data.subjects || []).filter(s => {
       if (!s) return false;
       const sSem = s.sem || 1;
@@ -45,9 +49,6 @@ const App = (() => {
       const isSemMatch = (semFilter === 'all' || sSem === parseInt(semFilter));
       return isSemVisible && isSemMatch;
     });
-    if (!list.length && (data.subjects || []).length) {
-      list = data.subjects;
-    }
     return list;
   }
 
@@ -60,7 +61,7 @@ const App = (() => {
       cancelAnimationFrame(el._rafId);
       el._rafId = null;
     }
-    const currentVal = parseFloat(el.textContent.replace(/[^0-9.-]/g, ''));
+    const currentVal = parseFloat(String(el.textContent || '').replace(/[^0-9.-]/g, ''));
     const startVal = !isNaN(currentVal) ? currentVal : from;
     if (startVal === to) {
       el.textContent = to;
@@ -506,39 +507,46 @@ const App = (() => {
     if (isNaN(targetVal)) return;
     if (!data.settings) data.settings = {};
     data.settings.targetSpi = Math.min(Math.max(targetVal, 4.0), 10.0);
-    data.settings.targetCgpa = data.settings.targetSpi;
     saveData(data);
     Cloud.saveDebounced(data, 1000);
-    MarksHub.renderTargetBacktracker();
-    
-    const sTargetCgpaEl = document.getElementById('settingTargetCgpa');
-    if (sTargetCgpaEl) sTargetCgpaEl.value = data.settings.targetSpi;
+    if (typeof MarksHub.renderTargetBacktracker === 'function') {
+      MarksHub.renderTargetBacktracker();
+    }
+    const badge = document.getElementById('targetSpiBadge');
+    if (badge) badge.textContent = `${data.settings.targetSpi.toFixed(1)} SPI`;
     if (Array.isArray(data.subjects)) {
       data.subjects.forEach(s => {
         MarksHub.updateSubjectCardLive(s.id);
       });
     }
+    toast(`Target SPI set to ${data.settings.targetSpi.toFixed(1)}`);
   }
 
   function updateStudentProfile(field, val) {
     if (!data.settings) data.settings = {};
-    data.settings[field] = val;
-    
     if (field === 'targetCgpa') {
+      const cgpaVal = parseFloat(val);
+      if (!isNaN(cgpaVal)) {
+        data.settings.targetCgpa = Math.min(Math.max(cgpaVal, 4.0), 10.0);
+      }
+    } else if (field === 'targetSpi') {
       const spiVal = parseFloat(val);
       if (!isNaN(spiVal)) {
         data.settings.targetSpi = Math.min(Math.max(spiVal, 4.0), 10.0);
-        MarksHub.renderTargetBacktracker();
-        if (Array.isArray(data.subjects)) {
-          data.subjects.forEach(s => {
-            MarksHub.updateSubjectCardLive(s.id);
-          });
-        }
       }
+    } else {
+      data.settings[field] = val;
     }
     
     saveData(data);
     Cloud.saveDebounced(data, 1000);
+    if (typeof MarksHub.renderTargetBacktracker === 'function') {
+      MarksHub.renderTargetBacktracker();
+    }
+    const badge = document.getElementById('targetSpiBadge');
+    if (badge && data.settings.targetSpi) {
+      badge.textContent = `${Number(data.settings.targetSpi).toFixed(1)} SPI`;
+    }
     toast(`Saved changes`);
   }
 
@@ -546,16 +554,64 @@ const App = (() => {
     const semNum = parseInt(sem) || 1;
     if (!data.settings) data.settings = {};
     data.settings.currentSem = semNum;
-    if (!Array.isArray(data.settings.visibleSems)) data.settings.visibleSems = [1];
+    if (!Array.isArray(data.settings.visibleSems)) data.settings.visibleSems = [semNum];
     if (!data.settings.visibleSems.includes(semNum)) {
       data.settings.visibleSems.push(semNum);
     }
+    
+    // If the semester has no subjects, seed official GTU BBA subjects for that semester!
+    const semSubjects = (data.subjects || []).filter(s => s.sem === semNum);
+    if (semSubjects.length === 0) {
+      seedSubjectsForSemester(data, semNum);
+    }
+    
     persist();
     render();
+    updateSettingsModalUI();
     if (typeof MarksHub.setActiveMarksSem === 'function') {
       MarksHub.setActiveMarksSem(semNum);
     }
-    toast(`Active Semester set to Sem ${semNum}`);
+    toast(`Active Semester set to Semester ${semNum}`);
+  }
+
+  function toggleSemVisibility(sem) {
+    const semNum = parseInt(sem) || 1;
+    if (!data.settings) data.settings = {};
+    if (!Array.isArray(data.settings.visibleSems)) data.settings.visibleSems = [1];
+    
+    const idx = data.settings.visibleSems.indexOf(semNum);
+    if (idx > -1) {
+      if (data.settings.visibleSems.length > 1) {
+        data.settings.visibleSems.splice(idx, 1);
+        if (data.settings.currentSem === semNum) {
+          data.settings.currentSem = data.settings.visibleSems[0];
+        }
+      } else {
+        toast(`At least 1 semester must be visible`);
+        return;
+      }
+    } else {
+      data.settings.visibleSems.push(semNum);
+      data.settings.visibleSems.sort((a, b) => a - b);
+      // If semester has no subjects, seed official GTU BBA subjects for that semester!
+      const semSubjects = (data.subjects || []).filter(s => s.sem === semNum);
+      if (semSubjects.length === 0) {
+        seedSubjectsForSemester(data, semNum);
+      }
+    }
+    persist();
+    render();
+    updateSettingsModalUI();
+    toast(`Updated semester visibility`);
+  }
+
+  function setAllSemsVisible() {
+    if (!data.settings) data.settings = {};
+    data.settings.visibleSems = [1, 2, 3, 4, 5, 6];
+    persist();
+    render();
+    updateSettingsModalUI();
+    toast(`All 6 semesters visible`);
   }
 
   function resetAllMarks() {
@@ -779,33 +835,55 @@ const App = (() => {
     }
   }
 
-  function updateSemVisibilitySummary() {
-    const vis = (data.settings && Array.isArray(data.settings.visibleSems)) ? data.settings.visibleSems : [1];
-    const textEl = document.getElementById('semVisibilityCountText');
-    if (textEl) {
-      textEl.textContent = `${vis.length} of 6 semesters visible`;
-    }
-  }
+  function updateSettingsModalUI() {
+    const curSem = (data.settings && data.settings.currentSem) ? data.settings.currentSem : 1;
+    const vis = (data.settings && Array.isArray(data.settings.visibleSems)) ? data.settings.visibleSems : [curSem];
 
-  function toggleSemVisibility(semNum) {
-    if (!data.settings) data.settings = {};
-    if (!Array.isArray(data.settings.visibleSems)) data.settings.visibleSems = [1];
-    const idx = data.settings.visibleSems.indexOf(semNum);
-    if (idx > -1) {
-      if (data.settings.visibleSems.length > 1) {
-        data.settings.visibleSems.splice(idx, 1);
-      } else {
-        const sw = document.getElementById(`semSwitch_${semNum}`);
-        if (sw) sw.checked = true;
-        toast('At least 1 semester must remain visible', true);
-        return;
-      }
-    } else {
-      data.settings.visibleSems.push(semNum);
+    // Active sem tag & button states
+    const activeSemTag = document.getElementById('activeSemTag');
+    if (activeSemTag) activeSemTag.textContent = `Semester ${curSem}`;
+
+    const activeBtns = document.getElementById('settingActiveSemBtns');
+    if (activeBtns) {
+      activeBtns.querySelectorAll('.sem-btn').forEach(btn => {
+        const sem = parseInt(btn.dataset.sem);
+        if (sem === curSem) btn.classList.add('active');
+        else btn.classList.remove('active');
+      });
     }
-    updateSemVisibilitySummary();
-    persist();
-    render();
+
+    // Visible sems tag & button states
+    const visTag = document.getElementById('visibleSemsTag');
+    if (visTag) visTag.textContent = `${vis.length} of 6 visible`;
+
+    const visBtns = document.getElementById('settingSemVisibilityBtns');
+    if (visBtns) {
+      visBtns.querySelectorAll('.sem-btn').forEach(btn => {
+        if (btn.classList.contains('sem-btn-all')) {
+          if (vis.length === 6) btn.classList.add('active');
+          else btn.classList.remove('active');
+        } else {
+          const sem = parseInt(btn.dataset.sem);
+          if (vis.includes(sem)) btn.classList.add('active');
+          else btn.classList.remove('active');
+        }
+      });
+    }
+
+    // Dropdown Selectors
+    const selSpi = document.getElementById('settingTargetSpi');
+    if (selSpi && data.settings) {
+      const spiVal = (typeof data.settings.targetSpi === 'number' ? data.settings.targetSpi : 10.0).toFixed(1);
+      selSpi.value = spiVal;
+      if (!selSpi.value) selSpi.value = "10.0";
+    }
+
+    const selCgpa = document.getElementById('settingTargetCgpa');
+    if (selCgpa && data.settings) {
+      const cgpaVal = (typeof data.settings.targetCgpa === 'number' ? data.settings.targetCgpa : 10.0).toFixed(1);
+      selCgpa.value = cgpaVal;
+      if (!selCgpa.value) selCgpa.value = "10.0";
+    }
   }
 
   function openSettingsModal() {
@@ -814,21 +892,11 @@ const App = (() => {
 
     const sNameEl = document.getElementById('settingStudentName');
     const sEnrollEl = document.getElementById('settingEnrollment');
-    const sCurSemEl = document.getElementById('settingCurrentSem');
-    const sTargetCgpaEl = document.getElementById('settingTargetCgpa');
 
     if (sNameEl) sNameEl.value = (data.settings && data.settings.studentName) || '';
     if (sEnrollEl) sEnrollEl.value = (data.settings && data.settings.enrollmentNo) || '';
-    if (sCurSemEl) sCurSemEl.value = String((data.settings && data.settings.currentSem) || 1);
-    if (sTargetCgpaEl) sTargetCgpaEl.value = (data.settings && (data.settings.targetCgpa || data.settings.targetSpi)) || '10.0';
 
-    const vis = (data.settings && Array.isArray(data.settings.visibleSems)) ? data.settings.visibleSems : [1, 2, 3, 4, 5, 6];
-    for (let i = 1; i <= 6; i++) {
-      const sw = document.getElementById(`semSwitch_${i}`);
-      if (sw) sw.checked = vis.includes(i);
-    }
-
-    updateSemVisibilitySummary();
+    updateSettingsModalUI();
     renderTrashList();
     m.classList.add('show');
   }
@@ -1206,6 +1274,7 @@ const App = (() => {
     openAddSubjectModal,
     addSubject,
     toggleSemVisibility,
+    setAllSemsVisible,
     setSemFilter,
     openSettingsModal,
     closeModal,

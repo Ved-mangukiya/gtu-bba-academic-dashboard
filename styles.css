@@ -2502,6 +2502,103 @@ button,
   color: var(--text-mid);
 }
 
+/* Semester Button Groups in Settings */
+.sem-btn-group {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.sem-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 14px;
+  border-radius: var(--r-full);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-mid);
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--t-fast);
+  user-select: none;
+}
+
+.sem-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-dark);
+  border-color: var(--border-dark);
+}
+
+.sem-btn.active {
+  background: var(--text-dark);
+  color: var(--bg-card);
+  border-color: var(--text-dark);
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+body.dark-mode .sem-btn.active {
+  background: #ffffff;
+  color: #000000;
+  border-color: #ffffff;
+}
+
+/* Visibility group highlights in primary blue/accent */
+.sem-visibility-group .sem-btn.active {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+  box-shadow: 0 2px 6px var(--primary-light);
+}
+
+.sem-btn-all {
+  font-weight: 700;
+  border-style: dashed;
+}
+
+/* Marks Hub Target Strategy Pill linking to Settings */
+.target-actions-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.target-settings-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--r-full);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-dark);
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--t-fast);
+  box-shadow: var(--shadow-xs);
+}
+
+.target-settings-pill:hover {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  transform: translateY(-1px);
+}
+
+.target-pill-val {
+  color: var(--primary);
+  font-weight: 800;
+}
+
+.target-pill-action {
+  font-size: 0.68rem;
+  color: var(--text-mid);
+  font-weight: 600;
+}
+
 .settings-sub-drawer {
   background: var(--bg-subtle);
   border-radius: var(--r-md);

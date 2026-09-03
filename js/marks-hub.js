@@ -367,6 +367,12 @@ const MarksHub = (() => {
     const semEl = document.getElementById('targetActiveSemNum');
     if (semEl) semEl.textContent = activeMarksSem;
 
+    const badgeEl = document.getElementById('targetSpiBadge');
+    if (badgeEl) badgeEl.textContent = `${targetSpi.toFixed(1)} SPI`;
+
+    const summaryEl = document.getElementById('targetShortSummary');
+    if (summaryEl) summaryEl.textContent = `Target: ${targetSpi.toFixed(1)} SPI (${targetDetails.grade}) · Tap to view strategy`;
+
     const selectEl = document.getElementById('targetSpiSelect');
     if (selectEl) selectEl.value = targetSpi.toFixed(1);
 
