@@ -600,6 +600,7 @@ const App = (() => {
           if (filter === 'pending') fMatch = !p.downloaded;
           else if (filter === 'downloaded') fMatch = p.downloaded;
           else if (filter === 'printed') fMatch = p.printed;
+          else if (filter === 'to-print' || filter === 'dl-not-printed' || filter === 'unprinted') fMatch = (p.downloaded && !p.printed);
           return pMatch && fMatch;
         });
         if (filter === 'all' && !term) return u;
@@ -616,6 +617,8 @@ const App = (() => {
       return;
     }
     if (emptyEl) emptyEl.style.display = 'none';
+
+    const isFilterActive = filter !== 'all' || Boolean(term);
 
     if (container) {
       container.innerHTML = filtered.map((s, si) => {
@@ -638,8 +641,10 @@ const App = (() => {
             ? `${sdl}/${stotal} DL (${spct}%) · ${spr} PR (${sprPct}%)` 
             : `0 parts created yet · Open unit to add parts`;
 
+          const isSubOpen = isFilterActive ? true : Boolean(orig.expanded);
+
           return `
-            <div class="subject-card ${orig.expanded ? 'open' : ''}" data-id="${s.id}">
+            <div class="subject-card ${isSubOpen ? 'open' : ''}" data-id="${s.id}">
               <div class="subject-head" onclick="App.toggleSubject('${s.id}')">
                 <div class="subject-icon-badge">${getSubjectIcon(orig.code, ci)}</div>
                 <div class="subject-info">
@@ -662,7 +667,7 @@ const App = (() => {
               <div class="subject-body">
                 <div class="subject-inner">
                   ${s.units && Array.isArray(s.units) ? s.units.map(u => {
-                    try { return PdfTracker.renderUnit(s.id, u, ci, orig); }
+                    try { return PdfTracker.renderUnit(s.id, u, ci, orig, isFilterActive); }
                     catch(e) { console.error('renderUnit error:', e); return ''; }
                   }).join('') : ''}
                 </div>

@@ -190,6 +190,17 @@ function ensureArray(val) {
   return [];
 }
 
+// Detect untouched legacy dummy placeholder parts (e.g. S1-PPM-U1-P1 with no attachments, no notes, and not downloaded/printed)
+function isLegacyDummyPart(p) {
+  if (!p) return true;
+  if (p.downloaded || p.printed) return false;
+  if (p.pdfDriveUrl || p.pdfFileName || (typeof p.pdfPageCount === 'number' && p.pdfPageCount > 0)) return false;
+  if ((p.note && p.note.trim()) || (p.priority && p.priority !== 'none')) return false;
+  const defaultPattern = /^S\d-[A-Z]+-U\d-P\d$/i;
+  if (p.name && !defaultPattern.test(p.name.trim())) return false;
+  return true;
+}
+
 // Sanitize & Migration Helper
 function sanitizeData(d) {
   if (!d) return getDefaultData();
@@ -211,14 +222,19 @@ function sanitizeData(d) {
   
   d.trash = ensureArray(d.trash);
 
-  // Enforce schemaVersion 5: all units start with 0 parts initially.
-  // When upgrading from legacy schemas, purge any auto-generated dummy parts.
+  // Enforce schemaVersion 5:
+  // When upgrading from legacy schemas, purge ONLY untouched auto-generated dummy parts,
+  // while preserving 100% of real user attachments, files, page counts, notes, and downloaded/printed flags!
   const isV5 = d.schemaVersion === 5;
   if (!isV5) {
     d.subjects.forEach(s => {
       s.units = ensureArray(s.units);
       s.units.forEach(u => {
-        u.parts = [];
+        if (Array.isArray(u.parts)) {
+          u.parts = u.parts.filter(p => !isLegacyDummyPart(p));
+        } else {
+          u.parts = [];
+        }
       });
     });
     d.schemaVersion = 5;
@@ -338,7 +354,11 @@ function loadData() {
           legacy.subjects.forEach(s => {
             if (Array.isArray(s.units)) {
               s.units.forEach(u => {
-                u.parts = [];
+                if (Array.isArray(u.parts)) {
+                  u.parts = u.parts.filter(p => !isLegacyDummyPart(p));
+                } else {
+                  u.parts = [];
+                }
               });
             }
           });

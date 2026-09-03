@@ -233,7 +233,7 @@ const PdfTracker = (() => {
     `;
   }
 
-  function renderUnit(subId, u, ci, s) {
+  function renderUnit(subId, u, ci, s, isFiltered = false) {
     const parts = (u.parts || []).slice().sort((a, b) => (a.number || 0) - (b.number || 0));
     const partsCount = parts.length;
     const dlCount = parts.filter(p => p.downloaded).length;
@@ -246,8 +246,10 @@ const PdfTracker = (() => {
       ? `Unit has no parts created yet` 
       : `${dlCount} downloaded · ${prCount} printed of ${partsCount} total parts`;
 
+    const isUnitOpen = isFiltered ? true : Boolean(u.expanded);
+
     return `
-      <div class="unit-card ${u.expanded ? 'open' : ''}" data-unit-id="${u.id}">
+      <div class="unit-card ${isUnitOpen ? 'open' : ''}" data-unit-id="${u.id}">
         <div class="unit-head" onclick="App.toggleUnit('${subId}','${u.id}')">
           <div class="unit-title-wrap">
             <span class="unit-num-tag">Unit ${u.number || 1}</span>
