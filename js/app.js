@@ -99,15 +99,34 @@ const App = (() => {
         });
       }
     });
-    const pending = Math.max(0, total - dl);
+    const toPrint = Math.max(0, dl - pr);
+    const toDownload = Math.max(0, total - dl);
     const dlPct = total > 0 ? Math.round((dl / total) * 100) : 0;
     const prPct = total > 0 ? Math.round((pr / total) * 100) : 0;
 
     animateCount(document.getElementById('statTotal'), _statPrev.total, total);
     animateCount(document.getElementById('statDownloaded'), _statPrev.dl, dl);
     animateCount(document.getElementById('statPrinted'), _statPrev.pr, pr);
-    animateCount(document.getElementById('statPending'), _statPrev.pending, pending);
-    _statPrev.total = total; _statPrev.dl = dl; _statPrev.pr = pr; _statPrev.pending = pending;
+    _statPrev.total = total; _statPrev.dl = dl; _statPrev.pr = pr;
+
+    const elStatToPrint = document.getElementById('statToPrint');
+    if (elStatToPrint) elStatToPrint.textContent = toPrint;
+
+    const elStatToDownload = document.getElementById('statToDownload');
+    if (elStatToDownload) elStatToDownload.textContent = toDownload;
+
+    // Update live counts on filter pills
+    const elCountAll = document.getElementById('filterCountAll');
+    if (elCountAll) elCountAll.textContent = total;
+
+    const elCountToPrint = document.getElementById('filterCountToPrint');
+    if (elCountToPrint) elCountToPrint.textContent = toPrint;
+
+    const elCountPrinted = document.getElementById('filterCountPrinted');
+    if (elCountPrinted) elCountPrinted.textContent = pr;
+
+    const elCountToDownload = document.getElementById('filterCountToDownload');
+    if (elCountToDownload) elCountToDownload.textContent = toDownload;
 
     // Percentages on Metric Hero Cards
     const elPctDl = document.getElementById('pctDlVal');
@@ -136,11 +155,11 @@ const App = (() => {
     const trackPrText = document.getElementById('trackPrText');
     if (trackPrText) trackPrText.innerHTML = `${pr} / ${total} Parts (<span id="trackPrPct">${prPct}%</span>)`;
 
-    // Zero-State vs Pending Footnote
+    // Zero-State vs Actionable Footnote Metrics
     const zeroHint = document.getElementById('zeroPartsHint');
-    const pendPill = document.getElementById('pendingPill');
+    const footMetrics = document.getElementById('footnoteMetrics');
     if (zeroHint) zeroHint.style.display = total === 0 ? 'inline-block' : 'none';
-    if (pendPill) pendPill.style.display = total === 0 ? 'none' : 'inline-flex';
+    if (footMetrics) footMetrics.style.display = total === 0 ? 'none' : 'inline-flex';
 
     // Legacy fallback for any other listener
     const ringPct = document.getElementById('progressPct');
@@ -597,10 +616,10 @@ const App = (() => {
         const parts = u.parts.filter(p => {
           const pMatch = !term || (p.name && p.name.toLowerCase().includes(term)) || uMatch;
           let fMatch = true;
-          if (filter === 'pending') fMatch = !p.downloaded;
-          else if (filter === 'downloaded') fMatch = p.downloaded;
+          if (filter === 'to-print' || filter === 'dl-not-printed' || filter === 'unprinted') fMatch = (p.downloaded && !p.printed);
           else if (filter === 'printed') fMatch = p.printed;
-          else if (filter === 'to-print' || filter === 'dl-not-printed' || filter === 'unprinted') fMatch = (p.downloaded && !p.printed);
+          else if (filter === 'to-download' || filter === 'pending') fMatch = !p.downloaded;
+          else if (filter === 'downloaded') fMatch = p.downloaded;
           return pMatch && fMatch;
         });
         if (filter === 'all' && !term) return u;
@@ -613,7 +632,55 @@ const App = (() => {
 
     if (!filtered.length) {
       if (container) container.innerHTML = '';
-      if (emptyEl) emptyEl.style.display = 'block';
+      if (emptyEl) {
+        emptyEl.style.display = 'flex';
+        const iconWrap = document.getElementById('emptyIconWrap');
+        const titleEl = document.getElementById('emptyTitle');
+        const subEl = document.getElementById('emptySub');
+        const actionBtn = document.getElementById('emptyActionBtn');
+
+        if (term) {
+          if (iconWrap) iconWrap.innerHTML = `<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>`;
+          if (titleEl) titleEl.textContent = `No matches for "${term}"`;
+          if (subEl) subEl.textContent = 'Check spelling or try searching by unit title or subject code (e.g. S1-PPM, S1-FA).';
+          if (actionBtn) {
+            actionBtn.textContent = 'Clear Search';
+            actionBtn.onclick = () => clearSearch();
+          }
+        } else if (filter === 'to-print') {
+          if (iconWrap) iconWrap.innerHTML = `<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>`;
+          if (titleEl) titleEl.textContent = 'All Caught Up on Printing!';
+          if (subEl) subEl.textContent = 'Every downloaded study material has physical hardcopy ready. You are all set for exam revision!';
+          if (actionBtn) {
+            actionBtn.textContent = 'View All Materials';
+            actionBtn.onclick = () => setFilter('all');
+          }
+        } else if (filter === 'to-download' || filter === 'pending') {
+          if (iconWrap) iconWrap.innerHTML = `<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>`;
+          if (titleEl) titleEl.textContent = 'All Materials Downloaded!';
+          if (subEl) subEl.textContent = 'All active study materials are saved on your device. None are pending download.';
+          if (actionBtn) {
+            actionBtn.textContent = 'View All Materials';
+            actionBtn.onclick = () => setFilter('all');
+          }
+        } else if (filter === 'printed') {
+          if (iconWrap) iconWrap.innerHTML = `<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
+          if (titleEl) titleEl.textContent = 'No Notes Printed Yet';
+          if (subEl) subEl.textContent = 'Once you print your downloaded study notes, mark them as printed to track physical hardcopies.';
+          if (actionBtn) {
+            actionBtn.textContent = 'View Materials To Print';
+            actionBtn.onclick = () => setFilter('to-print');
+          }
+        } else {
+          if (iconWrap) iconWrap.innerHTML = `<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
+          if (titleEl) titleEl.textContent = 'No Materials Found';
+          if (subEl) subEl.textContent = 'No materials match the selected criteria.';
+          if (actionBtn) {
+            actionBtn.textContent = 'View All Materials';
+            actionBtn.onclick = () => setFilter('all');
+          }
+        }
+      }
       return;
     }
     if (emptyEl) emptyEl.style.display = 'none';
@@ -1048,15 +1115,31 @@ const App = (() => {
     searchInput.addEventListener('input', (e) => { search = e.target.value; renderSubjectList(); });
   }
 
+  function setFilter(f) {
+    filter = f;
+    const filtersEl = document.getElementById('filters');
+    if (filtersEl) {
+      filtersEl.querySelectorAll('.pill').forEach(p => {
+        if (p.dataset.filter === f) p.classList.add('active');
+        else p.classList.remove('active');
+      });
+    }
+    renderSubjectList();
+  }
+
+  function clearSearch() {
+    search = '';
+    const input = document.getElementById('searchInput');
+    if (input) input.value = '';
+    renderSubjectList();
+  }
+
   const filtersEl = document.getElementById('filters');
   if (filtersEl) {
     filtersEl.addEventListener('click', (e) => {
       const pill = e.target.closest('.pill');
       if (!pill) return;
-      filter = pill.dataset.filter || 'all';
-      filtersEl.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
-      pill.classList.add('active');
-      renderSubjectList();
+      setFilter(pill.dataset.filter || 'all');
     });
   }
 
@@ -1147,6 +1230,8 @@ const App = (() => {
     clearTrash,
     resetAllPartsToZero,
     stepMarksInput,
+    setFilter,
+    clearSearch,
     openGtuGuideModal: () => MarksHub.openGtuGuideModal(),
     updateSimulator: (f, v) => MarksHub.updateSimulator(f, v),
     setSimulatorPreset: (p) => MarksHub.setSimulatorPreset(p)

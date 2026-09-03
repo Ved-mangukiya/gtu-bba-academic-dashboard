@@ -144,19 +144,26 @@
           </div>
         </div>
 
-        <!-- Zero State or Pending Footnote -->
+        <!-- Actionable Overview Footnote -->
         <div class="overview-footnote" id="overviewFootnote">
-          <span class="pending-pill" id="pendingPill">
-            <span class="pending-dot"></span>
-            <span>Pending Download: <strong id="statPending">0</strong></span>
-          </span>
+          <div class="footnote-left" id="footnoteMetrics">
+            <span class="footnote-action-pill" id="actionToPrint" onclick="App.setFilter('to-print')" title="Filter materials waiting to be printed">
+              <span class="action-dot dot-violet"></span>
+              <span>To Print: <strong id="statToPrint">0</strong></span>
+              <span class="action-arrow">→</span>
+            </span>
+            <span class="footnote-action-pill" id="actionToDownload" onclick="App.setFilter('to-download')" title="Filter materials waiting to be downloaded">
+              <span class="action-dot dot-cyan"></span>
+              <span>To Download: <strong id="statToDownload">0</strong></span>
+            </span>
+          </div>
           <span class="zero-parts-hint" id="zeroPartsHint" style="display: none;">
             ✨ Units have 0 parts initially · Open any unit below and tap <strong>"+ Part"</strong> to create parts!
           </span>
         </div>
       </section>
 
-      <!-- TOOLBAR: SEARCH & STATUS FILTERS -->
+      <!-- TOOLBAR: SEARCH & LOGICAL WORKFLOW FILTERS -->
       <section class="toolbar">
         <div class="search-box">
           <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -166,31 +173,38 @@
           <input type="text" id="searchInput" class="search-input" placeholder="Search subjects or materials…" />
         </div>
         <div class="filters" id="filters">
-          <button class="pill active" data-filter="all">All</button>
-          <button class="pill" data-filter="pending">Pending</button>
-          <button class="pill" data-filter="downloaded">Downloaded</button>
-          <button class="pill" data-filter="to-print" title="Downloaded but not yet printed">To Print</button>
-          <button class="pill" data-filter="printed">Printed</button>
+          <button class="pill active" data-filter="all" title="All study materials">
+            <span>All</span>
+            <span class="pill-count" id="filterCountAll">0</span>
+          </button>
+          <button class="pill pill-action" data-filter="to-print" title="Downloaded materials waiting to be printed">
+            <span>To Print</span>
+            <span class="pill-count count-highlight" id="filterCountToPrint">0</span>
+          </button>
+          <button class="pill" data-filter="printed" title="Physical hardcopies ready on desk">
+            <span>Printed</span>
+            <span class="pill-count" id="filterCountPrinted">0</span>
+          </button>
+          <button class="pill" data-filter="to-download" title="Materials waiting to be downloaded">
+            <span>To Download</span>
+            <span class="pill-count" id="filterCountToDownload">0</span>
+          </button>
         </div>
       </section>
 
       <!-- SUBJECTS LIST CONTAINER -->
       <main class="subjects" id="subjectsContainer"></main>
 
-      <!-- EMPTY STATE -->
-      <div class="empty" id="emptyState" style="display:none">
-        <div class="empty-anim">
-          <svg class="empty-svg" viewBox="0 0 120 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="15" y="20" width="90" height="70" rx="10" fill="var(--bg-subtle)" stroke="var(--border)" stroke-width="2" />
-            <rect x="28" y="36" width="64" height="8" rx="4" fill="var(--border)" />
-            <rect x="28" y="52" width="44" height="8" rx="4" fill="var(--border-subtle)" />
-            <rect x="28" y="68" width="52" height="8" rx="4" fill="var(--border-subtle)" />
-            <circle cx="90" cy="28" r="18" fill="var(--bg-card)" stroke="var(--border)" stroke-width="2" />
-            <path d="M83 28l4 4 8-8" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
+      <!-- CONTEXT-AWARE EMPTY STATE -->
+      <div class="empty-state-card" id="emptyState" style="display:none">
+        <div class="empty-icon-wrap" id="emptyIconWrap">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
         </div>
-        <p class="empty-title">Nothing found</p>
-        <p class="empty-sub">No results match your search or filter.</p>
+        <h3 class="empty-title" id="emptyTitle">Nothing found</h3>
+        <p class="empty-sub" id="emptySub">No results match your search or filter.</p>
+        <button class="btn btn-empty-action" id="emptyActionBtn" onclick="App.setFilter('all')">
+          View All Materials
+        </button>
       </div>
     </div>
 
