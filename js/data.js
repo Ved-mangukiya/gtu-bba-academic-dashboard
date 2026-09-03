@@ -4,7 +4,7 @@
 //  and PDF Metadata (File Name & Page Count) storage.
 // ============================================================
 
-const STORAGE_KEY = 'gtu_bba_pdf_tracker_v3';
+const STORAGE_KEY = 'gtu_bba_pdf_tracker_v5';
 
 const SUBJECT_SEED = [
   // Semester 1
@@ -119,7 +119,7 @@ function uid() {
   return 'id_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
 }
 
-// Build units for a subject — 1 part per unit by default
+// Build units for a subject — 0 parts per unit initially
 function buildUnits(code, unitNames) {
   return unitNames.map((name, i) => {
     const uNum = i + 1;
@@ -128,21 +128,7 @@ function buildUnits(code, unitNames) {
       number: uNum,
       name: name,
       expanded: false,
-      parts: [
-        {
-          id: uid(),
-          number: 1,
-          name: `${code}-U${uNum}-P1`,
-          downloaded: false,
-          printed: false,
-          priority: 'none',
-          note: '',
-          pdfFileName: '',
-          pdfDriveUrl: '',
-          pdfPageCount: null,
-          showPdfMeta: false
-        }
-      ]
+      parts: []
     };
   });
 }
@@ -163,6 +149,7 @@ function createDefaultMarks() {
 // Generate default dataset
 function getDefaultData() {
   return {
+    schemaVersion: 5,
     settings: {
       visibleSems: [1, 2, 3, 4, 5, 6],
       theme: 'light',
@@ -223,6 +210,19 @@ function sanitizeData(d) {
   if (typeof d.settings.targetCgpa !== 'number') d.settings.targetCgpa = d.settings.targetSpi;
   
   d.trash = ensureArray(d.trash);
+
+  // Enforce schemaVersion 5: all units start with 0 parts initially.
+  // When upgrading from legacy schemas, purge any auto-generated dummy parts.
+  const isV5 = d.schemaVersion === 5;
+  if (!isV5) {
+    d.subjects.forEach(s => {
+      s.units = ensureArray(s.units);
+      s.units.forEach(u => {
+        u.parts = [];
+      });
+    });
+    d.schemaVersion = 5;
+  }
 
   // Purge legacy pre-seeded placeholder subjects for Sem 2-6
   d.subjects = d.subjects.filter(s => {
@@ -309,13 +309,50 @@ function sanitizeData(d) {
   return d;
 }
 
-// LocalStorage helpers
+// Helper: resets all units across all subjects to 0 parts
+function resetAllPartsToZero(dataObj) {
+  if (!dataObj || !Array.isArray(dataObj.subjects)) return dataObj;
+  dataObj.subjects.forEach(s => {
+    if (Array.isArray(s.units)) {
+      s.units.forEach(u => {
+        u.parts = [];
+      });
+    }
+  });
+  return dataObj;
+}
+
+// LocalStorage helpers with automatic migration to v5 (zero parts per unit)
 function loadData() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) return sanitizeData(JSON.parse(raw));
+
+    // Migrate from v4 or v3 if exists
+    for (const legacyKey of ['gtu_bba_pdf_tracker_v4', 'gtu_bba_pdf_tracker_v3']) {
+      const legacyRaw = localStorage.getItem(legacyKey);
+      if (legacyRaw) {
+        const legacy = JSON.parse(legacyRaw);
+        if (legacy && Array.isArray(legacy.subjects)) {
+          legacy.schemaVersion = 5;
+          legacy.subjects.forEach(s => {
+            if (Array.isArray(s.units)) {
+              s.units.forEach(u => {
+                u.parts = [];
+              });
+            }
+          });
+          const sanitized = sanitizeData(legacy);
+          saveData(sanitized);
+          try { localStorage.removeItem(legacyKey); } catch (_) {}
+          return sanitized;
+        }
+      }
+    }
   } catch (_) { /* corrupted — reset */ }
-  return sanitizeData(null);
+  const fresh = getDefaultData();
+  saveData(fresh);
+  return fresh;
 }
 
 function saveData(data) {
@@ -332,6 +369,7 @@ if (typeof window !== 'undefined') {
   window.sanitizeData = sanitizeData;
   window.getDefaultData = getDefaultData;
   window.createDefaultMarks = createDefaultMarks;
+  window.resetAllPartsToZero = resetAllPartsToZero;
   window.ensureArray = ensureArray;
   window.uid = uid;
   window.buildUnits = buildUnits;

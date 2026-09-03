@@ -237,6 +237,14 @@ const PdfTracker = (() => {
     const parts = (u.parts || []).slice().sort((a, b) => (a.number || 0) - (b.number || 0));
     const partsCount = parts.length;
     const dlCount = parts.filter(p => p.downloaded).length;
+    const prCount = parts.filter(p => p.printed).length;
+
+    const badgeText = partsCount === 0 
+      ? `0 parts` 
+      : `${dlCount}/${partsCount} DL`;
+    const badgeTitle = partsCount === 0 
+      ? `Unit has no parts created yet` 
+      : `${dlCount} downloaded · ${prCount} printed of ${partsCount} total parts`;
 
     return `
       <div class="unit-card ${u.expanded ? 'open' : ''}" data-unit-id="${u.id}">
@@ -246,15 +254,43 @@ const PdfTracker = (() => {
             <span class="unit-title-text">${App.esc(u.name)}</span>
           </div>
           <div class="unit-actions" onclick="event.stopPropagation()">
-            <span class="unit-badge" title="${dlCount} of ${partsCount} parts downloaded">${dlCount}/${partsCount} DL</span>
-            <button class="btn btn-ghost btn-xs" onclick="App.addPart('${subId}','${u.id}')" title="Add Part to Unit">
+            <span class="unit-badge ${partsCount === 0 ? 'unit-badge-zero' : ''}" title="${badgeTitle}">${badgeText}</span>
+            <button class="btn btn-unit-add btn-xs" onclick="App.addPart('${subId}','${u.id}')" title="Add Part to Unit">
               ${SVG.plus} Part
             </button>
+            <span class="unit-chevron">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </span>
           </div>
         </div>
         <div class="unit-body">
           <div class="unit-inner">
-            ${parts.map(p => renderPart(subId, u.id, p, ci, u)).join('')}
+            ${partsCount === 0 ? `
+              <div class="unit-empty-state">
+                <div class="unit-empty-glyph">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="12" y1="18" x2="12" y2="12"></line>
+                    <line x1="9" y1="15" x2="15" y2="15"></line>
+                  </svg>
+                </div>
+                <div class="unit-empty-copy">
+                  <span class="unit-empty-title">0 PDF parts exist for Unit ${u.number || 1}</span>
+                  <span class="unit-empty-sub">When faculty sends study notes for this unit, tap below to create Part 1</span>
+                </div>
+                <button class="btn-create-first-part" onclick="App.addPart('${subId}','${u.id}')">
+                  ${SVG.plus} <span>Add Part 1</span>
+                </button>
+              </div>
+            ` : `
+              ${parts.map(p => renderPart(subId, u.id, p, ci, u)).join('')}
+              <div class="unit-add-bottom-row">
+                <button class="btn-add-more-parts" onclick="App.addPart('${subId}','${u.id}')">
+                  ${SVG.plus} <span>Add Part ${partsCount + 1}</span>
+                </button>
+              </div>
+            `}
           </div>
         </div>
       </div>

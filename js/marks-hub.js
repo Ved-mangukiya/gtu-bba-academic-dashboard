@@ -215,6 +215,7 @@ const MarksHub = (() => {
     // 1. Grade Badge Pill
     const gradeBadge = cardEl.querySelector('.grade-badge-pill');
     if (gradeBadge) {
+      gradeBadge.className = `grade-badge-pill grade-${res.grade}`;
       gradeBadge.textContent = `${res.grade} (${res.gp})`;
     }
 
@@ -223,6 +224,12 @@ const MarksHub = (() => {
     if (passFailText) {
       passFailText.className = `pass-fail-text ${res.pass ? 'text-pass' : 'text-fail'}`;
       passFailText.textContent = res.pass ? 'PASS' : 'FAIL';
+    }
+
+    // 2b. ESE status wrapper & threshold indicator
+    const eseWrap = cardEl.querySelector('.stepper-input-wrap[data-wrap-for="ese"]');
+    if (eseWrap) {
+      eseWrap.className = `stepper-input-wrap ${res.hasEseEntered && res.isEseFailed ? 'ese-failed-wrap' : (res.hasEseEntered ? 'ese-passed-wrap' : '')}`;
     }
 
     // 3. Internal Title Score
@@ -564,9 +571,13 @@ const MarksHub = (() => {
                             <label class="field-label">Internal Total (Max ${res.maxInternal})</label>
                             <span class="field-benchmark-badge" data-benchmark-for="internalLumpsum">Target: ${dynTarget.dynLump}</span>
                           </div>
-                          <input type="number" class="marks-num-input" data-field="internalLumpsum" min="0" max="${res.maxInternal}" placeholder="Target: ${dynTarget.dynLump}"
-                                 value="${m.internalLumpsum !== null && m.internalLumpsum !== undefined ? m.internalLumpsum : ''}"
-                                 oninput="App.onMarksInput('${s.id}', 'internalLumpsum', this.value)" />
+                          <div class="stepper-input-wrap">
+                            <button type="button" class="stepper-btn stepper-minus" onclick="App.stepMarksInput('${s.id}', 'internalLumpsum', -1)" title="Decrease Internal Total" aria-label="Decrease Internal">−</button>
+                            <input type="number" class="marks-num-input" data-field="internalLumpsum" min="0" max="${res.maxInternal}" placeholder="Target: ${dynTarget.dynLump}"
+                                   value="${m.internalLumpsum !== null && m.internalLumpsum !== undefined ? m.internalLumpsum : ''}"
+                                   oninput="App.onMarksInput('${s.id}', 'internalLumpsum', this.value)" />
+                            <button type="button" class="stepper-btn stepper-plus" onclick="App.stepMarksInput('${s.id}', 'internalLumpsum', 1)" title="Increase Internal Total" aria-label="Increase Internal">+</button>
+                          </div>
                         </div>
                       ` : `
                         <div class="marks-input-row">
@@ -575,27 +586,39 @@ const MarksHub = (() => {
                               <label class="field-label">Mid-Sem (20)</label>
                               <span class="field-benchmark-badge" data-benchmark-for="internalMid">Target: ${dynTarget.dynMid}</span>
                             </div>
-                            <input type="number" class="marks-num-input" data-field="internalMid" min="0" max="20" placeholder="Target: ${dynTarget.dynMid}"
-                                   value="${m.internalMid !== null && m.internalMid !== undefined ? m.internalMid : ''}"
-                                   oninput="App.onMarksInput('${s.id}', 'internalMid', this.value)" />
+                            <div class="stepper-input-wrap">
+                              <button type="button" class="stepper-btn stepper-minus" onclick="App.stepMarksInput('${s.id}', 'internalMid', -1)" title="Decrease Mid-Sem" aria-label="Decrease Mid-Sem">−</button>
+                              <input type="number" class="marks-num-input" data-field="internalMid" min="0" max="20" placeholder="Target: ${dynTarget.dynMid}"
+                                     value="${m.internalMid !== null && m.internalMid !== undefined ? m.internalMid : ''}"
+                                     oninput="App.onMarksInput('${s.id}', 'internalMid', this.value)" />
+                              <button type="button" class="stepper-btn stepper-plus" onclick="App.stepMarksInput('${s.id}', 'internalMid', 1)" title="Increase Mid-Sem" aria-label="Increase Mid-Sem">+</button>
+                            </div>
                           </div>
                           <div class="marks-field-group">
                             <div class="field-label-row">
                               <label class="field-label">Attendance (5)</label>
                               <span class="field-benchmark-badge" data-benchmark-for="internalAtt">Target: ${dynTarget.dynAtt}</span>
                             </div>
-                            <input type="number" class="marks-num-input" data-field="internalAtt" min="0" max="5" placeholder="Target: ${dynTarget.dynAtt}"
-                                   value="${m.internalAtt !== null && m.internalAtt !== undefined ? m.internalAtt : ''}"
-                                   oninput="App.onMarksInput('${s.id}', 'internalAtt', this.value)" />
+                            <div class="stepper-input-wrap">
+                              <button type="button" class="stepper-btn stepper-minus" onclick="App.stepMarksInput('${s.id}', 'internalAtt', -1)" title="Decrease Attendance" aria-label="Decrease Attendance">−</button>
+                              <input type="number" class="marks-num-input" data-field="internalAtt" min="0" max="5" placeholder="Target: ${dynTarget.dynAtt}"
+                                     value="${m.internalAtt !== null && m.internalAtt !== undefined ? m.internalAtt : ''}"
+                                     oninput="App.onMarksInput('${s.id}', 'internalAtt', this.value)" />
+                              <button type="button" class="stepper-btn stepper-plus" onclick="App.stepMarksInput('${s.id}', 'internalAtt', 1)" title="Increase Attendance" aria-label="Increase Attendance">+</button>
+                            </div>
                           </div>
                           <div class="marks-field-group">
                             <div class="field-label-row">
                               <label class="field-label">Behavior (5)</label>
                               <span class="field-benchmark-badge" data-benchmark-for="internalBeh">Target: ${dynTarget.dynBeh}</span>
                             </div>
-                            <input type="number" class="marks-num-input" data-field="internalBeh" min="0" max="5" placeholder="Target: ${dynTarget.dynBeh}"
-                                   value="${m.internalBeh !== null && m.internalBeh !== undefined ? m.internalBeh : ''}"
-                                   oninput="App.onMarksInput('${s.id}', 'internalBeh', this.value)" />
+                            <div class="stepper-input-wrap">
+                              <button type="button" class="stepper-btn stepper-minus" onclick="App.stepMarksInput('${s.id}', 'internalBeh', -1)" title="Decrease Behavior" aria-label="Decrease Behavior">−</button>
+                              <input type="number" class="marks-num-input" data-field="internalBeh" min="0" max="5" placeholder="Target: ${dynTarget.dynBeh}"
+                                     value="${m.internalBeh !== null && m.internalBeh !== undefined ? m.internalBeh : ''}"
+                                     oninput="App.onMarksInput('${s.id}', 'internalBeh', this.value)" />
+                              <button type="button" class="stepper-btn stepper-plus" onclick="App.stepMarksInput('${s.id}', 'internalBeh', 1)" title="Increase Behavior" aria-label="Increase Behavior">+</button>
+                            </div>
                           </div>
                         </div>
                       `}
@@ -608,18 +631,26 @@ const MarksHub = (() => {
                           <label class="field-label">Practical / Viva (Max ${res.maxPractical})</label>
                           <span class="field-benchmark-badge" data-benchmark-for="practical">Target: ${dynTarget.dynPractical}</span>
                         </div>
-                        <input type="number" class="marks-num-input" data-field="practical" min="0" max="${res.maxPractical}" placeholder="Target: ${dynTarget.dynPractical}"
-                               value="${m.practical !== null && m.practical !== undefined ? m.practical : ''}"
-                               oninput="App.onMarksInput('${s.id}', 'practical', this.value)" />
+                        <div class="stepper-input-wrap">
+                          <button type="button" class="stepper-btn stepper-minus" onclick="App.stepMarksInput('${s.id}', 'practical', -1)" title="Decrease Practical" aria-label="Decrease Practical">−</button>
+                          <input type="number" class="marks-num-input" data-field="practical" min="0" max="${res.maxPractical}" placeholder="Target: ${dynTarget.dynPractical}"
+                                 value="${m.practical !== null && m.practical !== undefined ? m.practical : ''}"
+                                 oninput="App.onMarksInput('${s.id}', 'practical', this.value)" />
+                          <button type="button" class="stepper-btn stepper-plus" onclick="App.stepMarksInput('${s.id}', 'practical', 1)" title="Increase Practical" aria-label="Increase Practical">+</button>
+                        </div>
                       </div>
                       <div class="marks-field-group">
                         <div class="field-label-row">
                           <label class="field-label">GTU ESE Exam (Max ${res.maxEse})</label>
                           <span class="field-benchmark-badge" data-benchmark-for="ese">Min ${Math.ceil(res.maxEse * 0.35)} | Target: ${dynTarget.dynEse}</span>
                         </div>
-                        <input type="number" class="marks-num-input" data-field="ese" min="0" max="${res.maxEse}" placeholder="Target: ${dynTarget.dynEse}"
-                               value="${m.ese !== null && m.ese !== undefined ? m.ese : ''}"
-                               oninput="App.onMarksInput('${s.id}', 'ese', this.value)" />
+                        <div class="stepper-input-wrap ${res.hasEseEntered && res.isEseFailed ? 'ese-failed-wrap' : (res.hasEseEntered ? 'ese-passed-wrap' : '')}" data-wrap-for="ese">
+                          <button type="button" class="stepper-btn stepper-minus" onclick="App.stepMarksInput('${s.id}', 'ese', -1)" title="Decrease ESE" aria-label="Decrease ESE">−</button>
+                          <input type="number" class="marks-num-input" data-field="ese" min="0" max="${res.maxEse}" placeholder="Target: ${dynTarget.dynEse}"
+                                 value="${m.ese !== null && m.ese !== undefined ? m.ese : ''}"
+                                 oninput="App.onMarksInput('${s.id}', 'ese', this.value)" />
+                          <button type="button" class="stepper-btn stepper-plus" onclick="App.stepMarksInput('${s.id}', 'ese', 1)" title="Increase ESE" aria-label="Increase ESE">+</button>
+                        </div>
                       </div>
                     </div>
 

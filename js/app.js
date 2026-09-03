@@ -99,9 +99,9 @@ const App = (() => {
         });
       }
     });
-    const pending = total - dl;
-    const pct = total ? Math.round((dl / total) * 100) : 0;
-    const prPct = total ? Math.round((pr / total) * 100) : 0;
+    const pending = Math.max(0, total - dl);
+    const dlPct = total > 0 ? Math.round((dl / total) * 100) : 0;
+    const prPct = total > 0 ? Math.round((pr / total) * 100) : 0;
 
     animateCount(document.getElementById('statTotal'), _statPrev.total, total);
     animateCount(document.getElementById('statDownloaded'), _statPrev.dl, dl);
@@ -109,13 +109,42 @@ const App = (() => {
     animateCount(document.getElementById('statPending'), _statPrev.pending, pending);
     _statPrev.total = total; _statPrev.dl = dl; _statPrev.pr = pr; _statPrev.pending = pending;
 
-    const ringPct = document.getElementById('progressPct');
-    if (ringPct) ringPct.textContent = pct + '%';
+    // Percentages on Metric Hero Cards
+    const elPctDl = document.getElementById('pctDlVal');
+    if (elPctDl) elPctDl.textContent = `${dlPct}%`;
 
+    const elPctPr = document.getElementById('pctPrVal');
+    if (elPctPr) elPctPr.textContent = `${prPct}%`;
+
+    // Counts Subtitles on Metric Cards
+    const elDlSub = document.getElementById('dlCountsSub');
+    if (elDlSub) elDlSub.innerHTML = `<strong>${dl}</strong> of ${total} saved`;
+
+    const elPrSub = document.getElementById('prCountsSub');
+    if (elPrSub) elPrSub.innerHTML = `<strong>${pr}</strong> of ${total} ready`;
+
+    // Precision Bars and Text
     const fillDl = document.getElementById('progressFill');
+    if (fillDl) fillDl.style.width = `${dlPct}%`;
+
     const fillPr = document.getElementById('progressFillPr');
-    if (fillDl) fillDl.style.width = pct + '%';
-    if (fillPr) fillPr.style.width = prPct + '%';
+    if (fillPr) fillPr.style.width = `${prPct}%`;
+
+    const trackDlText = document.getElementById('trackDlText');
+    if (trackDlText) trackDlText.innerHTML = `${dl} / ${total} Parts (<span id="trackDlPct">${dlPct}%</span>)`;
+
+    const trackPrText = document.getElementById('trackPrText');
+    if (trackPrText) trackPrText.innerHTML = `${pr} / ${total} Parts (<span id="trackPrPct">${prPct}%</span>)`;
+
+    // Zero-State vs Pending Footnote
+    const zeroHint = document.getElementById('zeroPartsHint');
+    const pendPill = document.getElementById('pendingPill');
+    if (zeroHint) zeroHint.style.display = total === 0 ? 'inline-block' : 'none';
+    if (pendPill) pendPill.style.display = total === 0 ? 'none' : 'inline-flex';
+
+    // Legacy fallback for any other listener
+    const ringPct = document.getElementById('progressPct');
+    if (ringPct) ringPct.textContent = `${dlPct}%`;
   }
 
   const chevSvg = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
@@ -192,12 +221,24 @@ const App = (() => {
     }
     const spct = stotal ? Math.round((sdl / stotal) * 100) : 0;
     const sprPct = stotal ? Math.round((spr / stotal) * 100) : 0;
+    const miniTrack = subCard.querySelector('.mini-track');
     const miniDl = subCard.querySelector('.mini-bar-dl');
     const miniPr = subCard.querySelector('.mini-bar-pr');
     const miniPct = subCard.querySelector('.mini-pct');
-    if (miniDl) miniDl.style.width = spct + '%';
-    if (miniPr) miniPr.style.width = sprPct + '%';
-    if (miniPct) miniPct.textContent = spct + '%';
+    const miniZero = subCard.querySelector('.mini-zero-pill');
+
+    if (stotal === 0) {
+      if (miniTrack) miniTrack.style.display = 'none';
+      if (miniPct) miniPct.style.display = 'none';
+      if (miniZero) miniZero.style.display = 'inline-flex';
+    } else {
+      if (miniZero) miniZero.style.display = 'none';
+      if (miniTrack) miniTrack.style.display = 'flex';
+      if (miniPct) miniPct.style.display = 'inline-block';
+      if (miniDl) miniDl.style.width = spct + '%';
+      if (miniPr) miniPr.style.width = sprPct + '%';
+      if (miniPct) miniPct.textContent = spct + '%';
+    }
   }
 
   function toggleDl(subId, unitId, partId) {
@@ -276,9 +317,60 @@ const App = (() => {
     u.parts.push(newPart);
     u.parts.sort((a, b) => (a.number || 0) - (b.number || 0));
     u.expanded = true;
+    if (s) s.expanded = true;
     persist();
     render();
     toast(`Added ${newPart.name}`);
+  }
+
+  function resetAllPartsToZero() {
+    if (!confirm('Reset all units across all subjects to 0 parts? This lets you start completely fresh and build parts as needed.')) return;
+    if (Array.isArray(data.subjects)) {
+      data.subjects.forEach(s => {
+        if (Array.isArray(s.units)) {
+          s.units.forEach(u => {
+            u.parts = [];
+          });
+        }
+      });
+    }
+    persist();
+    render();
+    toast('All units reset to 0 parts');
+  }
+
+  function stepMarksInput(subId, fieldKey, delta) {
+    const s = data.subjects.find(x => x.id === subId);
+    if (!s) return;
+    if (!s.marks) s.marks = createDefaultMarks();
+
+    const credits = s.credits || 4;
+    const maxInternal = s.maxInternal || 30;
+    const maxPractical = s.maxPractical || (credits === 2 ? 20 : 50);
+    const maxEse = s.maxEse || (credits === 2 ? 50 : 70);
+
+    let maxVal = 100;
+    if (fieldKey === 'internalMid') maxVal = 20;
+    else if (fieldKey === 'internalAtt') maxVal = 5;
+    else if (fieldKey === 'internalBeh') maxVal = 5;
+    else if (fieldKey === 'internalLumpsum') maxVal = maxInternal;
+    else if (fieldKey === 'practical') maxVal = maxPractical;
+    else if (fieldKey === 'ese') maxVal = maxEse;
+
+    const current = (typeof s.marks[fieldKey] === 'number') ? s.marks[fieldKey] : 0;
+    let nextVal = Math.min(Math.max(0, current + delta), maxVal);
+    nextVal = Math.round(nextVal * 10) / 10;
+    s.marks[fieldKey] = nextVal;
+
+    const cardEl = document.querySelector(`.marks-subject-card[data-sub-id="${subId}"]`);
+    if (cardEl) {
+      const inp = cardEl.querySelector(`input[data-field="${fieldKey}"]`);
+      if (inp) inp.value = nextVal;
+    }
+
+    saveData(data);
+    Cloud.saveDebounced(data, 1000);
+    MarksHub.updateSubjectCardLive(subId);
   }
 
   function deletePart(subId, unitId, partId) {
@@ -542,7 +634,9 @@ const App = (() => {
           }
           const spct = stotal ? Math.round((sdl / stotal) * 100) : 0;
           const sprPct = stotal ? Math.round((spr / stotal) * 100) : 0;
-          const tooltip = `${sdl}/${stotal} downloaded · ${spr} printed`;
+          const tooltip = stotal > 0 
+            ? `${sdl}/${stotal} DL (${spct}%) · ${spr} PR (${sprPct}%)` 
+            : `0 parts created yet · Open unit to add parts`;
 
           return `
             <div class="subject-card ${orig.expanded ? 'open' : ''}" data-id="${s.id}">
@@ -556,11 +650,12 @@ const App = (() => {
                        onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}">${esc(orig.name)}</div>
                 </div>
                 <div class="subject-mini-progress" title="${tooltip}">
-                  <div class="mini-track">
+                  <span class="mini-zero-pill" style="display:${stotal === 0 ? 'inline-flex' : 'none'}">0 parts</span>
+                  <div class="mini-track" style="display:${stotal === 0 ? 'none' : 'flex'}">
                     <div class="mini-bar-dl" style="width:${spct}%"></div>
                     <div class="mini-bar-pr" style="width:${sprPct}%"></div>
                   </div>
-                  <span class="mini-pct">${spct}%</span>
+                  <span class="mini-pct" style="display:${stotal === 0 ? 'none' : 'inline-block'}">${spct}%</span>
                 </div>
                 <span class="chevron">${chevSvg}</span>
               </div>
@@ -1045,6 +1140,8 @@ const App = (() => {
     setCurrentSem,
     restoreTrashItem,
     clearTrash,
+    resetAllPartsToZero,
+    stepMarksInput,
     openGtuGuideModal: () => MarksHub.openGtuGuideModal(),
     updateSimulator: (f, v) => MarksHub.updateSimulator(f, v),
     setSimulatorPreset: (p) => MarksHub.setSimulatorPreset(p)
