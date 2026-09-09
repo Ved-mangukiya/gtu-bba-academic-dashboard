@@ -3,10 +3,14 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="description"
     content="GTU BBA Academic Dashboard — Minimal, high-performance study material and marks manager for GTU BBA students." />
   <meta name="theme-color" content="#f8f9fa" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="GTU BBA" />
   <title>GTU BBA · Academic Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -870,26 +874,42 @@
               </div>
               <ul class="breakdown-list">
                 <li><span class="dot dot-blue"></span> <strong>ESE University Exam:</strong> 70 Marks (Min 25/70 needed)</li>
-                <li><span class="dot dot-green"></span> <strong>Practical / Viva / Report:</strong> 50 Marks</li>
-                <li><span class="dot dot-purple"></span> <strong>College Internal:</strong> 30 Marks (Mid 20 + Att 5 + Beh 5)</li>
+                <li><span class="dot dot-green"></span> <strong>College Internal Practical / Project:</strong> 50 Marks (Unit 5 Project, Report & Viva)</li>
+                <li><span class="dot dot-purple"></span> <strong>College Internal Theory:</strong> 30 Marks (Mid-Sem 20 [Exam 40÷2] + Attendance 10)</li>
               </ul>
             </div>
 
             <div class="breakdown-card">
               <div class="breakdown-head">
                 <span class="breakdown-pill pill-2c">2-Credit Subjects (Max 100)</span>
-                <span class="breakdown-sub-text">IKS, ESG</span>
+                <span class="breakdown-sub-text">IKS, ESG / FES</span>
               </div>
               <ul class="breakdown-list">
                 <li><span class="dot dot-blue"></span> <strong>ESE University Exam:</strong> 50 Marks (Min 18/50 needed)</li>
-                <li><span class="dot dot-green"></span> <strong>Practical / Activity:</strong> 20 Marks</li>
-                <li><span class="dot dot-purple"></span> <strong>College Internal:</strong> 30 Marks (Mid 20 + Att 5 + Beh 5)</li>
+                <li><span class="dot dot-green"></span> <strong>College Internal Practical / Project:</strong> 20 Marks (Unit 3 Heritage / ESG Project & Viva)</li>
+                <li><span class="dot dot-purple"></span> <strong>College Internal Theory:</strong> 30 Marks (Mid-Sem 20 [Exam 40÷2] + Attendance 10)</li>
               </ul>
             </div>
           </div>
 
+          <div class="guide-college-alert-box">
+            <div class="college-alert-badge">📢 Official College Update · Mid-Sem Exam Evaluation</div>
+            <p class="college-alert-p">
+              College conducts the internal Mid-Sem Exam out of <strong>40 Marks</strong>. When reported to GTU, your marks are <strong>divided by 2 (scaled to 20 Marks)</strong>.
+              <br/>
+              <em>Example: Scoring <strong>40 / 40</strong> in college exam = <strong>20 / 20</strong> GTU internal score (36/40 = 18/20, 30/40 = 15/20).</em>
+            </p>
+          </div>
+
           <div class="guide-alert-box">
-            <strong>⚠️ Mandatory GTU Passing Rule:</strong> A student must secure at least <strong>35% in the ESE paper</strong> (25/70 in 4-credit, 18/50 in 2-credit) AND at least <strong>35% aggregate overall</strong> to pass.
+            <strong>⚠️ Strict GTU Component-Wise Passing Rule:</strong> You must score at least <strong>35% in EACH component head individually</strong> to pass the subject:
+            <ul style="margin: 8px 0 8px 20px; line-height: 1.6;">
+              <li><strong>College Internal Theory:</strong> Min <strong>11 / 30</strong> (Mid-Sem 20 [40÷2] + Attendance 10)</li>
+              <li><strong>College Practical / Project:</strong> Min <strong>18 / 50</strong> (4-credit) or <strong>7 / 20</strong> (2-credit)</li>
+              <li><strong>GTU University Exam (ESE):</strong> Min <strong>25 / 70</strong> (4-credit) or <strong>18 / 50</strong> (2-credit)</li>
+              <li><strong>Overall Aggregate Total:</strong> Min <strong>35%</strong> (53 / 150 for 4-credit, 35 / 100 for 2-credit)</li>
+            </ul>
+            <em>Critical: Scoring high in one component does NOT compensate for failing another. Failing any single head results in an <strong>FF Grade (0 GP / Backlog)</strong>!</em>
           </div>
         </div>
 
@@ -994,29 +1014,25 @@
               </div>
               <div class="sim-inputs-grid">
                 <div class="sim-field">
-                  <label>Mid (20)</label>
-                  <input type="number" min="0" max="20" value="18" oninput="App.updateSimulator('c4Mid', this.value)" />
+                  <label>Mid (40÷2)</label>
+                  <input type="number" min="0" max="40" value="36" oninput="App.updateSimulator('c4Mid', this.value)" title="College Mid-Sem Exam (40 marks divided by 2 = 20 GTU marks)" />
                 </div>
                 <div class="sim-field">
-                  <label>Att (5)</label>
-                  <input type="number" min="0" max="5" value="5" oninput="App.updateSimulator('c4Att', this.value)" />
-                </div>
-                <div class="sim-field">
-                  <label>Beh (5)</label>
-                  <input type="number" min="0" max="5" value="4" oninput="App.updateSimulator('c4Beh', this.value)" />
+                  <label>Att (10)</label>
+                  <input type="number" min="0" max="10" value="9" oninput="App.updateSimulator('c4Att', this.value)" title="College Attendance (10 marks)" />
                 </div>
                 <div class="sim-field">
                   <label>Pract (50)</label>
-                  <input type="number" min="0" max="50" value="42" oninput="App.updateSimulator('c4Pract', this.value)" />
+                  <input type="number" min="0" max="50" value="42" oninput="App.updateSimulator('c4Pract', this.value)" title="Unit 5 Practical Project & Viva (50 marks)" />
                 </div>
                 <div class="sim-field">
                   <label>ESE (70)</label>
-                  <input type="number" min="0" max="70" value="55" oninput="App.updateSimulator('c4Ese', this.value)" />
+                  <input type="number" min="0" max="70" value="55" oninput="App.updateSimulator('c4Ese', this.value)" title="GTU University Exam (70 marks)" />
                 </div>
               </div>
               <div class="sim-sub-foot">
                 <span>Score: <strong id="sim4Total">124 / 150</strong> (<span id="sim4Pct">82.7%</span>)</span>
-                <span id="sim4Cp" class="sim-cp-tag">4c × 9 = 36 pts</span>
+                <span id="sim4Cp" class="sim-cp-tag">4c × 9 = 36 pts (Mid: 36/40 → 18/20)</span>
               </div>
             </div>
 
@@ -1028,24 +1044,20 @@
               </div>
               <div class="sim-inputs-grid">
                 <div class="sim-field">
-                  <label>Mid (20)</label>
-                  <input type="number" min="0" max="20" value="18" oninput="App.updateSimulator('c2Mid', this.value)" />
+                  <label>Mid (40÷2)</label>
+                  <input type="number" min="0" max="40" value="36" oninput="App.updateSimulator('c2Mid', this.value)" title="College Mid-Sem Exam (40 marks divided by 2 = 20 GTU marks)" />
                 </div>
                 <div class="sim-field">
-                  <label>Att (5)</label>
-                  <input type="number" min="0" max="5" value="4" oninput="App.updateSimulator('c2Att', this.value)" />
-                </div>
-                <div class="sim-field">
-                  <label>Beh (5)</label>
-                  <input type="number" min="0" max="5" value="4" oninput="App.updateSimulator('c2Beh', this.value)" />
+                  <label>Att (10)</label>
+                  <input type="number" min="0" max="10" value="8" oninput="App.updateSimulator('c2Att', this.value)" title="College Attendance (10 marks)" />
                 </div>
                 <div class="sim-field">
                   <label>Pract (20)</label>
-                  <input type="number" min="0" max="20" value="17" oninput="App.updateSimulator('c2Pract', this.value)" />
+                  <input type="number" min="0" max="20" value="17" oninput="App.updateSimulator('c2Pract', this.value)" title="Unit 3 Practical Project & Viva (20 marks)" />
                 </div>
                 <div class="sim-field">
                   <label>ESE (50)</label>
-                  <input type="number" min="0" max="50" value="39" oninput="App.updateSimulator('c2Ese', this.value)" />
+                  <input type="number" min="0" max="50" value="39" oninput="App.updateSimulator('c2Ese', this.value)" title="GTU University Exam (50 marks)" />
                 </div>
               </div>
               <div class="sim-sub-foot">

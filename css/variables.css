@@ -24,12 +24,12 @@
   --bg-part-done: #f0fdf4;
   --bg-part-printed: #faf5ff;
 
-  /* ---- Typography Colors (4 Strict Levels) ---- */
-  --text-dark: #111827;      /* Level 1: Page Title & Critical metrics */
-  --text-base: #374151;      /* Level 2: Section headers & Subject names */
-  --text-mid: #6b7280;       /* Level 3: Metadata & Labels */
-  --text-light: #9ca3af;     /* Level 4: Supporting hints & micro-copy */
-  --text-faint: #d1d5db;     /* Subtle icons & placeholders */
+  /* ---- Typography Colors (Crisp, High-Contrast Hierarchy) ---- */
+  --text-dark: #0f172a;      /* Slate 900: Crisp headers & critical metrics */
+  --text-base: #1e293b;      /* Slate 800: Sharp text readability */
+  --text-mid: #475569;       /* Slate 600: Crisp secondary labels */
+  --text-light: #64748b;     /* Slate 500: Clear supporting copy */
+  --text-faint: #94a3b8;     /* Slate 400: Placeholders & borders */
 
   /* ---- Unified Primary & Semantic Colors ---- */
   --primary: #4f46e5;
@@ -108,11 +108,11 @@ body.dark-mode {
   --bg-part-done: #064e3b22;
   --bg-part-printed: #581c8722;
 
-  --text-dark: #f9fafb;
-  --text-base: #e5e7eb;
-  --text-mid: #9ca3af;
-  --text-light: #6b7280;
-  --text-faint: #3f3f46;
+  --text-dark: #ffffff;
+  --text-base: #f8fafc;
+  --text-mid: #cbd5e1;
+  --text-light: #94a3b8;
+  --text-faint: #64748b;
 
   --primary: #6366f1;
   --primary-hover: #818cf8;
@@ -157,8 +157,9 @@ body {
   max-width: 100vw;
   overflow-x: hidden;
   position: relative;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: subpixel-antialiased;
+  -moz-osx-font-smoothing: auto;
   -webkit-tap-highlight-color: transparent;
   transition: background-color var(--t-base), color var(--t-base);
 }

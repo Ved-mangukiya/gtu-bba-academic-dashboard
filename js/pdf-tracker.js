@@ -162,29 +162,100 @@ const PdfTracker = (() => {
     App.toast('Attachment removed');
   }
 
-  function renderPart(subId, uId, p, ci) {
+  function addPracticalPreset(subId, unitId, taskName) {
+    const d = App.getData();
+    const s = d.subjects.find(x => x.id === subId);
+    if (!s) return;
+    const u = s.units.find(x => x.id === unitId);
+    if (!u) return;
+    if (!Array.isArray(u.parts)) u.parts = [];
+
+    const exists = u.parts.some(p => p.name.toLowerCase() === taskName.toLowerCase());
+    if (exists) {
+      App.toast(`"${taskName}" already exists in this unit!`, true);
+      return;
+    }
+
+    const pNum = u.parts.length + 1;
+    u.parts.push({
+      id: 'id_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36),
+      number: pNum,
+      name: taskName,
+      downloaded: false,
+      printed: false,
+      pdfFileName: '',
+      pdfDriveUrl: '',
+      pdfPageCount: null,
+      showPdfMeta: false,
+      projectStatus: 'in_progress'
+    });
+    u.expanded = true;
+    App.persist();
+    App.render();
+    App.toast(`Added project task: ${taskName}`);
+  }
+
+  function cycleProjectStatus(subId, unitId, partId) {
+    const { p } = App.find(subId, unitId, partId);
+    if (!p) return;
+    const cycle = ['not_started', 'in_progress', 'submitted', 'viva_ready'];
+    const current = p.projectStatus || 'not_started';
+    const nextIdx = (cycle.indexOf(current) + 1) % cycle.length;
+    p.projectStatus = cycle[nextIdx];
+
+    if (p.projectStatus === 'submitted' || p.projectStatus === 'viva_ready') {
+      p.downloaded = true;
+    }
+
+    App.persist();
+    App.render();
+
+    const statusTexts = {
+      'not_started': 'To Do (⏳)',
+      'in_progress': 'In Progress (🔨)',
+      'submitted': 'Submitted to Faculty (✅)',
+      'viva_ready': 'Viva Ready (🎓)'
+    };
+    App.toast(`Task status: ${statusTexts[p.projectStatus] || p.projectStatus}`);
+  }
+
+  function renderPart(subId, uId, p, ci, u, s) {
     const esc = App.esc;
+    const isPractical = isPracticalUnit(s, u);
     const isDone = !!p.downloaded;
     const isPrinted = !!p.printed;
     const hasPdf = !!p.pdfFileName;
     const hasDrive = !!p.pdfDriveUrl;
     const isAttached = hasPdf || hasDrive;
 
+    const pStatus = p.projectStatus || 'not_started';
+    const statusLabels = {
+      'not_started': '⏳ To Do',
+      'in_progress': '🔨 In Progress',
+      'submitted': '✅ Submitted',
+      'viva_ready': '🎓 Viva Ready'
+    };
+
     return `
-      <div class="part-card ${isDone ? 'done' : ''} ${isPrinted ? 'printed' : ''}" data-part-id="${p.id}">
+      <div class="part-card ${isDone ? 'done' : ''} ${isPrinted ? 'printed' : ''} ${isPractical ? 'part-card-practical' : ''}" data-part-id="${p.id}">
         <div class="part-main-row">
           <div class="part-left-group">
             <div class="part-check-group">
-              <button class="ck-btn ck-dl ${isDone ? 'checked' : ''}" onclick="App.toggleDl('${subId}','${uId}','${p.id}')" title="${isDone ? 'Downloaded · Tap to unmark' : 'Mark as Downloaded'}" aria-label="Toggle Download Status">
+              <button class="ck-btn ck-dl ${isDone ? 'checked' : ''}" onclick="App.toggleDl('${subId}','${uId}','${p.id}')" title="${isPractical ? (isDone ? 'Marked Completed / Saved' : 'Mark Task Completed') : (isDone ? 'Downloaded · Tap to unmark' : 'Mark as Downloaded')}" aria-label="Toggle Completion Status">
                 ${isDone ? SVG.check : ''}
               </button>
-              <button class="ck-btn ck-pr ${isPrinted ? 'checked' : ''}" onclick="App.togglePr('${subId}','${uId}','${p.id}')" title="${isPrinted ? 'Printed · Tap to unmark' : 'Mark as Printed'}" aria-label="Toggle Print Status">
+              <button class="ck-btn ck-pr ${isPrinted ? 'checked' : ''}" onclick="App.togglePr('${subId}','${uId}','${p.id}')" title="${isPractical ? (isPrinted ? 'Hardcopy / Report Bound' : 'Mark Hardcopy / Printed') : (isPrinted ? 'Printed · Tap to unmark' : 'Mark as Printed')}" aria-label="Toggle Hardcopy Status">
                 ${SVG.printer}
               </button>
             </div>
 
             <div class="part-title-group">
-              <span class="part-seq-badge">P${p.number || 1}</span>
+              <span class="part-seq-badge ${isPractical ? 'seq-practical' : ''}">${isPractical ? 'Task ' + (p.number || 1) : 'P' + (p.number || 1)}</span>
+              ${isPractical ? `
+                <button type="button" class="project-status-pill status-${pStatus}" onclick="PdfTracker.cycleProjectStatus('${subId}','${uId}','${p.id}')" title="Click to cycle status: To Do ➔ In Progress ➔ Submitted ➔ Viva Ready">
+                  ${statusLabels[pStatus] || '⏳ To Do'}
+                </button>
+              ` : ''}
               <span class="part-name editable" contenteditable="true"
                     onfocus="this.dataset.prev=this.textContent"
                     onblur="App.editPartName('${subId}','${uId}','${p.id}',this)"
@@ -194,9 +265,9 @@ const PdfTracker = (() => {
 
           <div class="part-actions">
             ${!isAttached ? `
-              <button class="btn-attach-pill" onclick="PdfTracker.openAttachModal('${subId}','${uId}','${p.id}')" title="Attach Google Drive PDF or notes">
+              <button class="btn-attach-pill ${isPractical ? 'btn-attach-practical' : ''}" onclick="PdfTracker.openAttachModal('${subId}','${uId}','${p.id}')" title="${isPractical ? 'Attach Google Doc, Drive submission, or report link' : 'Attach Google Drive PDF or notes'}">
                 <span class="attach-pill-icon">${SVG.clip}</span>
-                <span>Attach PDF</span>
+                <span>${isPractical ? 'Attach Submission' : 'Attach PDF'}</span>
               </button>
             ` : ''}
             <button class="icon-btn-sm btn-danger-icon" onclick="App.deletePart('${subId}','${uId}','${p.id}')" title="Delete Part" aria-label="Delete Part">
@@ -210,16 +281,16 @@ const PdfTracker = (() => {
             <div class="part-attachment-info" onclick="PdfTracker.openAttachModal('${subId}','${uId}','${p.id}')" title="Click to edit attachment details">
               <span class="attachment-file-icon">${SVG.fileDoc}</span>
               <div class="attachment-text-col">
-                <span class="attachment-filename">${esc(p.pdfFileName || 'Study Notes PDF')}</span>
+                <span class="attachment-filename">${esc(p.pdfFileName || (isPractical ? 'Project Report / Submission' : 'Study Notes PDF'))}</span>
                 ${p.pdfPageCount ? `<span class="attachment-pages-tag">${p.pdfPageCount} Pages</span>` : ''}
               </div>
             </div>
 
             <div class="part-attachment-actions">
               ${hasDrive ? `
-                <a href="${esc(p.pdfDriveUrl)}" target="_blank" rel="noopener noreferrer" class="btn-view-pdf" title="Open PDF in new tab" onclick="event.stopPropagation()">
+                <a href="${esc(p.pdfDriveUrl)}" target="_blank" rel="noopener noreferrer" class="btn-view-pdf ${isPractical ? 'btn-view-practical' : ''}" title="Open submission file in new tab" onclick="event.stopPropagation()">
                   <span class="btn-view-pdf-icon">${SVG.fileDoc}</span>
-                  <span>View PDF</span>
+                  <span>${isPractical ? 'Open Work' : 'View PDF'}</span>
                   <span class="btn-view-pdf-ext">${SVG.externalLink}</span>
                 </a>
               ` : ''}
@@ -234,31 +305,34 @@ const PdfTracker = (() => {
   }
 
   function renderUnit(subId, u, ci, s, isFiltered = false) {
+    const isPractical = isPracticalUnit(s, u);
     const parts = (u.parts || []).slice().sort((a, b) => (a.number || 0) - (b.number || 0));
     const partsCount = parts.length;
     const dlCount = parts.filter(p => p.downloaded).length;
     const prCount = parts.filter(p => p.printed).length;
 
-    const badgeText = partsCount === 0 
-      ? `0 parts` 
-      : `${dlCount}/${partsCount} DL`;
-    const badgeTitle = partsCount === 0 
-      ? `Unit has no parts created yet` 
-      : `${dlCount} downloaded · ${prCount} printed of ${partsCount} total parts`;
+    let badgeText = partsCount === 0 ? `0 parts` : `${dlCount}/${partsCount} DL`;
+    let badgeTitle = partsCount === 0 ? `Unit has no parts created yet` : `${dlCount} downloaded · ${prCount} printed of ${partsCount} total parts`;
+
+    if (isPractical) {
+      badgeText = partsCount === 0 ? `🛠️ Practical` : `🛠️ ${dlCount}/${partsCount} Done`;
+      badgeTitle = `Practical & Project Unit (${s.credits === 4 ? '50' : '20'} Practical Marks). Evaluated via projects, reports, and viva.`;
+    }
 
     const isUnitOpen = isFiltered ? true : Boolean(u.expanded);
+    const presets = isPractical && PRACTICAL_PRESETS[s.code] ? PRACTICAL_PRESETS[s.code] : [];
 
     return `
-      <div class="unit-card ${isUnitOpen ? 'open' : ''}" data-unit-id="${u.id}">
+      <div class="unit-card ${isUnitOpen ? 'open' : ''} ${isPractical ? 'unit-card-practical' : ''}" data-unit-id="${u.id}">
         <div class="unit-head" onclick="App.toggleUnit('${subId}','${u.id}')">
           <div class="unit-title-wrap">
-            <span class="unit-num-tag">Unit ${u.number || 1}</span>
+            <span class="unit-num-tag ${isPractical ? 'num-tag-practical' : ''}">${isPractical ? 'Unit ' + (u.number || 1) + ' · Practical' : 'Unit ' + (u.number || 1)}</span>
             <span class="unit-title-text">${App.esc(u.name)}</span>
           </div>
           <div class="unit-actions" onclick="event.stopPropagation()">
-            <span class="unit-badge ${partsCount === 0 ? 'unit-badge-zero' : ''}" title="${badgeTitle}">${badgeText}</span>
-            <button class="btn btn-unit-add btn-xs" onclick="App.addPart('${subId}','${u.id}')" title="Add Part to Unit">
-              ${SVG.plus} Part
+            <span class="unit-badge ${isPractical ? 'unit-badge-practical' : (partsCount === 0 ? 'unit-badge-zero' : '')}" title="${badgeTitle}">${badgeText}</span>
+            <button class="btn btn-unit-add btn-xs ${isPractical ? 'btn-unit-add-practical' : ''}" onclick="App.addPart('${subId}','${u.id}')" title="${isPractical ? 'Add Practical Task / Submission' : 'Add Part to Unit'}">
+              ${SVG.plus} ${isPractical ? 'Task' : 'Part'}
             </button>
             <span class="unit-chevron">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
@@ -267,8 +341,34 @@ const PdfTracker = (() => {
         </div>
         <div class="unit-body">
           <div class="unit-inner">
+            ${isPractical ? `
+              <div class="practical-unit-banner">
+                <div class="practical-banner-top">
+                  <span class="practical-banner-icon">🛠️</span>
+                  <div class="practical-banner-text">
+                    <strong class="practical-banner-title">Practical Project & Submission Unit</strong>
+                    <p class="practical-banner-desc">
+                      Faculty typically does not provide textbook theory notes for this unit. Evaluation is based on your <strong>Project Report, Field Visit, Case Studies, and Viva</strong> (Accounts for <strong>${s.credits === 4 ? '50 Marks' : '20 Marks'}</strong> in your GTU Practical component). Track your project tasks, reports, slides, and submission links below!
+                    </p>
+                  </div>
+                </div>
+                ${presets.length ? `
+                  <div class="practical-presets-bar">
+                    <span class="practical-presets-label">⚡ Quick Presets:</span>
+                    <div class="practical-presets-chips">
+                      ${presets.map(task => `
+                        <button type="button" class="preset-task-chip" onclick="PdfTracker.addPracticalPreset('${subId}','${u.id}','${App.esc(task)}')">
+                          + ${App.esc(task)}
+                        </button>
+                      `).join('')}
+                    </div>
+                  </div>
+                ` : ''}
+              </div>
+            ` : ''}
+
             ${partsCount === 0 ? `
-              <div class="unit-empty-state">
+              <div class="unit-empty-state ${isPractical ? 'unit-empty-practical' : ''}">
                 <div class="unit-empty-glyph">
                   <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -278,18 +378,18 @@ const PdfTracker = (() => {
                   </svg>
                 </div>
                 <div class="unit-empty-copy">
-                  <span class="unit-empty-title">0 PDF parts exist for Unit ${u.number || 1}</span>
-                  <span class="unit-empty-sub">When faculty sends study notes for this unit, tap below to create Part 1</span>
+                  <span class="unit-empty-title">${isPractical ? 'No Practical Tasks / Submissions Added Yet' : `0 PDF parts exist for Unit ${u.number || 1}`}</span>
+                  <span class="unit-empty-sub">${isPractical ? 'Tap below or pick a preset above to log your project report, field visit, or presentation deck.' : 'When faculty sends study notes for this unit, tap below to create Part 1.'}</span>
                 </div>
-                <button class="btn-create-first-part" onclick="App.addPart('${subId}','${u.id}')">
-                  ${SVG.plus} <span>Add Part 1</span>
+                <button class="btn-create-first-part ${isPractical ? 'btn-create-practical' : ''}" onclick="App.addPart('${subId}','${u.id}')">
+                  ${SVG.plus} <span>${isPractical ? 'Add First Practical Task' : 'Add Part 1'}</span>
                 </button>
               </div>
             ` : `
-              ${parts.map(p => renderPart(subId, u.id, p, ci, u)).join('')}
+              ${parts.map(p => renderPart(subId, u.id, p, ci, u, s)).join('')}
               <div class="unit-add-bottom-row">
-                <button class="btn-add-more-parts" onclick="App.addPart('${subId}','${u.id}')">
-                  ${SVG.plus} <span>Add Part ${partsCount + 1}</span>
+                <button class="btn-add-more-parts ${isPractical ? 'btn-add-more-practical' : ''}" onclick="App.addPart('${subId}','${u.id}')">
+                  ${SVG.plus} <span>${isPractical ? 'Add Another Practical Task' : `Add Part ${partsCount + 1}`}</span>
                 </button>
               </div>
             `}
@@ -306,6 +406,8 @@ const PdfTracker = (() => {
     submitRemoveAttachment,
     togglePdfMetaVisibility,
     removePdfMeta,
+    addPracticalPreset,
+    cycleProjectStatus,
     renderPart,
     renderUnit
   };

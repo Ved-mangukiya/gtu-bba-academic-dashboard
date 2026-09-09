@@ -369,23 +369,38 @@ const App = (() => {
     const maxPractical = s.maxPractical || (credits === 2 ? 20 : 50);
     const maxEse = s.maxEse || (credits === 2 ? 50 : 70);
 
-    let maxVal = 100;
-    if (fieldKey === 'internalMid') maxVal = 20;
-    else if (fieldKey === 'internalAtt') maxVal = 5;
-    else if (fieldKey === 'internalBeh') maxVal = 5;
-    else if (fieldKey === 'internalLumpsum') maxVal = maxInternal;
-    else if (fieldKey === 'practical') maxVal = maxPractical;
-    else if (fieldKey === 'ese') maxVal = maxEse;
+    if (fieldKey === 'internalMid') {
+      const current = (typeof s.marks.internalMidRaw === 'number')
+        ? s.marks.internalMidRaw
+        : ((typeof s.marks.internalMid === 'number') ? s.marks.internalMid * 2 : 0);
+      let nextVal = Math.min(Math.max(0, current + delta), 40);
+      nextVal = Math.round(nextVal * 10) / 10;
+      s.marks.internalMidRaw = nextVal;
+      s.marks.internalMid = Math.min(20, Math.round((nextVal / 2) * 10) / 10);
 
-    const current = (typeof s.marks[fieldKey] === 'number') ? s.marks[fieldKey] : 0;
-    let nextVal = Math.min(Math.max(0, current + delta), maxVal);
-    nextVal = Math.round(nextVal * 10) / 10;
-    s.marks[fieldKey] = nextVal;
+      const cardEl = document.querySelector(`.marks-subject-card[data-sub-id="${subId}"]`);
+      if (cardEl) {
+        const inp = cardEl.querySelector(`input[data-field="internalMid"]`);
+        if (inp) inp.value = nextVal;
+      }
+    } else {
+      let maxVal = 100;
+      if (fieldKey === 'internalAtt') maxVal = 10;
+      else if (fieldKey === 'internalBeh') maxVal = 5;
+      else if (fieldKey === 'internalLumpsum') maxVal = maxInternal;
+      else if (fieldKey === 'practical') maxVal = maxPractical;
+      else if (fieldKey === 'ese') maxVal = maxEse;
 
-    const cardEl = document.querySelector(`.marks-subject-card[data-sub-id="${subId}"]`);
-    if (cardEl) {
-      const inp = cardEl.querySelector(`input[data-field="${fieldKey}"]`);
-      if (inp) inp.value = nextVal;
+      const current = (typeof s.marks[fieldKey] === 'number') ? s.marks[fieldKey] : 0;
+      let nextVal = Math.min(Math.max(0, current + delta), maxVal);
+      nextVal = Math.round(nextVal * 10) / 10;
+      s.marks[fieldKey] = nextVal;
+
+      const cardEl = document.querySelector(`.marks-subject-card[data-sub-id="${subId}"]`);
+      if (cardEl) {
+        const inp = cardEl.querySelector(`input[data-field="${fieldKey}"]`);
+        if (inp) inp.value = nextVal;
+      }
     }
 
     saveData(data);
@@ -469,24 +484,39 @@ const App = (() => {
     if (!s) return;
     if (!s.marks) s.marks = createDefaultMarks();
     if (value === '' || value === null || value === undefined) {
-      s.marks[fieldKey] = null;
+      if (fieldKey === 'internalMid') {
+        s.marks.internalMid = null;
+        s.marks.internalMidRaw = null;
+      } else {
+        s.marks[fieldKey] = null;
+      }
     } else {
       let num = parseFloat(value);
       if (isNaN(num)) {
-        s.marks[fieldKey] = null;
+        if (fieldKey === 'internalMid') {
+          s.marks.internalMid = null;
+          s.marks.internalMidRaw = null;
+        } else {
+          s.marks[fieldKey] = null;
+        }
       } else {
         const credits = s.credits || 4;
         const maxInternal = s.maxInternal || 30;
         const maxPractical = s.maxPractical || (credits === 2 ? 20 : 50);
         const maxEse = s.maxEse || (credits === 2 ? 50 : 70);
 
-        if (fieldKey === 'internalMid') num = Math.min(Math.max(0, num), 20);
-        else if (fieldKey === 'internalAtt') num = Math.min(Math.max(0, num), 5);
-        else if (fieldKey === 'internalBeh') num = Math.min(Math.max(0, num), 5);
-        else if (fieldKey === 'internalLumpsum') num = Math.min(Math.max(0, num), maxInternal);
-        else if (fieldKey === 'practical') num = Math.min(Math.max(0, num), maxPractical);
-        else if (fieldKey === 'ese') num = Math.min(Math.max(0, num), maxEse);
-        s.marks[fieldKey] = num;
+        if (fieldKey === 'internalMid') {
+          num = Math.min(Math.max(0, num), 40);
+          s.marks.internalMidRaw = num;
+          s.marks.internalMid = Math.min(20, Math.round((num / 2) * 10) / 10);
+        } else {
+          if (fieldKey === 'internalAtt') num = Math.min(Math.max(0, num), 10);
+          else if (fieldKey === 'internalBeh') num = Math.min(Math.max(0, num), 5);
+          else if (fieldKey === 'internalLumpsum') num = Math.min(Math.max(0, num), maxInternal);
+          else if (fieldKey === 'practical') num = Math.min(Math.max(0, num), maxPractical);
+          else if (fieldKey === 'ese') num = Math.min(Math.max(0, num), maxEse);
+          s.marks[fieldKey] = num;
+        }
       }
     }
     saveData(data);

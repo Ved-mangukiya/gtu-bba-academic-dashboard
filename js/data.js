@@ -597,16 +597,66 @@ function buildUnits(code, unitNames) {
   });
 }
 
-// Default marks object template
+// Utility: Check if a unit is practical/project based
+function isPracticalUnit(subject, unit) {
+  if (!unit) return false;
+  const credits = subject ? (subject.credits || 4) : 4;
+  const uNum = unit.number || 1;
+  const uName = (unit.name || '').toLowerCase();
+  // 4-credit subject: Unit 5 is Practical
+  if (credits === 4 && uNum === 5) return true;
+  // 2-credit subject: Unit 3 is Practical
+  if (credits === 2 && uNum === 3) return true;
+  // Explicitly labeled practical
+  if (uName.startsWith('practical') || uName.includes('(practical') || uName.includes('practical:')) return true;
+  return false;
+}
+
+// Subject-specific practical project task suggestions for quick-add
+const PRACTICAL_PRESETS = {
+  'S1-PPM': [
+    'MSME / Enterprise Field Visit Report',
+    'Managerial Structure Case Study Analysis',
+    'Practical Viva & Presentation Slides'
+  ],
+  'S1-FA': [
+    'Annual Report Financial Statement Analysis',
+    'Final Accounts & Balance Sheet Assignment',
+    'Financial Ratio Analysis Practical File'
+  ],
+  'S1-BSL': [
+    'Real-World Survey Data Tabulation Project',
+    'Statistical Charts & Graphical Presentation',
+    'Linear Correlation & Regression Case Analysis'
+  ],
+  'S1-ENG': [
+    'Public Speaking & Speech Delivery Script',
+    'Executive Presentation & PPT Deck',
+    'Listening Comprehension & Viva Audio Record'
+  ],
+  'S1-IKS': [
+    'Indian Heritage Site / Monument Visit Report',
+    'Ancient Indian Knowledge System Research Paper',
+    'Group Discussion & Cultural Debate Notes'
+  ],
+  'S1-ESG': [
+    'Corporate Sustainability & ESG Disclosure Review',
+    'Green Initiative / Clean Campus Drive Report',
+    'SDGs Local Business Impact Case Study'
+  ]
+};
+
+// Default marks object template (GTU BBA: 20 Mid + 10 Attendance = 30 Internal; 50 College Practical/Internal; 70 GTU Exam)
 function createDefaultMarks() {
   return {
     isLumpsum: false,
-    internalMid: null,      // Max 20
-    internalAtt: null,      // Max 5
-    internalBeh: null,      // Max 5
+    internalMid: null,      // Max 20 (GTU Normalized = internalMidRaw / 2)
+    internalMidRaw: null,   // Max 40 (College Mid-Sem Exam Score)
+    internalAtt: null,      // Max 10 (Attendance)
+    internalBeh: null,      // Legacy / optional
     internalLumpsum: null,  // Max 30
-    practical: null,        // Max 50 (4c) or 20 (2c)
-    ese: null               // Max 70 (4c) or 50 (2c)
+    practical: null,        // Max 50 (4c) or 20 (2c) - College Internal Practical / Project
+    ese: null               // Max 70 (4c) or 50 (2c) - GTU University Exam
   };
 }
 
@@ -795,12 +845,18 @@ function sanitizeData(d) {
       s.marks = createDefaultMarks();
     } else {
       if (typeof s.marks.isLumpsum !== 'boolean') s.marks.isLumpsum = false;
-      ['internalMid', 'internalAtt', 'internalBeh', 'internalLumpsum', 'practical', 'ese'].forEach(k => {
+      ['internalMid', 'internalMidRaw', 'internalAtt', 'internalBeh', 'internalLumpsum', 'practical', 'ese'].forEach(k => {
         if (s.marks[k] !== undefined && s.marks[k] !== null && typeof s.marks[k] !== 'number') {
           const num = parseFloat(s.marks[k]);
           s.marks[k] = isNaN(num) ? null : num;
         }
       });
+      // Synchronize internalMidRaw (0-40) and internalMid (0-20) if one is present
+      if (typeof s.marks.internalMidRaw === 'number' && (s.marks.internalMid === null || s.marks.internalMid === undefined)) {
+        s.marks.internalMid = Math.min(20, Math.round((s.marks.internalMidRaw / 2) * 10) / 10);
+      } else if (typeof s.marks.internalMid === 'number' && (s.marks.internalMidRaw === null || s.marks.internalMidRaw === undefined)) {
+        s.marks.internalMidRaw = Math.min(40, Math.round(s.marks.internalMid * 2 * 10) / 10);
+      }
     }
 
     s.units = ensureArray(s.units);
@@ -817,6 +873,7 @@ function sanitizeData(d) {
         if (typeof p.pdfDriveUrl !== 'string') p.pdfDriveUrl = '';
         if (typeof p.pdfPageCount !== 'number') p.pdfPageCount = null;
         if (typeof p.showPdfMeta !== 'boolean') p.showPdfMeta = false;
+        if (typeof p.projectStatus !== 'string') p.projectStatus = 'not_started';
       });
     });
   });
