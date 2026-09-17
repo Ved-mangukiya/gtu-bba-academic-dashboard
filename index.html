@@ -65,6 +65,10 @@
           <span class="tab-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></span>
           <span class="tab-text">Marks</span>
         </button>
+        <button class="tab-btn" id="tabCalcBtn" onclick="App.switchTab('calc')">
+          <span class="tab-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="18"></line><path d="M16 10h.01"></path><path d="M12 10h.01"></path><path d="M8 10h.01"></path><path d="M12 14h.01"></path><path d="M8 14h.01"></path><path d="M12 18h.01"></path><path d="M8 18h.01"></path></svg></span>
+          <span class="tab-text">Calculator</span>
+        </button>
       </nav>
     </header>
 
@@ -228,7 +232,7 @@
             <span class="marks-big-val" id="summarySpiVal">0.00</span>
             <span class="marks-sub-label" id="summarySpiGrade">-- Grade</span>
           </div>
-          <div class="marks-stat-foot">GTU Formula · 20 Credits</div>
+          <div class="marks-stat-foot" id="summarySpiFoot">GTU Formula · 20 Credits</div>
         </div>
 
         <!-- TOTAL MARKS CARD -->
@@ -258,7 +262,7 @@
             <span class="marks-big-val" id="summaryCgpaVal">0.00</span>
             <span class="marks-sub-label" id="summaryCgpaStatus">3-Year Cumulative</span>
           </div>
-          <div class="marks-stat-foot">Cumulative Performance</div>
+          <div class="marks-stat-foot" id="summaryCgpaFoot">Cumulative Performance</div>
         </div>
       </section>
 
@@ -319,6 +323,9 @@
             <span class="section-sub">Tap any subject to view and edit marks</span>
           </div>
           <div class="section-title-actions">
+            <button class="btn btn-ghost btn-sm" onclick="App.switchTab('calc')" title="Open dedicated SPI/CGPA Calculator for Classmates">
+              🧮 Classmates Calc
+            </button>
             <button class="btn btn-ghost btn-sm" onclick="App.openGtuGuideModal()" title="View GTU marking scheme & animated formula explanation">
               ✨ GTU Guide
             </button>
@@ -369,6 +376,27 @@
       </section>
     </div>
 
+    <!-- VIEW 3: DEDICATED GTU SPI / SGPA / CGPA CALCULATOR (FOR PEERS & SELF) -->
+    <div id="calculatorView" class="tab-view" style="display:none">
+      <!-- SUB-NAVIGATION: 3 CALCULATOR MODES -->
+      <div class="calc-mode-nav">
+        <button type="button" class="calc-mode-pill active" id="calcPillSem1" onclick="GtuCalculator.setCalcMode('sem1')">
+          🎓 SSASIT BBA Sem 1 Quick Calc
+        </button>
+        <button type="button" class="calc-mode-pill" id="calcPillCustom" onclick="GtuCalculator.setCalcMode('custom')">
+          🌐 Universal Custom SPI Calc
+        </button>
+        <button type="button" class="calc-mode-pill" id="calcPillCgpa" onclick="GtuCalculator.setCalcMode('cgpa')">
+          📊 Multi-Semester CGPA & Target Planner
+        </button>
+      </div>
+
+      <!-- DYNAMIC CONTENT CONTAINER -->
+      <div id="calculatorContent">
+        <!-- Dynamically rendered by GtuCalculator -->
+      </div>
+    </div>
+
     <!-- FOOTER -->
     <footer class="footer">
       <p class="footer-text">GTU BBA Academic Dashboard · Created with ❤️ by Ved Mangukiya · Cloud Synced</p>
@@ -383,6 +411,10 @@
       <button class="bottom-nav-item" id="bNavMarks" onclick="App.switchTab('marks')">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
         <span>Marks</span>
+      </button>
+      <button class="bottom-nav-item" id="bNavCalc" onclick="App.switchTab('calc')">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="18"></line><path d="M16 10h.01"></path><path d="M12 10h.01"></path><path d="M8 10h.01"></path><path d="M12 14h.01"></path><path d="M8 14h.01"></path><path d="M12 18h.01"></path><path d="M8 18h.01"></path></svg>
+        <span>Calculator</span>
       </button>
       <button class="bottom-nav-item" id="bNavSettings" onclick="App.openSettingsModal()">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
@@ -875,7 +907,7 @@
               <ul class="breakdown-list">
                 <li><span class="dot dot-blue"></span> <strong>ESE University Exam:</strong> 70 Marks (Min 25/70 needed)</li>
                 <li><span class="dot dot-green"></span> <strong>College Internal Practical / Project:</strong> 50 Marks (Unit 5 Project, Report & Viva)</li>
-                <li><span class="dot dot-purple"></span> <strong>College Internal Theory:</strong> 30 Marks (Mid-Sem 20 [Exam 40÷2] + Attendance 10)</li>
+                <li><span class="dot dot-purple"></span> <strong>College Internal Theory:</strong> 30 Marks (40-Mark College Exam scaled directly to 30 GTU Marks, ×0.75)</li>
               </ul>
             </div>
 
@@ -887,24 +919,24 @@
               <ul class="breakdown-list">
                 <li><span class="dot dot-blue"></span> <strong>ESE University Exam:</strong> 50 Marks (Min 18/50 needed)</li>
                 <li><span class="dot dot-green"></span> <strong>College Internal Practical / Project:</strong> 20 Marks (Unit 3 Heritage / ESG Project & Viva)</li>
-                <li><span class="dot dot-purple"></span> <strong>College Internal Theory:</strong> 30 Marks (Mid-Sem 20 [Exam 40÷2] + Attendance 10)</li>
+                <li><span class="dot dot-purple"></span> <strong>College Internal Theory:</strong> 30 Marks (40-Mark College Exam scaled directly to 30 GTU Marks, ×0.75)</li>
               </ul>
             </div>
           </div>
 
           <div class="guide-college-alert-box">
-            <div class="college-alert-badge">📢 Official College Update · Mid-Sem Exam Evaluation</div>
+            <div class="college-alert-badge">📢 Official College Update · Internal Exam Evaluation (40 ➔ 30)</div>
             <p class="college-alert-p">
-              College conducts the internal Mid-Sem Exam out of <strong>40 Marks</strong>. When reported to GTU, your marks are <strong>divided by 2 (scaled to 20 Marks)</strong>.
+              College conducts the internal Exam out of <strong>40 Marks</strong>. When reported to GTU, your marks are <strong>scaled directly to 30 Marks (Exam × 0.75)</strong>.
               <br/>
-              <em>Example: Scoring <strong>40 / 40</strong> in college exam = <strong>20 / 20</strong> GTU internal score (36/40 = 18/20, 30/40 = 15/20).</em>
+              <em>Example: Scoring <strong>40 / 40</strong> in college exam = <strong>30 / 30</strong> GTU internal score (36/40 = 27/30, 32/40 = 24/30, 20/40 = 15/30).</em>
             </p>
           </div>
 
           <div class="guide-alert-box">
             <strong>⚠️ Strict GTU Component-Wise Passing Rule:</strong> You must score at least <strong>35% in EACH component head individually</strong> to pass the subject:
             <ul style="margin: 8px 0 8px 20px; line-height: 1.6;">
-              <li><strong>College Internal Theory:</strong> Min <strong>11 / 30</strong> (Mid-Sem 20 [40÷2] + Attendance 10)</li>
+              <li><strong>College Internal Theory:</strong> Min <strong>11 / 30</strong> (requires at least <strong>15 / 40</strong> in college exam)</li>
               <li><strong>College Practical / Project:</strong> Min <strong>18 / 50</strong> (4-credit) or <strong>7 / 20</strong> (2-credit)</li>
               <li><strong>GTU University Exam (ESE):</strong> Min <strong>25 / 70</strong> (4-credit) or <strong>18 / 50</strong> (2-credit)</li>
               <li><strong>Overall Aggregate Total:</strong> Min <strong>35%</strong> (53 / 150 for 4-credit, 35 / 100 for 2-credit)</li>
@@ -1014,12 +1046,8 @@
               </div>
               <div class="sim-inputs-grid">
                 <div class="sim-field">
-                  <label>Mid (40÷2)</label>
-                  <input type="number" min="0" max="40" value="36" oninput="App.updateSimulator('c4Mid', this.value)" title="College Mid-Sem Exam (40 marks divided by 2 = 20 GTU marks)" />
-                </div>
-                <div class="sim-field">
-                  <label>Att (10)</label>
-                  <input type="number" min="0" max="10" value="9" oninput="App.updateSimulator('c4Att', this.value)" title="College Attendance (10 marks)" />
+                  <label>Exam (40➔30)</label>
+                  <input type="number" min="0" max="40" value="36" oninput="App.updateSimulator('c4Mid', this.value)" title="College Internal Exam (40 marks scaled directly to 30 GTU marks, ×0.75)" />
                 </div>
                 <div class="sim-field">
                   <label>Pract (50)</label>
@@ -1032,7 +1060,7 @@
               </div>
               <div class="sim-sub-foot">
                 <span>Score: <strong id="sim4Total">124 / 150</strong> (<span id="sim4Pct">82.7%</span>)</span>
-                <span id="sim4Cp" class="sim-cp-tag">4c × 9 = 36 pts (Mid: 36/40 → 18/20)</span>
+                <span id="sim4Cp" class="sim-cp-tag">4c × 9 = 36 pts (Exam: 36/40 → 27/30 GTU)</span>
               </div>
             </div>
 
@@ -1044,12 +1072,8 @@
               </div>
               <div class="sim-inputs-grid">
                 <div class="sim-field">
-                  <label>Mid (40÷2)</label>
-                  <input type="number" min="0" max="40" value="36" oninput="App.updateSimulator('c2Mid', this.value)" title="College Mid-Sem Exam (40 marks divided by 2 = 20 GTU marks)" />
-                </div>
-                <div class="sim-field">
-                  <label>Att (10)</label>
-                  <input type="number" min="0" max="10" value="8" oninput="App.updateSimulator('c2Att', this.value)" title="College Attendance (10 marks)" />
+                  <label>Exam (40➔30)</label>
+                  <input type="number" min="0" max="40" value="36" oninput="App.updateSimulator('c2Mid', this.value)" title="College Internal Exam (40 marks scaled directly to 30 GTU marks, ×0.75)" />
                 </div>
                 <div class="sim-field">
                   <label>Pract (20)</label>
@@ -1062,7 +1086,7 @@
               </div>
               <div class="sim-sub-foot">
                 <span>Score: <strong id="sim2Total">82 / 100</strong> (<span id="sim2Pct">82.0%</span>)</span>
-                <span id="sim2Cp" class="sim-cp-tag">2c × 9 = 18 pts</span>
+                <span id="sim2Cp" class="sim-cp-tag">2c × 9 = 18 pts (Exam: 36/40 → 27/30 GTU)</span>
               </div>
             </div>
           </div>
@@ -1101,6 +1125,7 @@
   <script src="js/pdf-meta.js"></script>
   <script src="js/pdf-tracker.js"></script>
   <script src="js/marks-hub.js"></script>
+  <script src="js/calculator.js"></script>
   <script src="js/app.js"></script>
 </body>
 

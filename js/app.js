@@ -372,11 +372,11 @@ const App = (() => {
     if (fieldKey === 'internalMid') {
       const current = (typeof s.marks.internalMidRaw === 'number')
         ? s.marks.internalMidRaw
-        : ((typeof s.marks.internalMid === 'number') ? s.marks.internalMid * 2 : 0);
+        : ((typeof s.marks.internalMid === 'number') ? Math.round((s.marks.internalMid / 0.75) * 10) / 10 : 0);
       let nextVal = Math.min(Math.max(0, current + delta), 40);
       nextVal = Math.round(nextVal * 10) / 10;
       s.marks.internalMidRaw = nextVal;
-      s.marks.internalMid = Math.min(20, Math.round((nextVal / 2) * 10) / 10);
+      s.marks.internalMid = Math.min(30, Math.round((nextVal * 0.75) * 10) / 10);
 
       const cardEl = document.querySelector(`.marks-subject-card[data-sub-id="${subId}"]`);
       if (cardEl) {
@@ -445,25 +445,37 @@ const App = (() => {
 
     const pdfView = document.getElementById('pdfTrackerView');
     const marksView = document.getElementById('marksHubView');
+    const calcView = document.getElementById('calculatorView');
     const btnPdf = document.getElementById('tabPdfBtn');
     const btnMarks = document.getElementById('tabMarksBtn');
+    const btnCalc = document.getElementById('tabCalcBtn');
     const bNavMaterials = document.getElementById('bNavMaterials');
     const bNavMarks = document.getElementById('bNavMarks');
+    const bNavCalc = document.getElementById('bNavCalc');
+
+    [btnPdf, btnMarks, btnCalc, bNavMaterials, bNavMarks, bNavCalc].forEach(el => {
+      if (el) el.classList.remove('active');
+    });
 
     if (tabName === 'marks') {
       if (pdfView) { pdfView.style.display = 'none'; pdfView.classList.remove('active'); }
+      if (calcView) { calcView.style.display = 'none'; calcView.classList.remove('active'); }
       if (marksView) { marksView.style.display = 'block'; setTimeout(() => marksView.classList.add('active'), 10); }
-      if (btnPdf) btnPdf.classList.remove('active');
       if (btnMarks) btnMarks.classList.add('active');
-      if (bNavMaterials) bNavMaterials.classList.remove('active');
       if (bNavMarks) bNavMarks.classList.add('active');
       MarksHub.renderMarksHub();
+    } else if (tabName === 'calc') {
+      if (pdfView) { pdfView.style.display = 'none'; pdfView.classList.remove('active'); }
+      if (marksView) { marksView.style.display = 'none'; marksView.classList.remove('active'); }
+      if (calcView) { calcView.style.display = 'block'; setTimeout(() => calcView.classList.add('active'), 10); }
+      if (btnCalc) btnCalc.classList.add('active');
+      if (bNavCalc) bNavCalc.classList.add('active');
+      if (window.GtuCalculator) GtuCalculator.init();
     } else {
       if (marksView) { marksView.style.display = 'none'; marksView.classList.remove('active'); }
+      if (calcView) { calcView.style.display = 'none'; calcView.classList.remove('active'); }
       if (pdfView) { pdfView.style.display = 'block'; setTimeout(() => pdfView.classList.add('active'), 10); }
-      if (btnMarks) btnMarks.classList.remove('active');
       if (btnPdf) btnPdf.classList.add('active');
-      if (bNavMarks) bNavMarks.classList.remove('active');
       if (bNavMaterials) bNavMaterials.classList.add('active');
       renderSubjectList();
     }
@@ -508,7 +520,7 @@ const App = (() => {
         if (fieldKey === 'internalMid') {
           num = Math.min(Math.max(0, num), 40);
           s.marks.internalMidRaw = num;
-          s.marks.internalMid = Math.min(20, Math.round((num / 2) * 10) / 10);
+          s.marks.internalMid = Math.min(30, Math.round((num * 0.75) * 10) / 10);
         } else {
           if (fieldKey === 'internalAtt') num = Math.min(Math.max(0, num), 10);
           else if (fieldKey === 'internalBeh') num = Math.min(Math.max(0, num), 5);
@@ -660,25 +672,37 @@ const App = (() => {
     const activeTab = (data.settings && data.settings.activeTab) ? data.settings.activeTab : 'pdf';
     const pdfView = document.getElementById('pdfTrackerView');
     const marksView = document.getElementById('marksHubView');
+    const calcView = document.getElementById('calculatorView');
     const btnPdf = document.getElementById('tabPdfBtn');
     const btnMarks = document.getElementById('tabMarksBtn');
+    const btnCalc = document.getElementById('tabCalcBtn');
     const bNavMaterials = document.getElementById('bNavMaterials');
     const bNavMarks = document.getElementById('bNavMarks');
+    const bNavCalc = document.getElementById('bNavCalc');
+
+    [btnPdf, btnMarks, btnCalc, bNavMaterials, bNavMarks, bNavCalc].forEach(el => {
+      if (el) el.classList.remove('active');
+    });
 
     if (activeTab === 'marks') {
       if (pdfView) { pdfView.style.display = 'none'; pdfView.classList.remove('active'); }
+      if (calcView) { calcView.style.display = 'none'; calcView.classList.remove('active'); }
       if (marksView) { marksView.style.display = 'block'; marksView.classList.add('active'); }
-      if (btnPdf) btnPdf.classList.remove('active');
       if (btnMarks) btnMarks.classList.add('active');
-      if (bNavMaterials) bNavMaterials.classList.remove('active');
       if (bNavMarks) bNavMarks.classList.add('active');
       MarksHub.renderMarksHub();
+    } else if (activeTab === 'calc') {
+      if (pdfView) { pdfView.style.display = 'none'; pdfView.classList.remove('active'); }
+      if (marksView) { marksView.style.display = 'none'; marksView.classList.remove('active'); }
+      if (calcView) { calcView.style.display = 'block'; calcView.classList.add('active'); }
+      if (btnCalc) btnCalc.classList.add('active');
+      if (bNavCalc) bNavCalc.classList.add('active');
+      if (window.GtuCalculator) GtuCalculator.init();
     } else {
       if (marksView) { marksView.style.display = 'none'; marksView.classList.remove('active'); }
+      if (calcView) { calcView.style.display = 'none'; calcView.classList.remove('active'); }
       if (pdfView) { pdfView.style.display = 'block'; pdfView.classList.add('active'); }
-      if (btnMarks) btnMarks.classList.remove('active');
       if (btnPdf) btnPdf.classList.add('active');
-      if (bNavMarks) bNavMarks.classList.remove('active');
       if (bNavMaterials) bNavMaterials.classList.add('active');
       renderSubjectList();
     }

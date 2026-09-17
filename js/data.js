@@ -646,15 +646,15 @@ const PRACTICAL_PRESETS = {
   ]
 };
 
-// Default marks object template (GTU BBA: 20 Mid + 10 Attendance = 30 Internal; 50 College Practical/Internal; 70 GTU Exam)
+// Default marks object template (GTU BBA: 40-mark College Internal Exam scaled to 30 GTU Internal Marks; 50/20 College Practical; 70/50 GTU Exam)
 function createDefaultMarks() {
   return {
     isLumpsum: false,
-    internalMid: null,      // Max 20 (GTU Normalized = internalMidRaw / 2)
-    internalMidRaw: null,   // Max 40 (College Mid-Sem Exam Score)
-    internalAtt: null,      // Max 10 (Attendance)
-    internalBeh: null,      // Legacy / optional
-    internalLumpsum: null,  // Max 30
+    internalMid: null,      // Max 30 (GTU Scaled Internal = internalMidRaw * 0.75, i.e. 40 -> 30)
+    internalMidRaw: null,   // Max 40 (College Internal Exam Score out of 40)
+    internalAtt: null,      // Optional / Legacy
+    internalBeh: null,      // Optional / Legacy
+    internalLumpsum: null,  // Max 30 (Direct lumpsum override)
     practical: null,        // Max 50 (4c) or 20 (2c) - College Internal Practical / Project
     ese: null               // Max 70 (4c) or 50 (2c) - GTU University Exam
   };
@@ -851,11 +851,11 @@ function sanitizeData(d) {
           s.marks[k] = isNaN(num) ? null : num;
         }
       });
-      // Synchronize internalMidRaw (0-40) and internalMid (0-20) if one is present
-      if (typeof s.marks.internalMidRaw === 'number' && (s.marks.internalMid === null || s.marks.internalMid === undefined)) {
-        s.marks.internalMid = Math.min(20, Math.round((s.marks.internalMidRaw / 2) * 10) / 10);
+      // Synchronize internalMidRaw (0-40) and internalMid (0-30 GTU marks via raw * 0.75)
+      if (typeof s.marks.internalMidRaw === 'number') {
+        s.marks.internalMid = Math.min(30, Math.round((s.marks.internalMidRaw * 0.75) * 10) / 10);
       } else if (typeof s.marks.internalMid === 'number' && (s.marks.internalMidRaw === null || s.marks.internalMidRaw === undefined)) {
-        s.marks.internalMidRaw = Math.min(40, Math.round(s.marks.internalMid * 2 * 10) / 10);
+        s.marks.internalMidRaw = Math.min(40, Math.round((s.marks.internalMid / 0.75) * 10) / 10);
       }
     }
 

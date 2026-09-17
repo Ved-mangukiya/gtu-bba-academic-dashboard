@@ -4054,3 +4054,451 @@ body.dark-mode .btn-add-more-practical {
   60% { transform: scale(1.15); }
   100% { transform: scale(1); }
 }
+
+/* ============================================================
+   UNIVERSAL GTU SPI & CGPA CALCULATOR STYLES
+   ============================================================ */
+.calc-mode-nav {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+.calc-mode-nav::-webkit-scrollbar {
+  display: none;
+}
+.calc-mode-pill {
+  padding: 9px 18px;
+  border-radius: 9999px;
+  border: 1px solid var(--border, #e2e8f0);
+  background: var(--bg-card, #ffffff);
+  color: var(--text-muted, #64748b);
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.calc-mode-pill:hover {
+  border-color: var(--primary, #3b82f6);
+  color: var(--text, #0f172a);
+}
+.calc-mode-pill.active {
+  background: var(--primary, #3b82f6);
+  color: #ffffff;
+  border-color: var(--primary, #3b82f6);
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+}
+
+/* Calculator Hero Summary Card */
+.calc-hero-summary {
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 16px;
+  padding: 22px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+.calc-hero-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.calc-hero-badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--primary, #3b82f6);
+  background: rgba(59, 130, 246, 0.1);
+  padding: 3px 10px;
+  border-radius: 999px;
+  margin-bottom: 6px;
+}
+.calc-hero-h2 {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--text, #0f172a);
+  margin: 0 0 4px;
+}
+.calc-hero-sub {
+  font-size: 0.85rem;
+  color: var(--text-muted, #64748b);
+  margin: 0;
+}
+.calc-hero-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Stat cards grid */
+.calc-stat-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.calc-stat-card {
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border, #e2e8f0);
+  background: var(--bg-card-alt, #f8fafc);
+  display: flex;
+  flex-direction: column;
+}
+.calc-stat-lbl {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted, #64748b);
+  margin-bottom: 6px;
+}
+.calc-stat-val {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: var(--text, #0f172a);
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+.calc-stat-sub {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted, #64748b);
+}
+.card-hero-spi .calc-stat-val {
+  color: var(--primary, #3b82f6);
+}
+.card-hero-spi .calc-stat-sub {
+  color: var(--primary, #3b82f6);
+}
+.card-hero-gtu .calc-stat-val {
+  color: #10b981;
+}
+
+/* Presets Bar */
+.calc-presets-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-top: 14px;
+  border-top: 1px solid var(--border, #e2e8f0);
+}
+.calc-preset-lbl {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted, #64748b);
+}
+.calc-preset-chip {
+  background: var(--bg-card-alt, #f1f5f9);
+  border: 1px solid var(--border, #cbd5e1);
+  color: var(--text, #334155);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+.calc-preset-chip:hover {
+  background: var(--primary, #3b82f6);
+  color: #ffffff;
+  border-color: var(--primary, #3b82f6);
+}
+
+/* Subject cards list */
+.calc-subjects-section {
+  margin-top: 10px;
+}
+.calc-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.calc-h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text, #0f172a);
+  margin: 0;
+}
+.calc-sub-note {
+  font-size: 0.8rem;
+  color: var(--text-muted, #64748b);
+}
+.calc-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.calc-sub-card {
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 14px;
+  padding: 16px 18px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.calc-sub-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+.calc-card-failed {
+  border-color: rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.02);
+}
+.calc-sub-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border, #e2e8f0);
+}
+.calc-sub-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.calc-sub-code {
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--bg-card-alt, #f1f5f9);
+  color: var(--text, #1e293b);
+}
+.calc-sub-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text, #0f172a);
+}
+.calc-credit-pill {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--primary, #3b82f6);
+}
+.calc-grade-badge {
+  font-size: 0.84rem;
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background: var(--bg-card-alt, #e2e8f0);
+  color: var(--text, #1e293b);
+}
+.calc-grade-badge.grade-AA { background: rgba(16, 185, 129, 0.15); color: #059669; }
+.calc-grade-badge.grade-AB { background: rgba(59, 130, 246, 0.15); color: #2563eb; }
+.calc-grade-badge.grade-BB { background: rgba(99, 102, 241, 0.15); color: #4f46e5; }
+.calc-grade-badge.grade-BC { background: rgba(234, 179, 8, 0.15); color: #ca8a04; }
+.calc-grade-badge.grade-CC { background: rgba(249, 115, 22, 0.15); color: #ea580c; }
+.calc-grade-badge.grade-CD { background: rgba(217, 119, 6, 0.15); color: #b45309; }
+.calc-grade-badge.grade-DD { background: rgba(156, 163, 175, 0.2); color: #4b5563; }
+.calc-grade-badge.grade-FF { background: rgba(239, 68, 68, 0.15); color: #dc2626; }
+
+/* Grid inputs */
+.calc-inputs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.calc-field-col {
+  display: flex;
+  flex-direction: column;
+}
+.calc-field-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text, #334155);
+  margin-bottom: 5px;
+}
+.calc-max-hint {
+  font-size: 0.74rem;
+  color: var(--text-muted, #94a3b8);
+  font-weight: 600;
+}
+.calc-num-input {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border, #cbd5e1);
+  background: var(--bg-input, #ffffff);
+  color: var(--text, #0f172a);
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.18s ease;
+}
+.calc-num-input:focus {
+  border-color: var(--primary, #3b82f6);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+.calc-num-input.input-error {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.04);
+}
+.calc-sub-hint {
+  margin-top: 5px;
+}
+.calc-conv-tag {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted, #64748b);
+}
+.calc-conv-tag.tag-passed {
+  color: #059669;
+}
+.calc-conv-tag.tag-failed {
+  color: #dc2626;
+  font-weight: 700;
+}
+.calc-sub-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 0.84rem;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border, #e2e8f0);
+}
+.calc-score-display {
+  color: var(--text, #0f172a);
+}
+.calc-pct-tag {
+  color: var(--text-muted, #64748b);
+  font-weight: 600;
+}
+.calc-cp-display {
+  color: var(--text, #334155);
+  font-weight: 600;
+}
+
+/* Custom Table Styles */
+.calc-custom-table-wrap {
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 14px;
+  overflow-x: auto;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+}
+.calc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+.calc-table th {
+  background: var(--bg-card-alt, #f8fafc);
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted, #64748b);
+  border-bottom: 1px solid var(--border, #e2e8f0);
+}
+.calc-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border, #e2e8f0);
+  vertical-align: middle;
+}
+.custom-name-input,
+.custom-cred-input,
+.custom-grade-select,
+.cgpa-cred-input,
+.cgpa-spi-input {
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border, #cbd5e1);
+  background: var(--bg-input, #ffffff);
+  color: var(--text, #0f172a);
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  outline: none;
+}
+.custom-name-input { width: 100%; min-width: 140px; }
+.custom-cred-input { width: 70px; }
+.custom-grade-select { width: 100%; min-width: 140px; }
+.cgpa-cred-input { width: 80px; }
+.cgpa-spi-input { width: 100px; font-weight: 700; }
+.custom-cp-cell {
+  display: flex;
+  flex-direction: column;
+}
+.custom-cp-sub {
+  font-size: 0.72rem;
+  color: var(--text-muted, #94a3b8);
+}
+.custom-del-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted, #94a3b8);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+.custom-del-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+/* CGPA Target Planner Box */
+.cgpa-target-planner-box {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+.target-planner-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text, #0f172a);
+  margin-bottom: 8px;
+}
+.target-goal-stepper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.target-goal-stepper input {
+  width: 70px;
+  padding: 4px 8px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  border-radius: 6px;
+  border: 1.5px solid var(--primary, #3b82f6);
+  text-align: center;
+}
+.target-planner-advice {
+  font-size: 0.86rem;
+  color: var(--text, #334155);
+  line-height: 1.5;
+}

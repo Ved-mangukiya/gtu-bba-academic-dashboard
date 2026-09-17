@@ -53,7 +53,7 @@ const MarksHub = (() => {
 
     // Strict GTU minimum passing marks (35% in each individual component head)
     const minEse = Math.ceil(maxEse * 0.35);             // 25/70 for 4c, 18/50 for 2c
-    const minInternal = Math.ceil(maxInternal * 0.35);   // 11/30 (Mid-Sem 20 + Att 10)
+    const minInternal = Math.ceil(maxInternal * 0.35);   // 11/30 GTU Internal Theory (Scaled from 40 Exam)
     const minPractical = Math.ceil(maxPractical * 0.35); // 18/50 for 4c, 7/20 for 2c
     const minAggregate = Math.ceil(maxMarks * 0.35);     // 53/150 for 4c, 35/100 for 2c
 
@@ -68,20 +68,14 @@ const MarksHub = (() => {
     } else {
       const hasMidRaw = typeof m.internalMidRaw === 'number' && m.internalMidRaw > 0;
       const hasMid = typeof m.internalMid === 'number' && m.internalMid > 0;
-      const hasAtt = typeof m.internalAtt === 'number' && m.internalAtt > 0;
-      const hasBeh = typeof m.internalBeh === 'number' && m.internalBeh > 0;
-      if (hasMidRaw || hasMid || hasAtt || hasBeh) {
-        let mid = 0;
-        if (hasMidRaw) {
-          mid = Math.min(Math.max(m.internalMidRaw / 2, 0), 20);
-        } else if (hasMid) {
-          mid = Math.min(Math.max(m.internalMid, 0), 20);
-        }
-        // Attendance: 10 Marks (Mid 20 + Attendance 10 = 30 Internal Total)
-        const att = hasAtt ? Math.min(Math.max(m.internalAtt, 0), 10) : 0;
-        const beh = hasBeh ? Math.min(Math.max(m.internalBeh, 0), 5) : 0;
-        internalTotal = Math.min(mid + att + (hasBeh && att <= 5 ? beh : 0), maxInternal);
-        hasInternalDeclared = internalTotal > 0;
+      if (hasMidRaw) {
+        // Official College Scheme: Internal Exam of 40 marks converted directly to 30 marks (raw * 0.75)
+        // Example: 40/40 = 30/30 GTU, 36/40 = 27/30 GTU, 20/40 = 15/30 GTU
+        internalTotal = Math.min(Math.max(Math.round((m.internalMidRaw * 0.75) * 10) / 10, 0), maxInternal);
+        hasInternalDeclared = true;
+      } else if (hasMid) {
+        internalTotal = Math.min(Math.max(m.internalMid, 0), maxInternal);
+        hasInternalDeclared = true;
       }
     }
 
@@ -177,22 +171,49 @@ const MarksHub = (() => {
     const semSubs = (data.subjects || []).filter(s => (s.sem || 1) === activeMarksSem);
 
     let totalObtained = 0, totalMaxMarks = 0, weightedGpSum = 0, totalCreditsSum = 0, failCount = 0;
+    let totalSemCredits = 0;
+    let declaredSubsCount = 0;
 
     semSubs.forEach(s => {
       const res = calcSubjectMarks(s);
       totalObtained += res.totalScore;
       totalMaxMarks += res.maxMarks;
+      totalSemCredits += (s.credits || 4);
       if (res.hasAnyDeclared) {
+        declaredSubsCount++;
         weightedGpSum += res.credits * res.gp;
         totalCreditsSum += res.credits;
       }
       if (res.hasAnyFailed) failCount++;
     });
 
-    const spi = totalCreditsSum ? (weightedGpSum / totalCreditsSum) : 0;
-    const overallPct = totalMaxMarks ? (totalObtained / totalMaxMarks) * 100 : 0;
+    const isComplete = declaredSubsCount === semSubs.length && semSubs.length > 0;
+    // Pinpoint SPI: if all completed, calculated over totalSemCredits (20 for Sem 1); if in-progress, pacing over declared credits
+    const spi = totalCreditsSum ? Math.round((weightedGpSum / totalCreditsSum) * 100) / 100 : 0;
+    const overallPct = totalMaxMarks ? Math.round((totalObtained / totalMaxMarks) * 1000) / 10 : 0;
+    // GTU Official Percentage Conversion Formula: Equivalent % = (SPI - 0.5) * 10 (applicable for SPI >= 5.0)
+    const gtuEquivPct = spi >= 5.0 ? Math.round((spi - 0.5) * 10 * 100) / 100 : Math.round(overallPct * 10) / 10;
 
-    return { totalObtained, totalMaxMarks, overallPct, spi, totalCreditsSum, weightedGpSum, failCount };
+    let spiClass = 'Pending';
+    if (failCount > 0) {
+      spiClass = 'FF (Backlog)';
+    } else if (spi >= 8.5) {
+      spiClass = 'Outstanding (AA)';
+    } else if (spi >= 7.5) {
+      spiClass = 'Distinction (AB)';
+    } else if (spi >= 6.5) {
+      spiClass = 'First Class (BB)';
+    } else if (spi >= 5.5) {
+      spiClass = 'Higher Second Class (BC)';
+    } else if (spi >= 4.0) {
+      spiClass = 'Pass Class (CD/DD)';
+    }
+
+    return {
+      totalObtained, totalMaxMarks, overallPct, spi, gtuEquivPct, spiClass,
+      totalCreditsSum, totalSemCredits, weightedGpSum, failCount,
+      declaredSubsCount, totalSubsCount: semSubs.length, isComplete
+    };
   }
 
   // Dynamic shortfall balancer algorithm
@@ -255,9 +276,10 @@ const MarksHub = (() => {
       adviceHtml = `🎯 <strong>Baseline Target:</strong> Aim for Internal ${baseInternal}/${maxInternal} (Min 11), Practical ${basePractical}/${maxPractical} (Min ${res.minPractical}), and ESE ${dynEse}/${maxEse} (Min ${res.minEse}) for ${targetDetails.grade} grade.`;
     }
 
-    const dynMid = Math.round(baseInternal * (20 / 30));
-    const dynMidCollege = Math.min(40, dynMid * 2);
-    const dynAtt = Math.round(baseInternal * (10 / 30));
+    // College Internal Exam: 40 marks converted to 30 marks GTU Internal (Exam = GTU / 0.75)
+    const dynMid = baseInternal;
+    const dynMidCollege = Math.min(40, Math.round((baseInternal / 0.75) * 10) / 10);
+    const dynAtt = 0;
     const dynBeh = 0;
 
     return {
@@ -402,22 +424,28 @@ const MarksHub = (() => {
 
     // 7. Update benchmarks & placeholders
     const midBadge = cardEl.querySelector('.field-benchmark-badge[data-benchmark-for="internalMid"]');
-    if (midBadge) midBadge.textContent = `Target: ${dynTarget.dynMidCollege}/40 (${dynTarget.dynMid}/20)`;
+    if (midBadge) midBadge.textContent = `Target: ${dynTarget.dynMidCollege}/40 (${dynTarget.dynMid}/30 GTU)`;
 
-    // 7b. Live Mid-Sem Conversion Hint Pill
+    // 7b. Live Mid-Sem Conversion Hint Pill (40 Exam Marks -> 30 GTU Marks)
     const midConvPill = cardEl.querySelector('.mid-conv-pill');
     if (midConvPill) {
       const m = s.marks || {};
       const rawMid = (m.internalMidRaw !== null && m.internalMidRaw !== undefined)
         ? m.internalMidRaw
-        : ((typeof m.internalMid === 'number') ? m.internalMid * 2 : null);
+        : ((typeof m.internalMid === 'number') ? Math.round((m.internalMid / 0.75) * 10) / 10 : null);
       if (rawMid !== null && !isNaN(rawMid)) {
-        const gtuMid = Math.round((rawMid / 2) * 10) / 10;
+        const gtuMid = Math.min(30, Math.round((rawMid * 0.75) * 10) / 10);
         midConvPill.classList.add('active');
-        midConvPill.innerHTML = `⚡ <strong>${rawMid} / 40</strong> Exam = <strong>${gtuMid} / 20</strong> GTU (÷ 2)`;
+        if (rawMid >= 40) {
+          midConvPill.innerHTML = `🌟 <strong>${rawMid} / 40</strong> Exam = <strong>${gtuMid} / 30</strong> GTU (100% Full Score)`;
+        } else if (gtuMid < 11) {
+          midConvPill.innerHTML = `⚠️ <strong>${rawMid} / 40</strong> Exam = <strong>${gtuMid} / 30</strong> GTU (< 11 Min Pass)`;
+        } else {
+          midConvPill.innerHTML = `⚡ <strong>${rawMid} / 40</strong> Exam = <strong>${gtuMid} / 30</strong> GTU (× 0.75 · Scaled 40 ➔ 30)`;
+        }
       } else {
         midConvPill.classList.remove('active');
-        midConvPill.textContent = `College: 40 Marks ➔ GTU: 20 Marks (÷ 2)`;
+        midConvPill.textContent = `College: 40 Marks ➔ GTU: 30 Marks (× 0.75)`;
       }
     }
 
@@ -446,11 +474,24 @@ const MarksHub = (() => {
     const spiValEl = document.getElementById('summarySpiVal');
     const spiGradeEl = document.getElementById('summarySpiGrade');
     const spiTitleEl = document.getElementById('summarySpiTitle');
+    const spiFootEl = document.getElementById('summarySpiFoot');
     if (spiTitleEl) spiTitleEl.textContent = `Semester ${activeMarksSem} SPI`;
     if (spiValEl) spiValEl.textContent = stats.spi.toFixed(2);
     if (spiGradeEl) {
-      const gInfo = getGtuGradeAndPoints(stats.overallPct, stats.failCount > 0);
-      spiGradeEl.textContent = `${gInfo.grade} Grade · ${gInfo.text}`;
+      if (stats.failCount > 0) {
+        spiGradeEl.textContent = `⚠️ Backlog (${stats.failCount} paper failed)`;
+      } else if (stats.spi > 0) {
+        spiGradeEl.textContent = `${stats.spiClass} · ${stats.gtuEquivPct.toFixed(1)}% GTU`;
+      } else {
+        spiGradeEl.textContent = `-- Grade · Pending`;
+      }
+    }
+    if (spiFootEl) {
+      if (stats.spi >= 5.0) {
+        spiFootEl.innerHTML = `🎓 <strong>${stats.gtuEquivPct.toFixed(1)}% GTU Percentage</strong> · (SPI - 0.5) × 10`;
+      } else {
+        spiFootEl.textContent = `GTU Formula · 20 Credits`;
+      }
     }
 
     // 2. Total Marks Card
@@ -461,14 +502,23 @@ const MarksHub = (() => {
     if (pctValEl) pctValEl.textContent = `${stats.overallPct.toFixed(1)}%`;
     if (passStatusEl) {
       passStatusEl.textContent = stats.failCount === 0
-        ? '🟢 All Papers Passing'
+        ? (stats.isComplete ? '🟢 All Papers Passing' : `🟢 Pacing (${stats.declaredSubsCount}/${stats.totalSubsCount} Declared)`)
         : `🔴 ${stats.failCount} Paper(s) Require Re-attempt`;
     }
 
     // 3. Multi-Semester CGPA Card & Table
     const cgpaStats = calcCumulativeCgpa();
     const cgpaValEl = document.getElementById('summaryCgpaVal');
+    const cgpaFootEl = document.getElementById('summaryCgpaFoot');
     if (cgpaValEl) cgpaValEl.textContent = cgpaStats.cgpa.toFixed(2);
+    if (cgpaFootEl) {
+      const cgpaPct = cgpaStats.cgpa >= 5.0 ? ((cgpaStats.cgpa - 0.5) * 10).toFixed(1) : null;
+      if (cgpaPct !== null) {
+        cgpaFootEl.innerHTML = `🎓 <strong>${cgpaPct}% GTU Percentage</strong> · (CGPA - 0.5) × 10`;
+      } else {
+        cgpaFootEl.textContent = `Cumulative Performance`;
+      }
+    }
 
     // 4. Target Engine Suggestion Box
     renderTargetBacktracker();
@@ -761,40 +811,36 @@ const MarksHub = (() => {
                       ` : (() => {
                         const rawMidVal = (m.internalMidRaw !== null && m.internalMidRaw !== undefined)
                           ? m.internalMidRaw
-                          : ((m.internalMid !== null && m.internalMid !== undefined) ? m.internalMid * 2 : null);
+                          : ((m.internalMid !== null && m.internalMid !== undefined) ? Math.round((m.internalMid / 0.75) * 10) / 10 : null);
                         const hasMidVal = rawMidVal !== null && rawMidVal !== undefined && !isNaN(rawMidVal) && rawMidVal > 0;
-                        const gtuMidVal = hasMidVal ? (Math.round((rawMidVal / 2) * 10) / 10) : 0;
+                        const gtuMidVal = hasMidVal ? Math.min(30, Math.round((rawMidVal * 0.75) * 10) / 10) : 0;
                         return `
                         <div class="marks-input-row">
-                          <div class="marks-field-group">
+                          <div class="marks-field-group" style="flex: 1;">
                             <div class="field-label-row">
-                              <label class="field-label">Mid-Sem Exam <span class="mid-college-tag">/ 40</span></label>
-                              <span class="field-benchmark-badge" data-benchmark-for="internalMid">Target: ${dynTarget.dynMidCollege}/40</span>
+                              <label class="field-label">Internal Exam (College) <span class="mid-college-tag">/ 40</span></label>
+                              <span class="field-benchmark-badge" data-benchmark-for="internalMid">Target: ${dynTarget.dynMidCollege}/40 (${dynTarget.dynMid}/30 GTU)</span>
                             </div>
-                            <div class="stepper-input-wrap">
-                              <button type="button" class="stepper-btn stepper-minus" onclick="App.stepMarksInput('${s.id}', 'internalMid', -1)" title="Decrease Mid-Sem" aria-label="Decrease Mid-Sem">−</button>
+                            <div class="stepper-input-wrap ${res.hasInternalDeclared && res.isInternalFailed ? 'internal-failed-wrap' : (res.hasInternalDeclared ? 'internal-passed-wrap' : '')}">
+                              <button type="button" class="stepper-btn stepper-minus" onclick="App.stepMarksInput('${s.id}', 'internalMid', -1)" title="Decrease Internal Exam" aria-label="Decrease Internal Exam">−</button>
                               <input type="number" class="marks-num-input" data-field="internalMid" min="0" max="40" step="0.5" placeholder="0–40"
                                      value="${rawMidVal !== null && rawMidVal !== undefined ? rawMidVal : ''}"
                                      oninput="App.onMarksInput('${s.id}', 'internalMid', this.value)" />
-                              <button type="button" class="stepper-btn stepper-plus" onclick="App.stepMarksInput('${s.id}', 'internalMid', 1)" title="Increase Mid-Sem" aria-label="Increase Mid-Sem">+</button>
+                              <button type="button" class="stepper-btn stepper-plus" onclick="App.stepMarksInput('${s.id}', 'internalMid', 1)" title="Increase Internal Exam" aria-label="Increase Internal Exam">+</button>
                             </div>
                             <div class="mid-conversion-hint">
                               <span class="mid-conv-pill ${hasMidVal ? 'active' : ''}">
-                                ${hasMidVal ? `⚡ <strong>${rawMidVal}/40</strong> = <strong>${gtuMidVal}/20</strong> GTU` : `College: 40 ➔ GTU: 20 (÷ 2)`}
+                                ${hasMidVal
+                                  ? (rawMidVal >= 40
+                                      ? `🌟 <strong>${rawMidVal}/40</strong> Exam = <strong>${gtuMidVal}/30</strong> GTU (100% Full Score)`
+                                      : (gtuMidVal < 11
+                                          ? `⚠️ <strong>${rawMidVal}/40</strong> Exam = <strong>${gtuMidVal}/30</strong> GTU (< 11 Min Pass)`
+                                          : `⚡ <strong>${rawMidVal}/40</strong> Exam = <strong>${gtuMidVal}/30</strong> GTU (× 0.75 · Scaled 40 ➔ 30)`
+                                        )
+                                    )
+                                  : `College: 40 Marks ➔ GTU: 30 Marks (× 0.75 · Min 15/40 to pass)`
+                                }
                               </span>
-                            </div>
-                          </div>
-                          <div class="marks-field-group">
-                            <div class="field-label-row">
-                              <label class="field-label">Attendance <span class="mid-college-tag">/ 10</span></label>
-                              <span class="field-benchmark-badge" data-benchmark-for="internalAtt">Target: ${dynTarget.dynAtt}/10</span>
-                            </div>
-                            <div class="stepper-input-wrap">
-                              <button type="button" class="stepper-btn stepper-minus" onclick="App.stepMarksInput('${s.id}', 'internalAtt', -1)" title="Decrease Attendance" aria-label="Decrease Attendance">−</button>
-                              <input type="number" class="marks-num-input" data-field="internalAtt" min="0" max="10" placeholder="0–10"
-                                     value="${(m.internalAtt !== null && m.internalAtt !== undefined) ? m.internalAtt : ''}"
-                                     oninput="App.onMarksInput('${s.id}', 'internalAtt', this.value)" />
-                              <button type="button" class="stepper-btn stepper-plus" onclick="App.stepMarksInput('${s.id}', 'internalAtt', 1)" title="Increase Attendance" aria-label="Increase Attendance">+</button>
                             </div>
                           </div>
                         </div>
@@ -900,16 +946,16 @@ const MarksHub = (() => {
 
   function setSimulatorPreset(preset) {
     if (preset === 'aa') {
-      _simState = { c4Mid: 40, c4Att: 10, c4Pract: 47, c4Ese: 62, c2Mid: 40, c2Att: 10, c2Pract: 19, c2Ese: 44 };
+      _simState = { c4Mid: 40, c4Att: 0, c4Pract: 48, c4Ese: 65, c2Mid: 40, c2Att: 0, c2Pract: 19, c2Ese: 45 };
     } else if (preset === 'ab') {
-      _simState = { c4Mid: 36, c4Att: 9, c4Pract: 41, c4Ese: 56, c2Mid: 36, c2Att: 8, c2Pract: 16, c2Ese: 38 };
+      _simState = { c4Mid: 36, c4Att: 0, c4Pract: 42, c4Ese: 56, c2Mid: 36, c2Att: 0, c2Pract: 17, c2Ese: 40 };
     } else if (preset === 'bb') {
-      _simState = { c4Mid: 30, c4Att: 8, c4Pract: 35, c4Ese: 48, c2Mid: 30, c2Att: 7, c2Pract: 14, c2Ese: 34 };
+      _simState = { c4Mid: 32, c4Att: 0, c4Pract: 36, c4Ese: 48, c2Mid: 32, c2Att: 0, c2Pract: 14, c2Ese: 34 };
     } else if (preset === 'pass_edge') {
-      _simState = { c4Mid: 20, c4Att: 5, c4Pract: 20, c4Ese: 25, c2Mid: 20, c2Att: 5, c2Pract: 8, c2Ese: 18 };
+      _simState = { c4Mid: 16, c4Att: 0, c4Pract: 18, c4Ese: 26, c2Mid: 16, c2Att: 0, c2Pract: 7, c2Ese: 18 };
     }
     // Update inputs in DOM if modal is open
-    ['c4Mid', 'c4Att', 'c4Pract', 'c4Ese', 'c2Mid', 'c2Att', 'c2Pract', 'c2Ese'].forEach(f => {
+    ['c4Mid', 'c4Pract', 'c4Ese', 'c2Mid', 'c2Pract', 'c2Ese'].forEach(f => {
       const inp = document.querySelector(`input[oninput*="'${f}'"]`);
       if (inp) inp.value = _simState[f];
     });
@@ -918,8 +964,8 @@ const MarksHub = (() => {
 
   function renderSimulator() {
     const s = _simState;
-    const c4MidGtu = Math.min(Math.max(s.c4Mid / 2, 0), 20);
-    const c4Int = c4MidGtu + Math.min(s.c4Att, 10);
+    // 40 Exam marks scaled directly to 30 GTU internal score (raw * 0.75)
+    const c4Int = Math.min(30, Math.round((s.c4Mid * 0.75) * 10) / 10);
     const c4Pract = Math.min(s.c4Pract, 50);
     const c4Ese = Math.min(s.c4Ese, 70);
     const c4Total = Math.round((c4Int + c4Pract + c4Ese) * 10) / 10;
@@ -933,8 +979,7 @@ const MarksHub = (() => {
     const c4GradeInfo = getGtuGradeAndPoints(c4Pct, c4HasFailed);
     const c4CreditPoints = 4 * c4GradeInfo.gp;
 
-    const c2MidGtu = Math.min(Math.max(s.c2Mid / 2, 0), 20);
-    const c2Int = c2MidGtu + Math.min(s.c2Att, 10);
+    const c2Int = Math.min(30, Math.round((s.c2Mid * 0.75) * 10) / 10);
     const c2Pract = Math.min(s.c2Pract, 20);
     const c2Ese = Math.min(s.c2Ese, 50);
     const c2Total = Math.round((c2Int + c2Pract + c2Ese) * 10) / 10;
